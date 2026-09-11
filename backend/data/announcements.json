@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "title": "Admissions Open for Academic Session 2026-27",
+    "date": "2026-09-01",
+    "category": "Admission",
+    "description": "Admissions are now open for Nursery to Class 10. Registration forms are available online and at the school admin desk."
+  },
+  {
+    "id": 2,
+    "title": "Annual Sports Meet & Athletic Events",
+    "date": "2026-09-18",
+    "category": "Events",
+    "description": "Glorious Public School Annual Sports Meet will be held on the school grounds. All students must wear their respective house uniforms."
+  },
+  {
+    "id": 3,
+    "title": "Parent-Teacher Meeting (PTM)",
+    "date": "2026-09-25",
+    "category": "Academic",
+    "description": "Quarterly PTM for all grades will be held between 9:00 AM and 1:00 PM. Parents are cordially invited to discuss their ward's progress."
+  },
+  {
+    "id": 4,
+    "title": "Inter-School Science & Arts Exhibition",
+    "date": "2026-10-05",
+    "category": "Competition",
+    "description": "Students from classes 6 to 10 are invited to submit working science models and art projects to their class teachers by the end of this week."
+  }
+]
