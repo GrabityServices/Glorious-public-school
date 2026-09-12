@@ -1,0 +1,180 @@
+.header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-light);
+  transition: var(--transition-smooth);
+}
+
+.scrolled {
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(10, 37, 64, 0.08);
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logoBadge {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(10, 37, 64, 0.2);
+}
+
+.logoIcon {
+  color: #fef08a;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.schoolName {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.schoolSubtext {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  margin-top: 2px;
+}
+
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navItem {
+  position: relative;
+  padding: 8px 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-decoration: none;
+  border-radius: var(--border-radius-xl);
+  transition: color 0.2s ease;
+}
+
+.navItem:hover {
+  color: var(--accent-gold);
+}
+
+.navItem.active {
+  color: var(--primary-dark);
+}
+
+.activePill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius-xl);
+  z-index: -1;
+}
+
+.ctaGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.mobileDrawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom: 2px solid var(--primary-light);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 20px 24px;
+}
+
+.mobileLinksList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobileLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  border-radius: 8px;
+}
+
+.mobileLink:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.mobileActive {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.mobileDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-gold);
+}
+
+.mobileCtaWrapper {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 1120px) {
+  .desktopNav {
+    display: none;
+  }
+  .mobileMenuBtn {
+    display: block;
+  }
+}

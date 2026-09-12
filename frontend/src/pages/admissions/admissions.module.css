@@ -1,0 +1,357 @@
+.pageWrapper {
+  min-height: 80vh;
+}
+
+.heroHeader {
+  background: linear-gradient(180deg, #eef4fa 0%, #ffffff 100%);
+  padding: 60px 0 40px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.title {
+  font-size: 2.8rem;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 1.12rem;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.section {
+  padding: 70px 0 50px 0;
+}
+
+.centeredHeader {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.centeredHeader h2 {
+  font-size: 2.3rem;
+  color: var(--primary-dark);
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.stepCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 30px 22px;
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.stepCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-medium);
+  background-color: #ffffff;
+}
+
+.stepNum {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.stepTitle {
+  font-size: 1.15rem;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+.stepDesc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.formSection {
+  padding: 60px 0 90px 0;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-light);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 40px;
+}
+
+.formContainer {
+  background: #ffffff;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 40px;
+  box-shadow: var(--shadow-md);
+}
+
+.formHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sparkleIcon {
+  color: var(--accent-gold);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.formHeader h2 {
+  font-size: 1.65rem;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+
+.formHeader p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.sectionDivider {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+  letter-spacing: 0.08em;
+  padding-bottom: 6px;
+  margin: 20px 0 14px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.twoFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--text-dark);
+  background-color: #ffffff;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--primary-medium);
+  box-shadow: 0 0 0 3px rgba(19, 62, 107, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.successBlock {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.successIcon {
+  color: #16a34a;
+  margin: 0 auto 16px auto;
+}
+
+.successBlock h3 {
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+}
+
+.successBlock p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.appBadge {
+  margin: 20px auto;
+  display: inline-block;
+  background-color: var(--primary-light);
+  border: 1px dashed var(--primary-medium);
+  padding: 12px 24px;
+  border-radius: var(--border-radius-md);
+}
+
+.appBadge span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.appBadge strong {
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  letter-spacing: 0.05em;
+}
+
+.instructions {
+  max-width: 500px;
+  margin: 0 auto;
+  font-size: 0.92rem;
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.infoCard {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.infoCard h3 {
+  font-size: 1.25rem;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.criteriaTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.criteriaTable th {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.criteriaTable td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.docList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.docList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-dark);
+}
+
+.docIcon {
+  color: var(--accent-gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.helplineCard {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+  color: #ffffff;
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+}
+
+.helplineCard h4 {
+  font-size: 1.15rem;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.helplineCard p {
+  font-size: 0.86rem;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+
+.helpContact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.helpContact a {
+  color: #fef08a;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.helpHours {
+  display: block;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+@media (max-width: 992px) {
+  .stepsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+  .twoFields {
+    grid-template-columns: 1fr;
+  }
+  .formContainer {
+    padding: 24px 16px;
+  }
+}

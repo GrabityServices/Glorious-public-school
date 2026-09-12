@@ -1,0 +1,78 @@
+export const EVENTS_DATA = [
+  {
+    id: "dance-competition-jhajha-town-hall",
+    title: "Inter-School Dance & Cultural Fest at Jhajha Town Hall",
+    category: "Cultural",
+    date: "01 Oct - 02 Oct",
+    year: "Annual Event",
+    time: "10:00 AM - 04:30 PM",
+    venue: "Jhajha Town Hall, Main Market, Jhajha",
+    image: "/images/blog1.png",
+    shortDesc: "Our talented students showcase classical and folk dance performances at Jhajha Town Hall.",
+    fullDesc:
+      "Glorious Public School students proudly perform in the grand Inter-School Dance & Cultural Celebration held at Jhajha Town Hall. Students from Nursery to Class 10th compete across folk, classical, semi-classical, and patriotic themes, winning accolades for their graceful coordination, vibrant costumes, and expressive choreography.",
+    highlights: [
+      "Over 120 participating students across four age divisions",
+      "Special tribute to Indian cultural heritage and regional folk dances",
+      "Dignitaries, local educationists, and parents in attendance",
+      "First prize awarded to the GPS Senior Folk Dance Troupe",
+    ],
+  },
+  {
+    id: "independence-day-art-competition",
+    title: "Independence Day Painting & Art Competition",
+    category: "Competition",
+    date: "15 August",
+    year: "National Festival",
+    time: "08:30 AM - 12:30 PM",
+    venue: "School Main Courtyard & Assembly Ground",
+    image: "/images/blog2.png",
+    shortDesc: "Students participate in patriotic painting and drawing competitions celebrating national pride.",
+    fullDesc:
+      "Students celebrate Independence Day on 15th August with flag hoisting, patriotic songs, and a spirited painting competition. The art event provides a creative platform for young minds to express their love for the country through tricolor motifs, freedom fighter portraits, and environmental sustainability themes.",
+    highlights: [
+      "Tricolor flag hoisting ceremony by the Director & Principal",
+      "Painting competition theme: 'My Dream India & Cultural Heritage'",
+      "Exhibition of student artwork for visiting parents",
+      "Medals and merit certificates distributed to top three winners in each category",
+    ],
+  },
+  {
+    id: "annual-sports-meet",
+    title: "Annual Sports Day & Athletics Meet",
+    category: "Sports",
+    date: "20 December",
+    year: "Annual Meet",
+    time: "08:00 AM - 02:00 PM",
+    venue: "Glorious Public School Athletic Grounds",
+    image: "/images/blog3.png",
+    shortDesc: "Sprint races, relay challenges, shotput, and exciting obstacle courses for all wings.",
+    fullDesc:
+      "A high-energy day of sportsmanship and athletic fervor. House teams compete fiercely in track events, 100m/200m sprints, 4x100m relays, long jump, tug of war, and gymnastics drills. Pre-primary toddlers participate in lemon-and-spoon races and sack races.",
+    highlights: [
+      "March-past salute by student council and four school houses",
+      "Over 25 track and field events for boys and girls",
+      "Yoga drill and pyramid formations display",
+      "Presentation of the coveted Overall Championship Rolling Trophy",
+    ],
+  },
+  {
+    id: "science-art-exhibition",
+    title: "Junior Einstein Science & Craft Exhibition",
+    category: "Academic",
+    date: "28 February",
+    year: "National Science Day",
+    time: "09:30 AM - 01:30 PM",
+    venue: "School Multi-Purpose Hall & Laboratories",
+    image: "/images/how_we_work.png",
+    shortDesc: "Working science models, hydraulic lifts, solar irrigation, and robotic prototypes made by students.",
+    fullDesc:
+      "Observed on National Science Day, this exhibition turns our campus into an interactive science laboratory. Middle and secondary students display working models of renewable energy grids, water filtration units, rainwater harvesting setups, and automatic streetlights.",
+    highlights: [
+      "Over 45 working models engineered by student teams",
+      "Interactive math puzzle booths for junior visitors",
+      "Live science demonstrations by secondary physics & chemistry students",
+      "Open for public viewing by parents and local community members",
+    ],
+  },
+];

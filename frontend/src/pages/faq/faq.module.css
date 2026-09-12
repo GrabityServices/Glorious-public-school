@@ -1,0 +1,128 @@
+.pageWrapper {
+  min-height: 80vh;
+}
+
+.heroHeader {
+  background: linear-gradient(180deg, #eef4fa 0%, #ffffff 100%);
+  padding: 60px 0 40px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.title {
+  font-size: 2.8rem;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 1.12rem;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.section {
+  padding: 60px 0 90px 0;
+}
+
+.accordionContainer {
+  max-width: 860px;
+  margin: 0 auto 50px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accordionItem {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+}
+
+.itemOpen {
+  border-color: var(--primary-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.questionBtn {
+  width: 100%;
+  padding: 20px 24px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.questionText {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  line-height: 1.4;
+}
+
+.arrowIcon {
+  color: var(--accent-gold);
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.arrowRotated {
+  transform: rotate(180deg);
+}
+
+.answerWrap {
+  overflow: hidden;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+.answerText {
+  padding: 20px 24px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.helpBox {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #173e68 100%);
+  border-radius: var(--border-radius-lg);
+  padding: 40px;
+  text-align: center;
+  color: #ffffff;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.helpBox h3 {
+  font-size: 1.8rem;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.helpBox p {
+  color: #cbd5e1;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.helpBtns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
