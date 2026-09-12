@@ -1,0 +1,125 @@
+.topBar {
+  background-color: var(--primary-dark);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 0;
+  position: relative;
+  z-index: 1001;
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contactGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.contactItem:hover {
+  color: #ffffff;
+}
+
+.icon {
+  color: var(--accent-gold);
+}
+
+.divider {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+}
+
+.tickerWrapper {
+  flex: 1;
+  overflow: hidden;
+  max-width: 540px;
+  display: flex;
+  align-items: center;
+}
+
+.tickerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  animation: tickerSlide 22s linear infinite;
+}
+
+@keyframes tickerSlide {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.tickerBadge {
+  background-color: var(--accent-gold);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.tickerText {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #f1f5f9;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.actionLink:hover {
+  color: var(--accent-gold);
+}
+
+@media (max-width: 992px) {
+  .tickerWrapper {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .topBar {
+    padding: 4px 0;
+    font-size: 0.75rem;
+  }
+  .contactGroup {
+    gap: 8px;
+  }
+  .actionGroup .actionLink span {
+    display: none;
+  }
+}

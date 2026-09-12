@@ -1,0 +1,17 @@
+export const HOLIDAYS_DATA = [
+  { occasion: "Republic Day", date: "26 January", days: 1, type: "National Holiday" },
+  { occasion: "Saraswati Puja (Vasant Panchami)", date: "14 February", days: 1, type: "Festival" },
+  { occasion: "Maha Shivratri", date: "08 March", days: 1, type: "Festival" },
+  { occasion: "Holi Break", date: "24 March - 26 March", days: 3, type: "Festival Vacation" },
+  { occasion: "Eid-ul-Fitr", date: "11 April", days: 1, type: "Festival" },
+  { occasion: "Summer Vacation", date: "20 May - 15 June", days: 26, type: "Seasonal Vacation" },
+  { occasion: "Muharram", date: "17 July", days: 1, type: "Festival" },
+  { occasion: "Independence Day & Flag Hoisting", date: "15 August", days: 1, type: "National Celebration" },
+  { occasion: "Raksha Bandhan", date: "19 August", days: 1, type: "Festival" },
+  { occasion: "Janmashtami", date: "26 August", days: 1, type: "Festival" },
+  { occasion: "Gandhi Jayanti", date: "02 October", days: 1, type: "National Holiday" },
+  { occasion: "Durga Puja & Dussehra Vacation", date: "09 October - 13 October", days: 5, type: "Festival Vacation" },
+  { occasion: "Diwali & Chhath Puja Holidays", date: "31 October - 07 November", days: 8, type: "State Festival Vacation" },
+  { occasion: "Guru Nanak Jayanti", date: "15 November", days: 1, type: "Festival" },
+  { occasion: "Christmas & Winter Break", date: "25 December - 02 January", days: 9, type: "Winter Vacation" },
+];

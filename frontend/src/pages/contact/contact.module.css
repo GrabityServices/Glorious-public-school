@@ -1,0 +1,259 @@
+.pageWrapper {
+  min-height: 80vh;
+}
+
+.heroHeader {
+  background: linear-gradient(180deg, #eef4fa 0%, #ffffff 100%);
+  padding: 60px 0 40px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.title {
+  font-size: 2.8rem;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 1.12rem;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.section {
+  padding: 70px 0 90px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 48px;
+  align-items: flex-start;
+}
+
+.sectionTitle {
+  font-size: 2.2rem;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+.sectionDesc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.cardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.infoCard {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+}
+
+.infoCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.iconCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.infoCard h3 {
+  font-size: 1.12rem;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+
+.mainDesc {
+  font-size: 0.92rem;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.highlightLink a {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.highlightLink a:hover {
+  text-decoration: underline;
+}
+
+.noteText {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.hoursCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 24px;
+}
+
+.hoursCard h3 {
+  font-size: 1.25rem;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+}
+
+.hoursTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.hoursTable td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.openBadge {
+  font-size: 0.75rem;
+  background-color: #dcfce7;
+  color: #15803d;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.closedBadge {
+  font-size: 0.75rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.formContainer {
+  background: #ffffff;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+}
+
+.formContainer h2 {
+  font-size: 1.85rem;
+  color: var(--primary-dark);
+  margin-bottom: 6px;
+}
+
+.formSub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--text-dark);
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--primary-medium);
+  box-shadow: 0 0 0 3px rgba(19, 62, 107, 0.1);
+}
+
+.successBlock {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.successIcon {
+  color: #16a34a;
+  margin-bottom: 12px;
+}
+
+.successBlock h3 {
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+.successBlock p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .twoCols {
+    grid-template-columns: 1fr;
+  }
+  .formContainer {
+    padding: 24px 16px;
+  }
+}
