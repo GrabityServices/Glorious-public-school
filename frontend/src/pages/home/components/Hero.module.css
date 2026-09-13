@@ -116,7 +116,7 @@
   left: 0;
   bottom: 2px;
   width: 100%;
-  height: 4px;
+  height: 2px;
   background: linear-gradient(90deg, var(--accent-red) 0%, rgba(220, 38, 38, 0.2) 100%);
   border-radius: 2px;
 }
