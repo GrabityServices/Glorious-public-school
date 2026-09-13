@@ -114,14 +114,19 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 28px;
+  align-items: stretch;
 }
 
 .valueCard {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 18px 18px;
   transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 154px;
 }
 
 .valueCard:hover {
@@ -140,20 +145,23 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .valueTitle {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--primary-dark);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  line-height: 1.25;
 }
 
 .valueDesc {
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.83rem;
+  line-height: 1.5;
   color: var(--text-muted);
   margin: 0;
+  flex: 1;
 }
 
 .ctaWrapper {

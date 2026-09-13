@@ -26,8 +26,8 @@ export const SCHOOL_INFO = {
     "Empowering students from Nursery to Class 10th through holistic, modern, child-centric pedagogy, world-class infrastructural support, experienced teachers, and values grounded in integrity, discipline, and compassion.",
 
   stats: [
-    { label: "Dedicated Teachers", value: "18+", suffix: "" },
-    { label: "Enrolled Students", value: "450+", suffix: "" },
+    { label: "Dedicated Teachers", value: "25+", suffix: "" },
+    { label: "Enrolled Students", value: "800+", suffix: "" },
     { label: "Support Staff", value: "12+", suffix: "" },
     { label: "Board Pass Rate", value: "100%", suffix: "" },
     { label: "Academic Wings", value: "4 Core Stages", suffix: "" },

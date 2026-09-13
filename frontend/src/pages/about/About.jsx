@@ -72,7 +72,7 @@ export default function AboutPage() {
           </FadeUp>
 
           <div className={styles.valuesGrid}>
-            <FadeUp delay={0.1}>
+            <FadeUp delay={0.1} fullHeight>
               <div className={styles.pillarCard}>
                 <div className={styles.pillarNumber}>01</div>
                 <h3>Erudite Scholarship</h3>
@@ -80,7 +80,7 @@ export default function AboutPage() {
               </div>
             </FadeUp>
 
-            <FadeUp delay={0.15}>
+            <FadeUp delay={0.15} fullHeight>
               <div className={styles.pillarCard}>
                 <div className={styles.pillarNumber}>02</div>
                 <h3>Character & Integrity</h3>
@@ -88,7 +88,7 @@ export default function AboutPage() {
               </div>
             </FadeUp>
 
-            <FadeUp delay={0.2}>
+            <FadeUp delay={0.2} fullHeight>
               <div className={styles.pillarCard}>
                 <div className={styles.pillarNumber}>03</div>
                 <h3>Creative & Independent Thinking</h3>
@@ -96,7 +96,7 @@ export default function AboutPage() {
               </div>
             </FadeUp>
 
-            <FadeUp delay={0.25}>
+            <FadeUp delay={0.25} fullHeight>
               <div className={styles.pillarCard}>
                 <div className={styles.pillarNumber}>04</div>
                 <h3>All-Rounded Personality</h3>

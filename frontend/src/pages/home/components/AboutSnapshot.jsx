@@ -71,7 +71,7 @@ export default function AboutSnapshot() {
             {/* 4 Pillars Grid */}
             <div className={styles.valuesGrid}>
               {values.map((v, i) => (
-                <FadeUp key={v.title} delay={0.18 + 0.06 * i}>
+                <FadeUp key={v.title} delay={0.18 + 0.06 * i} fullHeight>
                   <div className={styles.valueCard}>
                     <div className={styles.iconCircle}>{v.icon}</div>
                     <h3 className={styles.valueTitle}>{v.title}</h3>

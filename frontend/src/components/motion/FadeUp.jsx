@@ -1,7 +1,7 @@
 import { m, useReducedMotion } from "framer-motion";
 import { varFadeUp } from "@/lib/motion/variants";
 
-export default function FadeUp({ children, className, delay = 0, style }) {
+export default function FadeUp({ children, className, delay = 0, style, fullHeight = false }) {
   const shouldReduceMotion = useReducedMotion();
 
   // If reduced motion is requested, bypass the y translate and only fade in
@@ -18,6 +18,10 @@ export default function FadeUp({ children, className, delay = 0, style }) {
         },
       };
 
+  const combinedStyle = fullHeight
+    ? { height: "100%", display: "flex", flexDirection: "column", ...style }
+    : style;
+
   return (
     <m.div
       initial="hidden"
@@ -25,7 +29,7 @@ export default function FadeUp({ children, className, delay = 0, style }) {
       viewport={{ once: true, amount: 0.15 }}
       variants={variants}
       className={className}
-      style={style}
+      style={combinedStyle}
     >
       {children}
     </m.div>

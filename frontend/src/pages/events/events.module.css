@@ -100,6 +100,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 28px;
+  align-items: stretch;
 }
 
 .eventCard {
@@ -110,6 +111,8 @@
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 380px;
   transition: var(--transition-smooth);
 }
 
@@ -124,6 +127,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .catBadge {
@@ -148,6 +152,9 @@
   color: var(--primary-dark);
   margin-bottom: 12px;
   line-height: 1.3;
+  min-height: 3.8rem;
+  display: flex;
+  align-items: flex-start;
 }
 
 .eventTitle a {
@@ -165,6 +172,7 @@
   line-height: 1.6;
   margin-bottom: 20px;
   flex: 1;
+  min-height: 64px;
 }
 
 .eventDetails {
@@ -175,6 +183,8 @@
   border-top: 1px dashed var(--border-color);
   border-bottom: 1px dashed var(--border-color);
   margin-bottom: 18px;
+  margin-top: auto;
+  min-height: 100px;
 }
 
 .detailRow {
