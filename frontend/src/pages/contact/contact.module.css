@@ -69,6 +69,8 @@
   gap: 16px;
   box-shadow: var(--shadow-sm);
   transition: var(--transition-smooth);
+  min-height: 104px;
+  width: 100%;
 }
 
 .infoCard:hover {

@@ -27,7 +27,7 @@ export default function AcademicsSnapshot() {
 
         <div className={styles.wingsGrid}>
           {ACADEMIC_WINGS.map((wing, idx) => (
-            <FadeUp key={wing.id} delay={0.1 * (idx + 1)}>
+            <FadeUp key={wing.id} delay={0.1 * (idx + 1)} fullHeight>
               <div className={styles.wingCard}>
                 <div className={styles.cardMedia}>
                   <img

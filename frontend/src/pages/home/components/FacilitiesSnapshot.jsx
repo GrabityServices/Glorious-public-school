@@ -37,7 +37,7 @@ export default function FacilitiesSnapshot() {
 
         <div className={styles.grid}>
           {FACILITIES_DATA.map((item, idx) => (
-            <FadeUp key={item.id} delay={0.08 * (idx + 1)}>
+            <FadeUp key={item.id} delay={0.08 * (idx + 1)} fullHeight>
               <div className={styles.card}>
                 <div className={styles.iconCircle}>
                   {iconMap[item.icon] || <BookOpen size={24} />}

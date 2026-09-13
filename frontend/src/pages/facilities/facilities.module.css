@@ -164,7 +164,7 @@
 }
 
 .ctaCard {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #173e68 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #2e1008 100%);
   border-radius: var(--border-radius-lg);
   padding: 50px 40px;
   color: #ffffff;

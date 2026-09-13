@@ -28,7 +28,7 @@ export default function StatsSection() {
 
         <div className={styles.statsGrid}>
           {SCHOOL_INFO.stats.map((stat, idx) => (
-            <FadeUp key={stat.label} delay={0.08 * (idx + 1)}>
+            <FadeUp key={stat.label} delay={0.08 * (idx + 1)} fullHeight>
               <div className={styles.statCard}>
                 <div className={styles.iconCircle}>
                   {statIcons[idx % statIcons.length]}

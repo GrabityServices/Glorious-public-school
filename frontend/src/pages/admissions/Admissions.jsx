@@ -105,7 +105,7 @@ export default function AdmissionsPage() {
 
           <div className={styles.stepsGrid}>
             {ADMISSION_STEPS.map((step) => (
-              <FadeUp key={step.step} delay={0.1}>
+              <FadeUp key={step.step} delay={0.1} fullHeight>
                 <div className={styles.stepCard}>
                   <div className={styles.stepNum}>{step.step}</div>
                   <h3 className={styles.stepTitle}>{step.title}</h3>

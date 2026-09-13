@@ -25,7 +25,7 @@ export default function NoticeEventsSection() {
 
             <div className={styles.eventsList}>
               {EVENTS_DATA.slice(0, 2).map((ev, i) => (
-                <FadeUp key={ev.id} delay={0.1 * (i + 1)}>
+                <FadeUp key={ev.id} delay={0.1 * (i + 1)} fullHeight>
                   <div className={styles.eventCard}>
                     <div className={styles.dateBadge}>
                       <span className={styles.dateDays}>{ev.date.split(" ")[0]}</span>

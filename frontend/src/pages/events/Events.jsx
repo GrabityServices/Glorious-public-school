@@ -52,7 +52,7 @@ export default function EventsPage() {
           {/* Events Grid */}
           <div className={styles.eventsGrid}>
             {filteredEvents.map((event, idx) => (
-              <FadeUp key={event.id} delay={0.08 * (idx + 1)}>
+              <FadeUp key={event.id} delay={0.08 * (idx + 1)} fullHeight>
                 <div className={styles.eventCard}>
                   <div className={styles.cardTop}>
                     <span className={styles.catBadge}>{event.category}</span>
