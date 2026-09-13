@@ -14,7 +14,7 @@ export const SCHOOL_INFO = {
   pincode: "811308",
   landmark: "Near Koltex, Petrol Pump",
 
-  admissionNotice: "🎓 ADMISSION IS GOING ON FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY! 🎓",
+  admissionNotice: "ADMISSION OPEN FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY!",
 
   aboutText:
     "Glorious Public School is dedicated to create erudite, upright leaders of tomorrow's world. Glorious strives to develop an all-rounded personality in its students. The school nurtures the creative and independent thinking of every student, and brings out the leadership skills inherent in every child. There is special emphasis on ethics and stress on individual character and integrity of the child.",
@@ -30,7 +30,7 @@ export const SCHOOL_INFO = {
     { label: "Enrolled Students", value: "450+", suffix: "" },
     { label: "Support Staff", value: "12+", suffix: "" },
     { label: "Board Pass Rate", value: "100%", suffix: "" },
-    { label: "Classes", value: "Nursery - 10th", suffix: "" },
+    { label: "Academic Wings", value: "4 Core Stages", suffix: "" },
     { label: "School Buses/Vans", value: "8+", suffix: "" },
   ],
 
@@ -46,14 +46,14 @@ export const SCHOOL_INFO = {
 
   quickLinks: [
     { label: "Online Admission", href: "/admissions" },
-    { label: "Academics (Nursery-10th)", href: "/academics" },
+    { label: "Academic Curriculum", href: "/academics" },
     { label: "School Facilities", href: "/facilities" },
-    { label: "Notice Board & News", href: "/news" },
     { label: "School Events", href: "/events" },
+    { label: "School Calendar", href: "/calendar" },
+    { label: "Notice Board & News", href: "/news" },
     { label: "Holiday Calendar", href: "/holiday" },
     { label: "Photo Gallery", href: "/gallery" },
     { label: "Faculty & Staff", href: "/staff" },
-    { label: "Student Login", href: "/login" },
     { label: "Contact Us", href: "/contact" },
   ],
 };

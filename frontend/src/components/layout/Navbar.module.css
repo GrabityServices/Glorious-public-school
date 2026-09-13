@@ -1,18 +1,14 @@
 .header {
-  position: sticky;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
-  z-index: 1000;
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-light);
   transition: var(--transition-smooth);
 }
 
 .scrolled {
-  background-color: rgba(255, 255, 255, 0.96);
+  background-color: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(10, 37, 64, 0.08);
 }
 
 .container {
@@ -32,42 +28,43 @@
   text-decoration: none;
 }
 
-.logoBadge {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(10, 37, 64, 0.2);
+
+.logoImg {
+  height: 48px;
+  width: auto;
+  max-width: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
-.logoIcon {
-  color: #fef08a;
+.brand:hover .logoImg {
+  transform: scale(1.04);
 }
 
-.brandText {
+.brandInfo {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
-.schoolName {
+.brandTitle {
   font-family: var(--font-serif);
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary-dark);
   line-height: 1.1;
   letter-spacing: -0.01em;
 }
 
-.schoolSubtext {
-  font-size: 0.68rem;
+.brandSub {
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--accent-gold);
+  color: var(--accent-brown);
+  letter-spacing: 0.12em;
   margin-top: 2px;
 }
+
 
 .desktopNav {
   display: flex;
@@ -87,7 +84,7 @@
 }
 
 .navItem:hover {
-  color: var(--accent-gold);
+  color: var(--accent-red);
 }
 
 .navItem.active {
@@ -127,6 +124,8 @@
   border-bottom: 2px solid var(--primary-light);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   padding: 20px 24px;
+  max-height: calc(100vh - 100%);
+  overflow-y: auto;
 }
 
 .mobileLinksList {
@@ -176,5 +175,21 @@
   }
   .mobileMenuBtn {
     display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 8px 16px;
+  }
+  .logoImg {
+    height: 38px;
+    max-width: 40px;
+  }
+  .brandTitle {
+    font-size: 1.05rem;
+  }
+  .brandSub {
+    font-size: 0.58rem;
   }
 }

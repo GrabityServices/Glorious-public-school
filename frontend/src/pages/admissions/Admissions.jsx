@@ -85,7 +85,7 @@ export default function AdmissionsPage() {
         <div className={styles.container}>
           <FadeUp>
             <div className="badge-admission" style={{ marginBottom: "16px" }}>
-              🎓 ADMISSION IS GOING ON (SESSION 2026-2027) 🎓
+              ADMISSIONS OPEN (SESSION 2026-2027)
             </div>
             <h1 className={styles.title}>Admissions for Nursery to Class 10th</h1>
             <p className={styles.subtitle}>

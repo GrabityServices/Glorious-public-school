@@ -1,12 +1,12 @@
 .footer {
-  background-color: var(--primary-dark);
+  background-color: var(--bg-dark);
   color: #f1f5f9;
   position: relative;
   overflow: hidden;
 }
 
 .admissionBanner {
-  background: linear-gradient(135deg, #133e6b 0%, #0a2540 100%);
+  background: linear-gradient(135deg, #18181b 0%, #451a03 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 40px 0;
 }
@@ -23,7 +23,7 @@
   display: inline-block;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--accent-gold);
+  color: #fca5a5;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 6px;
@@ -38,6 +38,7 @@
 .bannerDesc {
   color: #cbd5e1;
   max-width: 600px;
+  line-height: 1.6;
 }
 
 .bannerBtnGroup {
@@ -67,14 +68,13 @@
   margin-bottom: 16px;
 }
 
-.logoBadge {
-  width: 42px;
-  height: 42px;
-  background-color: var(--primary-medium);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footerLogoImg {
+  height: 52px;
+  width: auto;
+  max-width: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
 .brandTitle {
@@ -84,10 +84,11 @@
 }
 
 .brandSub {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  color: var(--accent-gold);
-  letter-spacing: 0.06em;
+  color: var(--accent-brown);
+  letter-spacing: 0.1em;
+  margin-top: 3px;
 }
 
 .aboutText {
@@ -123,7 +124,7 @@
   left: 0;
   width: 32px;
   height: 2px;
-  background-color: var(--accent-gold);
+  background-color: var(--accent-red);
 }
 
 .linksList {
@@ -142,7 +143,7 @@
 }
 
 .linksList a:hover {
-  color: var(--accent-gold);
+  color: var(--accent-red);
   transform: translateX(4px);
 }
 
@@ -192,7 +193,7 @@
 }
 
 .contactIcon {
-  color: var(--accent-gold);
+  color: var(--accent-red);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -213,7 +214,7 @@
 }
 
 .contactItem a:hover {
-  color: var(--accent-gold);
+  color: var(--accent-red);
 }
 
 .bottomBar {
@@ -244,7 +245,7 @@
 }
 
 .legalLinks a:hover {
-  color: var(--accent-gold);
+  color: var(--accent-red);
 }
 
 @media (max-width: 1024px) {

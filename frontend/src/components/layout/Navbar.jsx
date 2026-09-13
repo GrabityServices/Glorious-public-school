@@ -6,7 +6,7 @@ import styles from "./Navbar.module.css";
 import { easeCalm } from "@/lib/motion/easing";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
-export default function Navbar() {
+export default function Navbar({ isScrolled }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
@@ -19,9 +19,11 @@ export default function Navbar() {
         setScrolled(false);
       }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const activeScrolled = isScrolled !== undefined ? isScrolled : scrolled;
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -30,14 +32,12 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "About Us", href: "/about" },
+    { name: "About", href: "/about" },
     { name: "Academics", href: "/academics" },
-    { name: "Admissions", href: "/admissions" },
     { name: "Facilities", href: "/facilities" },
     { name: "Events", href: "/events" },
+    { name: "Calendar", href: "/calendar" },
     { name: "Gallery", href: "/gallery" },
-    { name: "Staff", href: "/staff" },
-    { name: "Notice", href: "/news" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -73,16 +73,18 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
+    <div className={`${styles.header} ${activeScrolled ? styles.scrolled : ""}`}>
       <div className={styles.container}>
         {/* School Logo & Title */}
         <Link to="/" className={styles.brand}>
-          <div className={styles.logoBadge}>
-            <GraduationCap size={26} className={styles.logoIcon} />
-          </div>
-          <div className={styles.brandText}>
-            <span className={styles.schoolName}>Glorious Public School</span>
-            <span className={styles.schoolSubtext}>NURSERY TO CLASS 10TH • JHAJHA, BIHAR</span>
+          <img
+            src="/images/glorious-public-school-logo.png"
+            alt="Glorious Public School Logo"
+            className={styles.logoImg}
+          />
+          <div className={styles.brandInfo}>
+            <span className={styles.brandTitle}>Glorious Public School</span>
+            <span className={styles.brandSub}>KOLTEX • JHAJHA (BIHAR)</span>
           </div>
         </Link>
 
@@ -162,7 +164,7 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   <Award size={16} />
-                  <span>Apply for Admission (Nursery - 10th)</span>
+                  <span>Apply for Online Admission</span>
                 </Link>
                 <a
                   href={`tel:${SCHOOL_INFO.phone}`}
@@ -177,6 +179,6 @@ export default function Navbar() {
           </m.div>
         )}
       </AnimatePresence>
-    </header>
+    </div>
   );
 }

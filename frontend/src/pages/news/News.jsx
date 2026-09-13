@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Calendar, User, FileText, ArrowRight, Sparkles } from "lucide-react";
+import { Bell, Calendar, User, FileText, ArrowRight, Sparkles, Phone, Mail } from "lucide-react";
 import styles from "./news.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
@@ -82,8 +82,8 @@ export default function NewsPage() {
                 <div className={styles.readerFooter}>
                   <p>For inquiries regarding this circular, please contact the administrative desk:</p>
                   <div className={styles.contactFooter}>
-                    <span>📞 Helpline: 9534105012</span>
-                    <span>✉️ Email: gpsjhajha@gmail.com</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Phone size={14} /> Helpline: 9534105012</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Mail size={14} /> Email: gpsjhajha@gmail.com</span>
                   </div>
                   <Link to="/admissions" className="btn btn-gold btn-sm" style={{ marginTop: "14px" }}>
                     <span>Online Admission Open &rarr;</span>

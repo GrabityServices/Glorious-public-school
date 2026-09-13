@@ -17,14 +17,14 @@ export default function ApplyBanner() {
 
             <FadeUp delay={0.1}>
               <p className={styles.bannerText}>
-                Glorious is dedicated to create erudite, upright leaders of tomorrow's world. Glorious strives to develop an all-rounded personality in its students. The school nurtures the creative and independent thinking of every child, providing safe transport, boarding hostel, and experienced faculty from Nursery to Class 10th.
+                Glorious is dedicated to create erudite, upright leaders of tomorrow's world. Glorious strives to develop an all-rounded personality in its students. The school nurtures the creative and independent thinking of every child, providing safe transport, boarding hostel, and experienced faculty with individual student care.
               </p>
             </FadeUp>
 
             <FadeUp delay={0.15}>
               <div className={styles.checklist}>
                 <span className={styles.checkItem}><CheckCircle size={16} /> Online Simple Application</span>
-                <span className={styles.checkItem}><CheckCircle size={16} /> Nursery to Class 10th</span>
+                <span className={styles.checkItem}><CheckCircle size={16} /> Qualified & Caring Teachers</span>
                 <span className={styles.checkItem}><CheckCircle size={16} /> Transport & Hostel Available</span>
                 <span className={styles.checkItem}><CheckCircle size={16} /> Affordable Fee Structure</span>
               </div>

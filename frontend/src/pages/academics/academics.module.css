@@ -249,7 +249,7 @@
 }
 
 .evaluationCard {
-  background: linear-gradient(135deg, #0a2540 0%, #173e68 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
   border-radius: var(--border-radius-lg);
   padding: 48px;
   color: #ffffff;
