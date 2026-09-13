@@ -10,7 +10,7 @@
 }
 
 .bannerCard {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+  background: linear-gradient(135deg, #121214 0%, #3b1a10 100%);
   border-radius: var(--border-radius-lg);
   padding: 60px 48px;
   color: #ffffff;
@@ -26,7 +26,7 @@
   right: -100px;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(217, 119, 6, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
 }
 
@@ -42,7 +42,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #fef08a;
+  color: #fca5a5;
   margin-bottom: 12px;
 }
 

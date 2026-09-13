@@ -79,9 +79,9 @@ export default function PrivacyPage() {
                   For queries regarding student records or updating parent contact numbers:
                 </p>
                 <p className={styles.text}>
-                  📍 Address: {SCHOOL_INFO.address}<br />
-                  📞 Phone: <strong>{SCHOOL_INFO.phone}</strong><br />
-                  ✉️ Email: <strong>{SCHOOL_INFO.email}</strong>
+                  <strong>Address:</strong> {SCHOOL_INFO.address}<br />
+                  <strong>Phone:</strong> {SCHOOL_INFO.phone}<br />
+                  <strong>Email:</strong> {SCHOOL_INFO.email}
                 </p>
               </m.div>
 

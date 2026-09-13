@@ -22,7 +22,7 @@ export default function Footer() {
           <div className={styles.bannerFlex}>
             <div>
               <span className={styles.bannerTag}>Session 2026 - 2027</span>
-              <h3 className={styles.bannerTitle}>Admissions Open for Nursery to Class 10th</h3>
+              <h3 className={styles.bannerTitle}>Admissions Open for the New Academic Session</h3>
               <p className={styles.bannerDesc}>
                 Empower your child with strong academic roots, leadership skills, and character building.
               </p>
@@ -46,12 +46,14 @@ export default function Footer() {
           {/* Col 1: About School */}
           <div className={styles.aboutCol}>
             <div className={styles.brand}>
-              <div className={styles.logoBadge}>
-                <GraduationCap size={24} color="#fef08a" />
-              </div>
+              <img
+                src="/images/glorious-public-school-logo.png"
+                alt="Glorious Public School Crest"
+                className={styles.footerLogoImg}
+              />
               <div>
                 <h4 className={styles.brandTitle}>Glorious Public School</h4>
-                <p className={styles.brandSub}>NURSERY TO CLASS 10TH • JHAJHA</p>
+                <p className={styles.brandSub}>KNOWLEDGE • LEADERSHIP • INTEGRITY</p>
               </div>
             </div>
             <p className={styles.aboutText}>
@@ -68,14 +70,14 @@ export default function Footer() {
             <h4 className={styles.colTitle}>Quick Links</h4>
             <ul className={styles.linksList}>
               <li><Link to="/admissions">Online Admission</Link></li>
-              <li><Link to="/academics">Academics (Nursery-10th)</Link></li>
+              <li><Link to="/academics">Academic Curriculum</Link></li>
               <li><Link to="/facilities">School Facilities & Hostel</Link></li>
               <li><Link to="/events">Events & Competitions</Link></li>
+              <li><Link to="/calendar">School Calendar</Link></li>
               <li><Link to="/news">News & Notice Board</Link></li>
               <li><Link to="/gallery">Photo Gallery</Link></li>
               <li><Link to="/holiday">Holiday Calendar</Link></li>
               <li><Link to="/staff">Faculty & Staff</Link></li>
-              <li><Link to="/faq">Parent FAQ</Link></li>
               <li><Link to="/contact">Contact Us</Link></li>
             </ul>
           </div>

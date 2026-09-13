@@ -20,15 +20,15 @@ export default function TopHeader() {
           </a>
         </div>
 
-        {/* Marquee Ticker */}
+        {/* Marquee Ticker
         <div className={styles.tickerWrapper}>
           <div className={styles.tickerContent}>
             <span className={styles.tickerBadge}>ADMISSION OPEN</span>
             <span className={styles.tickerText}>
-              🎓 Admissions are going on for Nursery to Class 10th (Session 2026-2027). Enroll your child today!
+               Admissions are going on for Nursery to Class 10th (Session 2026-2027). Enroll your child today!
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Action Links */}
         <div className={styles.actionGroup}>

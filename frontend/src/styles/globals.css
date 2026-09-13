@@ -1,43 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* School Academic Color Palette */
-  --primary-dark: #0a2540;
-  --primary-dark-rgb: 10, 37, 64;
-  --primary-medium: #133e6b;
-  --primary-light: #eaf2fb;
-  --primary-light-hover: #d5e6f8;
+  /* School Color Palette - Black, Ash, Academic Crimson Red & Cognac Brown */
+  --primary-dark: #121214;          /* Obsidian Black */
+  --primary-dark-rgb: 18, 18, 20;
+  --primary-medium: #27272a;        /* Deep Ash Charcoal */
+  --primary-light: #f4f4f5;         /* Soft Ash Gray */
+  --primary-light-hover: #e4e4e7;
   
-  --accent-gold: #d97706;
-  --accent-gold-hover: #b45309;
-  --accent-gold-light: #fef3c7;
-  --accent-maroon: #881337;
-  --accent-blue: #2563eb;
-  --accent-green: #15803d;
+  --accent-red: #dc2626;           /* Crimson Red (matching crest ring) */
+  --accent-red-hover: #b91c1c;     /* Deep Ruby */
+  --accent-red-light: #fee2e2;     /* Soft Rose Tint */
+
+  --accent-brown: #9a3412;         /* Warm Cognac Bronze Brown */
+  --accent-brown-hover: #7c2d12;   /* Deep Saddle Mahogany */
+  --accent-brown-light: #ffedd5;   /* Warm Peach Cream */
+
+  --accent-gold: #dc2626;          /* Mapped to vibrant Crimson Red for buttons & badges */
+  --accent-gold-hover: #b91c1c;
+  --accent-gold-light: #fee2e2;
+
+  --accent-orange: #dc2626;        /* Backward compatibility */
+  --accent-orange-hover: #b91c1c;
+  --accent-orange-light: #fee2e2;
+
+  --accent-amber: #9a3412;         /* Cognac amber */
+  --accent-ash: #64748b;           /* Slate Ash */
+  --accent-blue: #0284c7;          /* Crest Azure Book */
+  --accent-blue-light: #e0f2fe;
+  --accent-green: #10b981;         /* Live Status Emerald */
 
   --bg-light: #ffffff;
-  --bg-surface: #f8fafc;
+  --bg-surface: #f4f5f7;           /* Platinum Ash Surface */
   --bg-card: #ffffff;
-  --bg-accent: #f1f5f9;
+  --bg-accent: #e5e7eb;            /* Cool Ash Accent */
+  --bg-dark: #0a0a0c;              /* True Midnight Black */
 
-  --text-dark: #0f172a;
-  --text-muted: #475569;
-  --text-light: #94a3b8;
+  --text-dark: #111827;            /* Onyx Text */
+  --text-muted: #4b5563;           /* Ash Slate Text */
+  --text-light: #9ca3af;           /* Light Ash Text */
 
-  --border-color: #e2e8f0;
-  --border-light: rgba(10, 37, 64, 0.08);
+  --border-color: #e5e7eb;         /* Clean Ash Border */
+  --border-light: rgba(18, 18, 20, 0.08);
 
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --transition-smooth: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   --transition-fast: all 0.15s ease;
   
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 2px 4px 0 rgba(10, 37, 64, 0.04);
-  --shadow-md: 0 10px 15px -3px rgba(10, 37, 64, 0.07), 0 4px 6px -2px rgba(10, 37, 64, 0.03);
-  --shadow-lg: 0 20px 25px -5px rgba(10, 37, 64, 0.09), 0 10px 10px -5px rgba(10, 37, 64, 0.03);
-  --shadow-xl: 0 25px 50px -12px rgba(10, 37, 64, 0.15);
+  --shadow-xs: 0 1px 2px 0 rgba(18, 18, 20, 0.04);
+  --shadow-sm: 0 2px 4px 0 rgba(18, 18, 20, 0.04);
+  --shadow-md: 0 10px 15px -3px rgba(18, 18, 20, 0.07), 0 4px 6px -2px rgba(18, 18, 20, 0.03);
+  --shadow-lg: 0 20px 25px -5px rgba(18, 18, 20, 0.09), 0 10px 10px -5px rgba(18, 18, 20, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(18, 18, 20, 0.18);
 
   --border-radius-sm: 6px;
   --border-radius-md: 12px;
@@ -62,6 +78,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  scroll-padding-top: 110px;
 }
 
 /* Custom Scrollbar */
@@ -74,12 +91,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #9ca3af;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #6b7280;
 }
 
 /* Base Typography */
@@ -148,32 +165,33 @@ img {
 .btn-primary {
   background-color: var(--primary-dark);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(10, 37, 64, 0.2);
+  box-shadow: 0 4px 14px rgba(18, 18, 20, 0.25);
 }
 
 .btn-primary:hover {
   background-color: var(--primary-medium);
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(10, 37, 64, 0.25);
+  box-shadow: 0 8px 20px rgba(18, 18, 20, 0.35);
   color: #ffffff;
 }
 
 .btn-gold {
-  background-color: var(--accent-gold);
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
 }
 
 .btn-gold:hover {
-  background-color: var(--accent-gold-hover);
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(217, 119, 6, 0.35);
+  box-shadow: 0 8px 22px rgba(220, 38, 38, 0.45);
   color: #ffffff;
 }
 
 .btn-secondary {
   background-color: var(--primary-light);
   color: var(--primary-dark);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
@@ -204,11 +222,12 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
-  color: var(--accent-gold);
+  color: #991b1b;
   margin-bottom: 8px;
-  background-color: var(--accent-gold-light);
+  background-color: #fee2e2;
   padding: 4px 14px;
   border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(220, 38, 38, 0.25);
 }
 
 /* Admission Badge */
@@ -216,20 +235,20 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
   color: #ffffff;
   padding: 6px 16px;
   border-radius: var(--border-radius-xl);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
   animation: pulseBadge 2.5s infinite;
 }
 
 @keyframes pulseBadge {
   0% { transform: scale(1); }
-  50% { transform: scale(1.03); box-shadow: 0 6px 14px rgba(217, 119, 6, 0.4); }
+  50% { transform: scale(1.03); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45); }
   100% { transform: scale(1); }
 }
 

@@ -92,7 +92,7 @@ export default function NoticeEventsSection() {
 
               <div className={styles.noticeFooter}>
                 <Link to="/admissions" className="btn btn-gold btn-sm" style={{ width: "100%" }}>
-                  <span>Apply Now for Admission (Nursery - 10th)</span>
+                  <span>Enroll for the New Academic Session</span>
                   <ChevronRight size={16} />
                 </Link>
               </div>

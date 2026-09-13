@@ -12,6 +12,7 @@ import News from "@/pages/news/News";
 import Gallery from "@/pages/gallery/Gallery";
 import Staff from "@/pages/staff/Staff";
 import Holiday from "@/pages/holiday/Holiday";
+import Calendar from "@/pages/calendar/Calendar";
 import Faq from "@/pages/faq/Faq";
 import Contact from "@/pages/contact/Contact";
 import Login from "@/pages/login/Login";
@@ -40,6 +41,9 @@ export default function AppRoutes() {
         <Route path="staff" element={<Staff />} />
         <Route path="teachers" element={<Navigate to="/staff" replace />} />
         <Route path="holiday" element={<Holiday />} />
+        <Route path="calendar" element={<Calendar />} />
+        <Route path="calendars" element={<Navigate to="/calendar" replace />} />
+        <Route path="academic-calendar" element={<Navigate to="/calendar" replace />} />
         <Route path="faq" element={<Faq />} />
         <Route path="contact" element={<Contact />} />
         <Route path="login" element={<Login />} />

@@ -1,11 +1,47 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Award, ArrowRight, Phone, ShieldCheck, Bus, Home, BookOpen } from "lucide-react";
-import { m } from "framer-motion";
+import { Award, ArrowRight, Phone, ShieldCheck, Bus, Home, BookOpen, Sparkles } from "lucide-react";
+import { AnimatePresence, m } from "framer-motion";
 import styles from "./Hero.module.css";
 import FadeUp from "@/components/motion/FadeUp";
+import HeroSlider from "./HeroSlider";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
+const PRESTIGE_HIGHLIGHTS = [
+  {
+    id: "pedagogy",
+    icon: <Sparkles size={14} className={styles.premiumIcon} />,
+    text: "EMPOWERING FUTURE LEADERS WITH CRITICAL & ETHICAL THINKING",
+  },
+  {
+    id: "motto",
+    icon: <Award size={14} className={styles.premiumIcon} />,
+    text: "KNOWLEDGE • LEADERSHIP • INTEGRITY • JHAJHA",
+  },
+  {
+    id: "facilities",
+    icon: <ShieldCheck size={14} className={styles.premiumIcon} />,
+    text: "SMART CLASSROOMS, MODERN LABS & DEDICATED FACULTY",
+  },
+  {
+    id: "holistic",
+    icon: <Sparkles size={14} className={styles.premiumIcon} />,
+    text: "BALANCING SCHOLARLY RIGOR, SPORTS & MORAL CHARACTER",
+  },
+];
+
 export default function Hero() {
+  const [highlightIdx, setHighlightIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHighlightIdx((prev) => (prev + 1) % PRESTIGE_HIGHLIGHTS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentHighlight = PRESTIGE_HIGHLIGHTS[highlightIdx];
+
   return (
     <section className={styles.heroSection}>
       {/* Subtle background glow */}
@@ -15,32 +51,47 @@ export default function Hero() {
         <div className={styles.heroGrid}>
           {/* Left Content */}
           <div className={styles.heroContent}>
+            {/* Dynamic Prestige & Accreditation Badge */}
             <FadeUp>
-              <div className={styles.admissionBadge}>
+              <div className={styles.prestigeBadge}>
                 <span className={styles.pulseDot} />
-                <span>🎓 ADMISSION IS GOING ON (NURSERY TO CLASS 10TH) 🎓</span>
+                <div className={styles.badgeRotator}>
+                  <AnimatePresence mode="wait">
+                    <m.div
+                      key={currentHighlight.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                      className={styles.badgeItem}
+                    >
+                      {currentHighlight.icon}
+                      <span>{currentHighlight.text}</span>
+                    </m.div>
+                  </AnimatePresence>
+                </div>
               </div>
             </FadeUp>
 
             <FadeUp delay={0.1}>
               <h1 className={styles.heroTitle}>
-                Welcome to <span className={styles.highlightText}>Glorious</span> Public School
+                Empowering Young Minds at <span className={styles.highlightText}>Glorious</span> Public School
               </h1>
             </FadeUp>
 
-            <FadeUp delay={0.2}>
+            <FadeUp delay={0.16}>
               <p className={styles.heroSubtitle}>
-                Dedicated to create <strong>erudite, upright leaders of tomorrow's world</strong>. We nurture the creative, independent thinking of every child, fostering all-rounded personality, ethics, and unwavering integrity.
+                <strong>Glorious Public School</strong> provides a vibrant, values-driven sanctuary of learning in Jhajha — dedicated to academic excellence, creative curiosity, and character leadership from Nursery to Class 10th.
               </p>
             </FadeUp>
 
             {/* Quick Feature Pills */}
-            <FadeUp delay={0.25}>
+            <FadeUp delay={0.24}>
               <div className={styles.featurePills}>
-                <span className={styles.pill}><BookOpen size={14} /> Nursery to Class 10th</span>
+                <span className={styles.pill}><BookOpen size={14} /> Concept-Based Curriculum</span>
                 <span className={styles.pill}><Bus size={14} /> Safe Transport</span>
                 <span className={styles.pill}><Home size={14} /> Hostel Facility</span>
-                <span className={styles.pill}><ShieldCheck size={14} /> Quality Education</span>
+                <span className={styles.pill}><ShieldCheck size={14} /> Holistic Growth</span>
               </div>
             </FadeUp>
 
@@ -48,7 +99,7 @@ export default function Hero() {
             <FadeUp delay={0.3}>
               <div className={styles.btnGroup}>
                 <Link to="/admissions" className="btn btn-gold">
-                  <span>Apply Now for Your Kids</span>
+                  <span>Apply for Admission</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/academics" className="btn btn-secondary">
@@ -59,7 +110,7 @@ export default function Hero() {
                     <Phone size={15} />
                   </div>
                   <div>
-                    <span className={styles.phoneLabel}>Have questions? Call</span>
+                    <span className={styles.phoneLabel}>Helpline</span>
                     <span className={styles.phoneNumber}>{SCHOOL_INFO.phone}</span>
                   </div>
                 </a>
@@ -67,49 +118,9 @@ export default function Hero() {
             </FadeUp>
           </div>
 
-          {/* Right Card / Visual Showcase */}
-          <FadeUp delay={0.2} className={styles.visualCol}>
-            <div className={styles.visualCard}>
-              <div className={styles.cardHeader}>
-                <div className={styles.cardBadge}>Jhajha, Jamui (Bihar)</div>
-                <h3>Academic Session 2026-27</h3>
-              </div>
-
-              <div className={styles.cardHighlights}>
-                <div className={styles.highlightItem}>
-                  <div className={styles.iconBox}><Award size={20} /></div>
-                  <div>
-                    <h4>100% Board Success</h4>
-                    <p>Dedicated mentorship for Class 9th & 10th with continuous testing.</p>
-                  </div>
-                </div>
-
-                <div className={styles.highlightItem}>
-                  <div className={styles.iconBox}><BookOpen size={20} /></div>
-                  <div>
-                    <h4>Pre-Primary to Secondary</h4>
-                    <p>Play-way toddler learning to high-school scientific rigour.</p>
-                  </div>
-                </div>
-
-                <div className={styles.highlightItem}>
-                  <div className={styles.iconBox}><Bus size={20} /></div>
-                  <div>
-                    <h4>Extensive Transport & Hostel</h4>
-                    <p>Daily bus fleet covering Jhajha & Jamui with caring boarding facility.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.cardFooter}>
-                <div className={styles.locationTag}>
-                  📍 Koltex, Petrol Pump, Jhajha
-                </div>
-                <Link to="/contact" className={styles.visitLink}>
-                  Visit Campus &rarr;
-                </Link>
-              </div>
-            </div>
+          {/* Right Visual Slider */}
+          <FadeUp delay={0.2} className={styles.sliderCol}>
+            <HeroSlider />
           </FadeUp>
         </div>
       </div>

@@ -37,8 +37,8 @@
 
 .wingCard {
   background: #ffffff;
-  border-radius: var(--border-radius-md);
-  padding: 24px;
+  border-radius: 14px;
+  overflow: hidden;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -52,45 +52,79 @@
   border-color: var(--primary-medium);
 }
 
+.cardMedia {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background-color: var(--primary-dark);
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.wingCard:hover .cardImage {
+  transform: scale(1.06);
+}
+
+.gradeBadgeOverlay {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  background: rgba(18, 18, 20, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cardBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .cardTop {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.gradeBadge {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--border-radius-xl);
+  justify-content: flex-start;
+  margin-bottom: 8px;
 }
 
 .ageTag {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--accent-brown);
 }
 
 .wingTitle {
-  font-size: 1.25rem;
+  font-size: 1.18rem;
   color: var(--primary-dark);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  line-height: 1.25;
 }
 
 .wingTagline {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--accent-gold);
-  margin-bottom: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
 }
 
 .wingDesc {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  line-height: 1.55;
-  margin-bottom: 16px;
+  line-height: 1.5;
+  margin-bottom: 14px;
   flex: 1;
 }
 
@@ -98,8 +132,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 20px;
-  padding-top: 14px;
+  margin-bottom: 16px;
+  padding-top: 12px;
   border-top: 1px dashed var(--border-color);
 }
 
@@ -107,7 +141,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-dark);
 }
 
@@ -127,7 +161,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--primary-dark);
   text-decoration: none;

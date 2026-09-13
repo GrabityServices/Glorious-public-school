@@ -8,7 +8,7 @@ import ApplyBanner from "./components/ApplyBanner";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export default function Home() {
-  useDocumentTitle("Glorious Public School | Nursery to Class 10th | Jhajha, Bihar");
+  useDocumentTitle("Glorious Public School | Excellence in Education | Jhajha, Bihar");
 
   return (
     <div>

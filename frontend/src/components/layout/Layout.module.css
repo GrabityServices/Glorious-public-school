@@ -1,0 +1,29 @@
+.layoutWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.fixedHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.fixedHeader.scrolled {
+  box-shadow: 0 4px 20px rgba(18, 18, 20, 0.09);
+}
+
+.headerSpacer {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+}
