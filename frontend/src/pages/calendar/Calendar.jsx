@@ -150,6 +150,27 @@ export default function CalendarPage() {
       {/* Main Calendar Workspace */}
       <section className={styles.calendarSection}>
         <div className={styles.container}>
+          {/* Print-Only School & Calendar Header */}
+          <div className={styles.printHeader}>
+            <div className={styles.printHeaderTop}>
+              <h1 className={styles.printSchoolTitle}>Glorious Public School</h1>
+              <p className={styles.printSchoolSubtitle}>
+                Recognized Co-Educational English Medium School (Nursery to Class 10th) • Jhajha, Jamui, Bihar
+              </p>
+            </div>
+            <div className={styles.printHeaderMeta}>
+              <div className={styles.printMetaLeft}>
+                <strong>School Academic Calendar:</strong> {activeMonthObj.fullName}
+              </div>
+              <div className={styles.printMetaRight}>
+                <span>Academic Session 2026 - 2027</span>
+                <span className={styles.printDateText}>
+                  Printed: {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Category Filter Tabs */}
           <div className={styles.filterBar}>
             <span className={styles.filterLabel}>Filter by Category:</span>

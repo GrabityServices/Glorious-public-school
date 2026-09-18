@@ -47,13 +47,13 @@
   flex-direction: column;
   height: 100%;
   min-height: 310px;
+  box-shadow: var(--shadow-xs);
 }
 
 .card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-md);
-  border-color: var(--primary-medium);
-  background-color: #ffffff;
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
 .iconCircle {
@@ -61,12 +61,17 @@
   height: 52px;
   border-radius: 12px;
   background-color: var(--primary-light);
-  color: var(--primary-dark);
+  color: var(--accent-gold);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.card:hover .iconCircle {
+  transform: scale(1.08);
 }
 
 .cardTitle {

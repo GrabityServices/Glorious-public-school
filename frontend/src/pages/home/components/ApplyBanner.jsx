@@ -34,7 +34,7 @@ export default function ApplyBanner() {
               <div className={styles.btnGroup}>
                 <Link to="/admissions" className="btn btn-gold">
                   <span>Apply Online Now</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={18} strokeWidth={2.2} />
                 </Link>
                 <a href={`tel:${SCHOOL_INFO.phone}`} className="btn btn-outline" style={{ borderColor: "#ffffff", color: "#ffffff" }}>
                   <Phone size={16} />

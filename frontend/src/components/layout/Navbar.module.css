@@ -74,35 +74,77 @@
 
 .navItem {
   position: relative;
-  padding: 8px 12px;
+  padding: 8px 16px;
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--border-radius-xl);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navLabel {
+  position: relative;
+  z-index: 2;
   transition: color 0.2s ease;
 }
 
 .navItem:hover {
-  color: var(--accent-red);
+  color: var(--primary-dark);
+}
+
+.navItem:active {
+  transform: scale(0.96);
 }
 
 .navItem.active {
-  color: var(--primary-dark);
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.navItem.active .navLabel {
+  color: var(--accent-red);
 }
 
 .activePill {
   position: absolute;
   inset: 0;
   background-color: var(--primary-light);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius-xl);
-  z-index: -1;
+  box-shadow: 0 1px 3px rgba(18, 18, 20, 0.05);
+  z-index: 1;
+}
+
+.applyBtnActive {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent-red) !important;
 }
 
 .ctaGroup {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.navApplyBtn {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.navApplyIcon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.navApplyBtn:hover .navApplyIcon {
+  transform: scale(1.1);
 }
 
 .mobileMenuBtn {
@@ -138,29 +180,55 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  font-size: 1.05rem;
+  padding: 12px 18px;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--text-dark);
-  border-radius: 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+}
+
+.mobileLinkLabel {
+  transition: color 0.2s ease;
 }
 
 .mobileLink:hover {
   background-color: var(--primary-light);
-  color: var(--primary-dark);
+  color: var(--accent-red);
+}
+
+.mobileLink:active {
+  transform: scale(0.98);
 }
 
 .mobileActive {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
+  background-color: var(--primary-light) !important;
+  color: var(--accent-red) !important;
+  font-weight: 700;
+  border: 1px solid var(--border-color) !important;
+  border-left: 3px solid var(--accent-red) !important;
+}
+
+.mobileActive .mobileLinkLabel {
+  color: var(--accent-red) !important;
   font-weight: 700;
 }
 
-.mobileDot {
-  width: 8px;
-  height: 8px;
+.activePip {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: var(--accent-gold);
+  background-color: var(--accent-red);
+  display: inline-block;
+}
+
+.inactiveArrow {
+  font-size: 1.1rem;
+  color: #9ca3af;
+  font-weight: 400;
+  margin-right: 2px;
 }
 
 .mobileCtaWrapper {
@@ -176,20 +244,107 @@
   .mobileMenuBtn {
     display: block;
   }
+  .container {
+    min-height: 72px;
+    padding: 12px 20px;
+  }
 }
 
 @media (max-width: 640px) {
   .container {
-    padding: 8px 16px;
+    min-height: 72px;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .brand {
+    gap: 11px;
+    min-width: 0;
   }
   .logoImg {
-    height: 38px;
-    max-width: 40px;
+    height: 46px;
+    width: auto;
+    max-width: 48px;
+  }
+  .brandInfo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .brandTitle {
     font-size: 1.05rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .brandSub {
-    font-size: 0.58rem;
+    display: block !important;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--accent-brown);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    line-height: 1.25;
+    margin-top: 2px;
+  }
+  .ctaGroup {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .navApplyBtn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+  }
+  .navApplyIcon {
+    width: 16px;
+    height: 16px;
+  }
+  .mobileMenuBtn {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 400px) {
+  .container {
+    min-height: 66px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .brand {
+    gap: 9px;
+  }
+  .logoImg {
+    height: 42px;
+    width: auto;
+    max-width: 44px;
+  }
+  .brandTitle {
+    font-size: 0.96rem;
+    line-height: 1.2;
+  }
+  .brandSub {
+    display: block !important;
+    font-size: 0.54rem;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+  .ctaGroup {
+    gap: 6px;
+  }
+  .navApplyBtn {
+    padding: 7px 11px;
+    font-size: 0.74rem;
+    gap: 5px;
+  }
+  .navApplyIcon {
+    width: 15px;
+    height: 15px;
+  }
+  .mobileMenuBtn {
+    padding: 6px;
   }
 }

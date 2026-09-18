@@ -91,14 +91,17 @@ export default function Navbar({ isScrolled }) {
         {/* Desktop Navigation Links */}
         <nav className={styles.desktopNav}>
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(link.href + "/");
             return (
               <Link
                 key={link.name}
                 to={link.href}
                 className={`${styles.navItem} ${isActive ? styles.active : ""}`}
               >
-                {link.name}
+                <span className={styles.navLabel}>{link.name}</span>
                 {isActive && (
                   <m.div
                     layoutId="activeNavPill"
@@ -111,11 +114,16 @@ export default function Navbar({ isScrolled }) {
           })}
         </nav>
 
-        {/* Desktop Header CTA */}
+        {/* Header CTA */}
         <div className={styles.ctaGroup}>
-          <Link to="/admissions" className="btn btn-gold btn-sm">
+          <Link
+            to="/admissions"
+            className={`btn btn-gold btn-sm ${styles.navApplyBtn} ${
+              pathname === "/admissions" ? styles.applyBtnActive : ""
+            }`}
+          >
             <span>Apply Now</span>
-            <Award size={15} />
+            <Award size={16} strokeWidth={2.2} className={styles.navApplyIcon} />
           </Link>
 
           {/* Mobile Menu Toggle Button */}
@@ -141,7 +149,10 @@ export default function Navbar({ isScrolled }) {
           >
             <div className={styles.mobileLinksList}>
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : pathname === link.href || pathname.startsWith(link.href + "/");
                 return (
                   <m.div key={link.name} variants={mobileLinkVariants}>
                     <Link
@@ -149,8 +160,12 @@ export default function Navbar({ isScrolled }) {
                       className={`${styles.mobileLink} ${isActive ? styles.mobileActive : ""}`}
                       onClick={() => setIsOpen(false)}
                     >
-                      <span>{link.name}</span>
-                      {isActive && <div className={styles.mobileDot} />}
+                      <span className={styles.mobileLinkLabel}>{link.name}</span>
+                      {isActive ? (
+                        <span className={styles.activePip} />
+                      ) : (
+                        <span className={styles.inactiveArrow}>›</span>
+                      )}
                     </Link>
                   </m.div>
                 );
@@ -163,7 +178,7 @@ export default function Navbar({ isScrolled }) {
                   style={{ width: "100%" }}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Award size={16} />
+                  <Award size={18} strokeWidth={2.2} />
                   <span>Apply for Online Admission</span>
                 </Link>
                 <a

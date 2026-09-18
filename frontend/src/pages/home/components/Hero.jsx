@@ -100,7 +100,7 @@ export default function Hero() {
               <div className={styles.btnGroup}>
                 <Link to="/admissions" className="btn btn-gold">
                   <span>Apply for Admission</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={18} strokeWidth={2.2} />
                 </Link>
                 <Link to="/academics" className="btn btn-secondary">
                   <span>Explore Academics</span>

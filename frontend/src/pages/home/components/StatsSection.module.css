@@ -35,8 +35,8 @@
 }
 
 .statCard {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
   border-radius: var(--border-radius-md);
   padding: 24px 16px;
@@ -52,24 +52,118 @@
 
 .statCard:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: var(--accent-gold);
+  background: rgba(255, 255, 255, 0.10);
 }
 
 .iconCircle {
-  color: var(--accent-gold);
   margin-bottom: 12px;
   display: flex;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.statCard:hover .iconCircle {
+  transform: scale(1.1);
 }
 
 .statValue {
   font-family: var(--font-serif);
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #fef08a;
+  font-size: 2.3rem;
+  font-weight: 800;
   margin-bottom: 4px;
+  line-height: 1.15;
+  display: inline-block;
+}
+
+/* User Gradient 1: Indigo */
+.valIndigo {
+  background: linear-gradient(135deg, #ffffff 40%, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconIndigo {
+  color: #818cf8;
+}
+.cardIndigo:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.25);
+}
+
+/* User Gradient 2: Emerald */
+.valEmerald {
+  background: linear-gradient(135deg, #ffffff 40%, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconEmerald {
+  color: #34d399;
+}
+.cardEmerald:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.25);
+}
+
+/* User Gradient 3: Amber */
+.valAmber {
+  background: linear-gradient(135deg, #ffffff 40%, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconAmber {
+  color: #fbbf24;
+}
+.cardAmber:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.25);
+}
+
+/* Complementary 4: Rose Crimson */
+.valRose {
+  background: linear-gradient(135deg, #ffffff 40%, #f43f5e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconRose {
+  color: #fb7185;
+}
+.cardRose:hover {
+  border-color: rgba(244, 63, 94, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(244, 63, 94, 0.25);
+}
+
+/* Complementary 5: Sky Blue */
+.valSky {
+  background: linear-gradient(135deg, #ffffff 40%, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconSky {
+  color: #38bdf8;
+}
+.cardSky:hover {
+  border-color: rgba(14, 165, 233, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.25);
+}
+
+/* Complementary 6: Violet */
+.valViolet {
+  background: linear-gradient(135deg, #ffffff 40%, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.iconViolet {
+  color: #a78bfa;
+}
+.cardViolet:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.25);
 }
 
 .statLabel {
