@@ -92,15 +92,24 @@
   transition: all 0.2s ease;
 }
 
-.filterPill:hover {
+.filterPill:not(.activeFilterPill):hover {
   border-color: var(--accent-gold);
   color: var(--primary-dark);
+  background-color: var(--primary-light);
 }
 
-.activeFilterPill {
+.activeFilterPill,
+.filterPill.activeFilterPill {
   background-color: var(--primary-dark);
-  color: #ffffff;
+  color: #ffffff !important;
   border-color: var(--primary-dark);
+}
+
+.activeFilterPill:hover,
+.filterPill.activeFilterPill:hover {
+  background-color: #27272a;
+  color: #ffffff !important;
+  border-color: #27272a;
 }
 
 .monthSelectorBar {
@@ -143,19 +152,21 @@
   opacity: 0.8;
 }
 
-.monthTab:hover {
+.monthTab:not(.activeMonthTab):hover {
   background-color: var(--primary-light);
   color: var(--primary-dark);
 }
 
-.activeMonthTab {
+.activeMonthTab,
+.monthTab.activeMonthTab {
   background-color: var(--primary-dark);
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
-.activeMonthTab:hover {
-  background-color: var(--primary-dark);
-  color: #ffffff;
+.activeMonthTab:hover,
+.monthTab.activeMonthTab:hover {
+  background-color: #27272a;
+  color: #ffffff !important;
 }
 
 .calendarCard {
@@ -619,5 +630,252 @@
   .eventDot {
     width: 6px;
     height: 6px;
+  }
+}
+
+/* Screen-only: Hide dedicated print header */
+.printHeader {
+  display: none;
+}
+
+/* Fast, Crisp Printable Calendar Stylesheet */
+@media print {
+  @page {
+    size: portrait;
+    margin: 10mm 10mm 12mm 10mm;
+  }
+
+  /* Hide screen navigation, actions, filter buttons, month carousel, and popups */
+  .heroHeader,
+  .heroActions,
+  .filterBar,
+  .monthSelectorBar,
+  .navArrowBtn,
+  .modalOverlay,
+  .modalCloseBtn,
+  .emptyAgenda {
+    display: none !important;
+  }
+
+  /* Show clean official print header */
+  .printHeader {
+    display: block !important;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0f172a;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .printHeaderTop {
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .printSchoolTitle {
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    color: #0f172a;
+    margin-bottom: 2px;
+    font-weight: 800;
+  }
+
+  .printSchoolSubtitle {
+    font-size: 0.78rem;
+    color: #475569;
+    margin: 0;
+  }
+
+  .printHeaderMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: #0f172a;
+    padding-top: 6px;
+    border-top: 1px solid #cbd5e1;
+  }
+
+  .printMetaRight {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .pageWrapper,
+  .calendarSection,
+  .container {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .calendarCard {
+    box-shadow: none !important;
+    border: 1px solid #94a3b8 !important;
+    border-radius: 8px !important;
+    margin-bottom: 16px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cardNavHeader {
+    padding: 10px 14px !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    justify-content: center !important;
+  }
+
+  .currentMonthTitle h2 {
+    font-size: 1.35rem !important;
+    color: #0f172a !important;
+  }
+
+  .eventsCountBadge {
+    display: inline-block !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 0.75rem !important;
+    padding: 2px 8px !important;
+  }
+
+  .weekdaysGrid {
+    background: #f1f5f9 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  .weekdaysGrid span {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    padding: 6px 4px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .matrixGrid {
+    background: #cbd5e1 !important;
+    gap: 1px !important;
+  }
+
+  .dayCell {
+    background: #ffffff !important;
+    min-height: 65px !important;
+    padding: 4px !important;
+    cursor: default !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cellHeader {
+    margin-bottom: 2px !important;
+  }
+
+  .dayNumber {
+    font-size: 0.8rem !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+
+  .sundayTag {
+    font-size: 0.65rem !important;
+    padding: 1px 4px !important;
+  }
+
+  .eventsStack {
+    gap: 2px !important;
+  }
+
+  .eventPill {
+    border-radius: 3px !important;
+    padding: 2px 4px !important;
+    margin-bottom: 1px !important;
+    font-size: 0.65rem !important;
+    border-width: 1px !important;
+  }
+
+  .pillText {
+    display: inline !important;
+    white-space: normal !important;
+    font-size: 0.65rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .eventDot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  .agendaSection {
+    margin-top: 16px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .agendaHeader {
+    margin-bottom: 10px !important;
+  }
+
+  .agendaHeader h3 {
+    font-size: 1.1rem !important;
+    color: #0f172a !important;
+  }
+
+  .agendaGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .agendaCard {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    padding: 10px 12px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    min-height: auto !important;
+    cursor: default !important;
+  }
+
+  .agendaCardTop {
+    margin-bottom: 4px !important;
+  }
+
+  .catBadge {
+    font-size: 0.68rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .agendaDateText {
+    font-size: 0.72rem !important;
+    color: #475569 !important;
+  }
+
+  .agendaTitle {
+    font-size: 0.88rem !important;
+    color: #0f172a !important;
+    margin-bottom: 4px !important;
+  }
+
+  .agendaDesc {
+    font-size: 0.75rem !important;
+    color: #334155 !important;
+    line-height: 1.35 !important;
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+    margin-bottom: 6px !important;
+  }
+
+  .agendaMeta {
+    border-top: 1px dashed #cbd5e1 !important;
+    padding-top: 6px !important;
+    gap: 8px !important;
+  }
+
+  .metaItem {
+    font-size: 0.7rem !important;
+    color: #475569 !important;
   }
 }

@@ -127,6 +127,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 154px;
+  box-shadow: var(--shadow-xs);
 }
 
 .valueCard:hover {
@@ -146,6 +147,11 @@
   justify-content: center;
   margin-bottom: 10px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.valueCard:hover .iconCircle {
+  transform: scale(1.08);
 }
 
 .valueTitle {

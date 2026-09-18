@@ -30,7 +30,7 @@ export const SCHOOL_INFO = {
     { label: "Enrolled Students", value: "800+", suffix: "" },
     { label: "Support Staff", value: "12+", suffix: "" },
     { label: "Board Pass Rate", value: "100%", suffix: "" },
-    { label: "Academic Wings", value: "4 Core Stages", suffix: "" },
+    { label: "Academic Wings", value: "4", suffix: "" },
     { label: "School Buses/Vans", value: "8+", suffix: "" },
   ],
 

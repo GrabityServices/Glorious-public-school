@@ -1,58 +1,64 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
 :root {
   /* School Color Palette - Black, Ash, Academic Crimson Red & Cognac Brown */
-  --primary-dark: #121214;          /* Obsidian Black */
+  --primary-dark: #121214; /* Obsidian Black */
   --primary-dark-rgb: 18, 18, 20;
-  --primary-medium: #27272a;        /* Deep Ash Charcoal */
-  --primary-light: #f4f4f5;         /* Soft Ash Gray */
+  --primary-medium: #27272a; /* Deep Ash Charcoal */
+  --primary-light: #f4f4f5; /* Soft Ash Gray */
   --primary-light-hover: #e4e4e7;
-  
-  --accent-red: #dc2626;           /* Crimson Red (matching crest ring) */
-  --accent-red-hover: #b91c1c;     /* Deep Ruby */
-  --accent-red-light: #fee2e2;     /* Soft Rose Tint */
 
-  --accent-brown: #9a3412;         /* Warm Cognac Bronze Brown */
-  --accent-brown-hover: #7c2d12;   /* Deep Saddle Mahogany */
-  --accent-brown-light: #ffedd5;   /* Warm Peach Cream */
+  --accent-red: #dc2626; /* Crimson Red (matching crest ring) */
+  --accent-red-hover: #b91c1c; /* Deep Ruby */
+  --accent-red-light: #fee2e2; /* Soft Rose Tint */
 
-  --accent-gold: #dc2626;          /* Mapped to vibrant Crimson Red for buttons & badges */
+  --accent-brown: #9a3412; /* Warm Cognac Bronze Brown */
+  --accent-brown-hover: #7c2d12; /* Deep Saddle Mahogany */
+  --accent-brown-light: #ffedd5; /* Warm Peach Cream */
+
+  --accent-gold: #dc2626; /* Mapped to vibrant Crimson Red for buttons & badges */
   --accent-gold-hover: #b91c1c;
   --accent-gold-light: #fee2e2;
 
-  --accent-orange: #dc2626;        /* Backward compatibility */
+  --accent-orange: #dc2626; /* Backward compatibility */
   --accent-orange-hover: #b91c1c;
   --accent-orange-light: #fee2e2;
 
-  --accent-amber: #9a3412;         /* Cognac amber */
-  --accent-ash: #64748b;           /* Slate Ash */
-  --accent-blue: #0284c7;          /* Crest Azure Book */
+  --accent-amber: #9a3412; /* Cognac amber */
+  --accent-ash: #64748b; /* Slate Ash */
+  --accent-blue: #0284c7; /* Crest Azure Book */
   --accent-blue-light: #e0f2fe;
-  --accent-green: #10b981;         /* Live Status Emerald */
+  --accent-green: #10b981; /* Live Status Emerald */
 
   --bg-light: #ffffff;
-  --bg-surface: #f4f5f7;           /* Platinum Ash Surface */
+  --bg-surface: #f4f5f7; /* Platinum Ash Surface */
   --bg-card: #ffffff;
-  --bg-accent: #e5e7eb;            /* Cool Ash Accent */
-  --bg-dark: #0a0a0c;              /* True Midnight Black */
+  --bg-accent: #e5e7eb; /* Cool Ash Accent */
+  --bg-dark: #0a0a0c; /* True Midnight Black */
 
-  --text-dark: #111827;            /* Onyx Text */
-  --text-muted: #4b5563;           /* Ash Slate Text */
-  --text-light: #9ca3af;           /* Light Ash Text */
+  --text-dark: #111827; /* Onyx Text */
+  --text-muted: #4b5563; /* Ash Slate Text */
+  --text-light: #9ca3af; /* Light Ash Text */
 
-  --border-color: #e5e7eb;         /* Clean Ash Border */
+  --border-color: #e5e7eb; /* Clean Ash Border */
   --border-light: rgba(18, 18, 20, 0.08);
 
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans:
+    "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
 
   --transition-smooth: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   --transition-fast: all 0.15s ease;
-  
+
   --shadow-xs: 0 1px 2px 0 rgba(18, 18, 20, 0.04);
   --shadow-sm: 0 2px 4px 0 rgba(18, 18, 20, 0.04);
-  --shadow-md: 0 10px 15px -3px rgba(18, 18, 20, 0.07), 0 4px 6px -2px rgba(18, 18, 20, 0.03);
-  --shadow-lg: 0 20px 25px -5px rgba(18, 18, 20, 0.09), 0 10px 10px -5px rgba(18, 18, 20, 0.04);
+  --shadow-md:
+    0 10px 15px -3px rgba(18, 18, 20, 0.07),
+    0 4px 6px -2px rgba(18, 18, 20, 0.03);
+  --shadow-lg:
+    0 20px 25px -5px rgba(18, 18, 20, 0.09),
+    0 10px 10px -5px rgba(18, 18, 20, 0.04);
   --shadow-xl: 0 25px 50px -12px rgba(18, 18, 20, 0.18);
 
   --border-radius-sm: 6px;
@@ -60,12 +66,142 @@
   --border-radius-lg: 20px;
   --border-radius-xl: 30px;
   --border-radius-circle: 50%;
+
+  /* Selection Colors - Champagne Silk & Warm Muted Gold */
+  --selection-bg: #fecdd3; /* Soft Rose Tint */
+  --selection-color: #881337; /* Deep Ruby Text */
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight box/flash */
+}
+
+/* Remove sticky mobile focus outline on tap */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Eliminate mobile tap delay & unwanted gestures */
+a,
+button,
+.btn,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent accidental text selection and mobile callouts on interactive elements */
+button,
+.btn,
+a,
+[role="button"],
+[role="tab"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+nav,
+header,
+footer,
+summary,
+.badge-admission,
+.section-subtitle,
+svg {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Ensure reading text remains selectable */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+article,
+blockquote,
+li,
+td,
+th,
+span {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Re-allow selection inside regular inline links in reading text */
+p a,
+article a,
+li a {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Global Selection Style */
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+  text-shadow: none;
+}
+
+::-moz-selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
+  text-shadow: none;
+}
+
+/* Prevent buttons, links, and UI controls from showing selection highlight on tap/click */
+button::selection,
+.btn::selection,
+a::selection,
+[role="button"]::selection,
+input[type="button"]::selection,
+input[type="submit"]::selection,
+input[type="reset"]::selection,
+nav::selection,
+nav a::selection,
+.badge-admission::selection {
+  background-color: transparent !important;
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+button::-moz-selection,
+.btn::-moz-selection,
+a::-moz-selection,
+[role="button"]::-moz-selection,
+input[type="button"]::-moz-selection,
+input[type="submit"]::-moz-selection,
+input[type="reset"]::-moz-selection,
+nav::-moz-selection,
+nav a::-moz-selection,
+.badge-admission::-moz-selection {
+  background-color: transparent !important;
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+/* Retain selection style for prose links within paragraphs and articles */
+p a::selection,
+article a::selection,
+li a::selection {
+  background-color: var(--selection-bg) !important;
+  color: var(--selection-color) !important;
+}
+
+p a::-moz-selection,
+article a::-moz-selection,
+li a::-moz-selection {
+  background-color: var(--selection-bg) !important;
+  color: var(--selection-color) !important;
 }
 
 html,
@@ -100,7 +236,12 @@ body {
 }
 
 /* Base Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--primary-dark);
   font-family: var(--font-serif);
   font-weight: 700;
@@ -247,9 +388,16 @@ img {
 }
 
 @keyframes pulseBadge {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Container */
@@ -283,5 +431,61 @@ img {
   }
   .section-padding {
     padding: 50px 0;
+  }
+
+  /* Mobile-proportioned buttons & icons */
+  .btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    gap: 7px;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+  .btn svg {
+    flex-shrink: 0;
+  }
+}
+
+/* Global Print Stylesheet for Instant Print Rendering */
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    scroll-behavior: auto !important;
+  }
+
+  header,
+  nav,
+  footer,
+  aside,
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  a[href]::after {
+    content: none !important;
   }
 }

@@ -144,7 +144,7 @@
 .pillarCard:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-md);
-  border-color: var(--primary-medium);
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
 .pillarNumber {
@@ -154,6 +154,11 @@
   color: var(--accent-gold);
   margin-bottom: 12px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.pillarCard:hover .pillarNumber {
+  transform: scale(1.06);
 }
 
 .pillarCard h3 {
@@ -172,13 +177,30 @@
 }
 
 .statsBanner {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #173e68 100%);
+  background: linear-gradient(135deg, #121214 0%, #241513 55%, #3b1a10 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius-lg);
-  padding: 48px;
+  padding: 52px 48px;
   color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.statsBanner::after {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
 }
 
 .statsFlex {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -187,38 +209,39 @@
 }
 
 .statsTag {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #fef08a;
-  letter-spacing: 0.08em;
-  display: block;
-  margin-bottom: 8px;
+  color: #fca5a5;
+  letter-spacing: 0.1em;
+  display: inline-block;
+  margin-bottom: 10px;
 }
 
 .statsFlex h3 {
   color: #ffffff;
-  font-size: 2rem;
+  font-size: 2.2rem;
   margin-bottom: 18px;
+  line-height: 1.25;
 }
 
 .checkList {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 13px;
 }
 
 .checkList li {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 1rem;
   color: #e2e8f0;
 }
 
 .checkList svg {
-  color: #fef08a;
+  color: #ef4444;
   flex-shrink: 0;
 }
 

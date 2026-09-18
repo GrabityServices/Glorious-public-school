@@ -13,6 +13,15 @@ export default function StatsSection() {
     <Bus size={28} />,
   ];
 
+  const THEMES = [
+    { card: styles.cardIndigo, text: styles.valIndigo, icon: styles.iconIndigo },
+    { card: styles.cardEmerald, text: styles.valEmerald, icon: styles.iconEmerald },
+    { card: styles.cardAmber, text: styles.valAmber, icon: styles.iconAmber },
+    { card: styles.cardRose, text: styles.valRose, icon: styles.iconRose },
+    { card: styles.cardSky, text: styles.valSky, icon: styles.iconSky },
+    { card: styles.cardViolet, text: styles.valViolet, icon: styles.iconViolet },
+  ];
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -27,17 +36,20 @@ export default function StatsSection() {
         </div>
 
         <div className={styles.statsGrid}>
-          {SCHOOL_INFO.stats.map((stat, idx) => (
-            <FadeUp key={stat.label} delay={0.08 * (idx + 1)} fullHeight>
-              <div className={styles.statCard}>
-                <div className={styles.iconCircle}>
-                  {statIcons[idx % statIcons.length]}
+          {SCHOOL_INFO.stats.map((stat, idx) => {
+            const theme = THEMES[idx % THEMES.length];
+            return (
+              <FadeUp key={stat.label} delay={0.08 * (idx + 1)} fullHeight>
+                <div className={`${styles.statCard} ${theme.card}`}>
+                  <div className={`${styles.iconCircle} ${theme.icon}`}>
+                    {statIcons[idx % statIcons.length]}
+                  </div>
+                  <div className={`${styles.statValue} ${theme.text}`}>{stat.value}</div>
+                  <div className={styles.statLabel}>{stat.label}</div>
                 </div>
-                <div className={styles.statValue}>{stat.value}</div>
-                <div className={styles.statLabel}>{stat.label}</div>
-              </div>
-            </FadeUp>
-          ))}
+              </FadeUp>
+            );
+          })}
         </div>
       </div>
     </section>
