@@ -38,10 +38,11 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: var(--border-radius-md);
   padding: 24px 16px;
   text-align: center;
-  transition: var(--transition-smooth);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,6 +78,10 @@
 }
 
 /* User Gradient 1: Indigo */
+.cardIndigo:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.25);
+}
 .valIndigo {
   background: linear-gradient(135deg, #ffffff 40%, #6366f1);
   -webkit-background-clip: text;
@@ -86,12 +91,12 @@
 .iconIndigo {
   color: #818cf8;
 }
-.cardIndigo:hover {
-  border-color: rgba(99, 102, 241, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.25);
-}
 
 /* User Gradient 2: Emerald */
+.cardEmerald:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.25);
+}
 .valEmerald {
   background: linear-gradient(135deg, #ffffff 40%, #10b981);
   -webkit-background-clip: text;
@@ -101,12 +106,12 @@
 .iconEmerald {
   color: #34d399;
 }
-.cardEmerald:hover {
-  border-color: rgba(16, 185, 129, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.25);
-}
 
 /* User Gradient 3: Amber */
+.cardAmber:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.25);
+}
 .valAmber {
   background: linear-gradient(135deg, #ffffff 40%, #f59e0b);
   -webkit-background-clip: text;
@@ -116,12 +121,12 @@
 .iconAmber {
   color: #fbbf24;
 }
-.cardAmber:hover {
-  border-color: rgba(245, 158, 11, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.25);
-}
 
 /* Complementary 4: Rose Crimson */
+.cardRose:hover {
+  border-color: rgba(244, 63, 94, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(244, 63, 94, 0.25);
+}
 .valRose {
   background: linear-gradient(135deg, #ffffff 40%, #f43f5e);
   -webkit-background-clip: text;
@@ -131,12 +136,12 @@
 .iconRose {
   color: #fb7185;
 }
-.cardRose:hover {
-  border-color: rgba(244, 63, 94, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(244, 63, 94, 0.25);
-}
 
 /* Complementary 5: Sky Blue */
+.cardSky:hover {
+  border-color: rgba(14, 165, 233, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.25);
+}
 .valSky {
   background: linear-gradient(135deg, #ffffff 40%, #0ea5e9);
   -webkit-background-clip: text;
@@ -146,12 +151,12 @@
 .iconSky {
   color: #38bdf8;
 }
-.cardSky:hover {
-  border-color: rgba(14, 165, 233, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.25);
-}
 
 /* Complementary 6: Violet */
+.cardViolet:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.25);
+}
 .valViolet {
   background: linear-gradient(135deg, #ffffff 40%, #8b5cf6);
   -webkit-background-clip: text;
@@ -160,10 +165,6 @@
 }
 .iconViolet {
   color: #a78bfa;
-}
-.cardViolet:hover {
-  border-color: rgba(139, 92, 246, 0.6);
-  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.25);
 }
 
 .statLabel {
