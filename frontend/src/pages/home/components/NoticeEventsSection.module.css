@@ -196,6 +196,23 @@
   gap: 16px;
   max-height: 380px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-gold) rgba(0, 0, 0, 0.06);
+}
+
+.noticesList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.noticesList::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+}
+
+.noticesList::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 4px;
 }
 
 .noticeItem {

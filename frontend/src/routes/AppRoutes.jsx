@@ -20,11 +20,23 @@ import Privacy from "@/pages/privacy/Privacy";
 import Terms from "@/pages/terms/Terms";
 import NotFound from "@/pages/not-found/NotFound";
 
+// Admin Panel Components
+import AdminProtectedRoute from "@/routes/AdminProtectedRoute";
+import AdminLayout from "@/pages/admin/layout/AdminLayout";
+import AdminLogin from "@/pages/admin/login/AdminLogin";
+import AdminDashboard from "@/pages/admin/dashboard/AdminDashboard";
+import AdminNotices from "@/pages/admin/notices/AdminNotices";
+import AdminEvents from "@/pages/admin/events/AdminEvents";
+import AdminStaff from "@/pages/admin/staff/AdminStaff";
+import AdminGallery from "@/pages/admin/gallery/AdminGallery";
+import AdminAdmissions from "@/pages/admin/admissions/AdminAdmissions";
+import AdminSettings from "@/pages/admin/settings/AdminSettings";
+
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public School Website Pages */}
       <Route path="/" element={<Layout />}>
-        {/* Core School Pages */}
         <Route index element={<Home />} />
         <Route path="about" element={<About />} />
         <Route path="academics" element={<Academics />} />
@@ -49,10 +61,32 @@ export default function AppRoutes() {
         <Route path="login" element={<Login />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
-
-        {/* 404 Fallback */}
-        <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/* Admin Authentication */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Protected Admin Panel */}
+      <Route
+        path="/admin"
+        element={
+          <AdminProtectedRoute>
+            <AdminLayout />
+          </AdminProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="dashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="notices" element={<AdminNotices />} />
+        <Route path="events" element={<AdminEvents />} />
+        <Route path="staff" element={<AdminStaff />} />
+        <Route path="gallery" element={<AdminGallery />} />
+        <Route path="admissions" element={<AdminAdmissions />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
+      {/* 404 Fallback */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

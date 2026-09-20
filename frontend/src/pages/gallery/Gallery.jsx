@@ -6,17 +6,21 @@ import styles from "./gallery.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import Image from "@/components/common/Image";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { GALLERY_CATEGORIES, GALLERY_ITEMS } from "@/data/galleryData";
+import { useData } from "@/context/DataContext";
+import { GALLERY_CATEGORIES } from "@/data/galleryData";
 
 export default function GalleryPage() {
   useDocumentTitle("Photo Gallery | Glorious Public School, Jhajha");
+  const { gallery } = useData();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeModalItem, setActiveModalItem] = useState(null);
 
+  const galleryList = gallery || [];
+
   const filteredItems =
     activeCategory === "All"
-      ? GALLERY_ITEMS
-      : GALLERY_ITEMS.filter((item) => item.category === activeCategory);
+      ? galleryList
+      : galleryList.filter((item) => item.category === activeCategory);
 
   return (
     <div className={styles.pageWrapper}>
@@ -90,6 +94,7 @@ export default function GalleryPage() {
             exit={{ opacity: 0 }}
             className={styles.modalOverlay}
             onClick={() => setActiveModalItem(null)}
+            data-lenis-prevent="true"
           >
             <m.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -97,6 +102,7 @@ export default function GalleryPage() {
               exit={{ scale: 0.9, opacity: 0 }}
               className={styles.modalContent}
               onClick={(e) => e.stopPropagation()}
+              data-lenis-prevent="true"
             >
               <button
                 className={styles.closeBtn}

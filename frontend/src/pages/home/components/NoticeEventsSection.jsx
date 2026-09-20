@@ -4,8 +4,13 @@ import styles from "./NoticeEventsSection.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import { EVENTS_DATA } from "@/data/eventsData";
 import { NEWS_NOTICES } from "@/data/newsData";
+import { useData } from "@/context/DataContext";
 
 export default function NoticeEventsSection() {
+  const { notices: liveNotices, events: liveEvents } = useData();
+  const displayEvents = liveEvents || EVENTS_DATA;
+  const displayNotices = liveNotices || NEWS_NOTICES;
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -24,7 +29,7 @@ export default function NoticeEventsSection() {
             </div>
 
             <div className={styles.eventsList}>
-              {EVENTS_DATA.slice(0, 2).map((ev, i) => (
+              {displayEvents.slice(0, 2).map((ev, i) => (
                 <FadeUp key={ev.id} delay={0.1 * (i + 1)} fullHeight>
                   <div className={styles.eventCard}>
                     <div className={styles.dateBadge}>
@@ -73,8 +78,8 @@ export default function NoticeEventsSection() {
                 <span>Current Announcements & Circulars</span>
               </div>
 
-              <div className={styles.noticesList}>
-                {NEWS_NOTICES.slice(0, 4).map((notice, idx) => (
+              <div className={styles.noticesList} data-lenis-prevent="true">
+                {displayNotices.slice(0, 4).map((notice, idx) => (
                   <div key={notice.id} className={styles.noticeItem}>
                     <div className={styles.noticeHeader}>
                       <span className={styles.noticeDate}>{notice.date}</span>

@@ -133,6 +133,10 @@ export default function LoginPage() {
                 <ShieldCheck size={16} />
                 <span>Need admission registration? <Link to="/admissions">Apply Online Here</Link></span>
               </div>
+              <div className={styles.footerNote} style={{ marginTop: "10px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "10px" }}>
+                <Lock size={14} style={{ color: "#dc2626" }} />
+                <span>School Administrator? <Link to="/admin/login" style={{ color: "#dc2626", fontWeight: 600 }}>Access Admin Portal &rarr;</Link></span>
+              </div>
             </div>
           </FadeUp>
         </div>

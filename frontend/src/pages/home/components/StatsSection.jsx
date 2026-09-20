@@ -2,8 +2,12 @@ import { Award, Users, GraduationCap, Bus, CheckCircle2, ShieldCheck } from "luc
 import styles from "./StatsSection.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import { SCHOOL_INFO } from "@/data/schoolData";
+import { useData } from "@/context/DataContext";
 
 export default function StatsSection() {
+  const { schoolInfo } = useData();
+  const statsList = schoolInfo?.stats || SCHOOL_INFO.stats;
+
   const statIcons = [
     <GraduationCap size={28} />,
     <Users size={28} />,
@@ -36,7 +40,7 @@ export default function StatsSection() {
         </div>
 
         <div className={styles.statsGrid}>
-          {SCHOOL_INFO.stats.map((stat, idx) => {
+          {statsList.map((stat, idx) => {
             const theme = THEMES[idx % THEMES.length];
             return (
               <FadeUp key={stat.label} delay={0.08 * (idx + 1)} fullHeight>

@@ -3,13 +3,14 @@ import { Calendar, MapPin, Clock, ArrowLeft, CheckCircle2, Award } from "lucide-
 import styles from "./events.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { EVENTS_DATA } from "@/data/eventsData";
+import { useData } from "@/context/DataContext";
 
 export default function EventDetailPage() {
   const { id } = useParams();
-  const event = EVENTS_DATA.find((e) => e.id === id) || EVENTS_DATA[0];
+  const { events } = useData();
+  const event = events.find((e) => e.id === id) || events[0] || {};
 
-  useDocumentTitle(`${event.title} | Glorious Public School`);
+  useDocumentTitle(`${event.title || "Event Details"} | Glorious Public School`);
 
   return (
     <div className={styles.pageWrapper}>
