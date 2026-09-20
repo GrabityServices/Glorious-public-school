@@ -5,19 +5,20 @@ import styles from "./staff.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import Image from "@/components/common/Image";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { STAFF_MEMBERS } from "@/data/staffData";
 import { SCHOOL_INFO } from "@/data/schoolData";
+import { useData } from "@/context/DataContext";
 
 export default function StaffPage() {
   useDocumentTitle("Our Teachers & Staff | Glorious Public School");
+  const { staff } = useData();
   const [filterWing, setFilterWing] = useState("All");
 
   const wings = ["All", "Administration", "Secondary", "Primary", "Pre-Primary", "Sports"];
 
   const filteredStaff =
     filterWing === "All"
-      ? STAFF_MEMBERS
-      : STAFF_MEMBERS.filter((s) => s.wing === filterWing);
+      ? staff
+      : staff.filter((s) => s.wing === filterWing);
 
   return (
     <div className={styles.pageWrapper}>

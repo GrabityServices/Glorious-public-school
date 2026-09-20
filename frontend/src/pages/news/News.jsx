@@ -4,11 +4,15 @@ import { Bell, Calendar, User, FileText, ArrowRight, Sparkles, Phone, Mail } fro
 import styles from "./news.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { NEWS_NOTICES } from "@/data/newsData";
+import { useData } from "@/context/DataContext";
 
 export default function NewsPage() {
   useDocumentTitle("News & Notice Board | Glorious Public School");
-  const [selectedNotice, setSelectedNotice] = useState(NEWS_NOTICES[0]);
+  const { notices } = useData();
+  const [selectedNoticeId, setSelectedNoticeId] = useState(null);
+
+  const activeNotice =
+    notices.find((n) => n.id === selectedNoticeId) || notices[0] || null;
 
   return (
     <div className={styles.pageWrapper}>
@@ -33,12 +37,12 @@ export default function NewsPage() {
             <div className={styles.listCol}>
               <h2 className={styles.colHeading}>Current Circulars</h2>
               <div className={styles.noticesList}>
-                {NEWS_NOTICES.map((notice) => {
-                  const isSelected = selectedNotice.id === notice.id;
+                {notices.map((notice) => {
+                  const isSelected = activeNotice && activeNotice.id === notice.id;
                   return (
                     <div
                       key={notice.id}
-                      onClick={() => setSelectedNotice(notice)}
+                      onClick={() => setSelectedNoticeId(notice.id)}
                       className={`${styles.noticeCard} ${
                         isSelected ? styles.selectedCard : ""
                       }`}
@@ -60,36 +64,42 @@ export default function NewsPage() {
 
             {/* Selected Notice Reader */}
             <div className={styles.detailCol}>
-              <div className={styles.readerBox}>
-                <div className={styles.readerHeader}>
-                  <div className={styles.metaBadgeRow}>
-                    <span className={styles.catTag}>{selectedNotice.category}</span>
-                    <span className={styles.dateRow}>
-                      <Calendar size={14} /> {selectedNotice.date}
-                    </span>
-                    <span className={styles.authorRow}>
-                      <User size={14} /> By: {selectedNotice.author}
-                    </span>
+              {activeNotice ? (
+                <div className={styles.readerBox}>
+                  <div className={styles.readerHeader}>
+                    <div className={styles.metaBadgeRow}>
+                      <span className={styles.catTag}>{activeNotice.category}</span>
+                      <span className={styles.dateRow}>
+                        <Calendar size={14} /> {activeNotice.date}
+                      </span>
+                      <span className={styles.authorRow}>
+                        <User size={14} /> By: {activeNotice.author}
+                      </span>
+                    </div>
+                    <h2>{activeNotice.title}</h2>
                   </div>
-                  <h2>{selectedNotice.title}</h2>
-                </div>
 
-                <div className={styles.readerBody}>
-                  <p className={styles.summaryHighlight}>{selectedNotice.summary}</p>
-                  <p className={styles.fullContent}>{selectedNotice.fullContent}</p>
-                </div>
-
-                <div className={styles.readerFooter}>
-                  <p>For inquiries regarding this circular, please contact the administrative desk:</p>
-                  <div className={styles.contactFooter}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Phone size={14} /> Helpline: 9534105012</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Mail size={14} /> Email: gpsjhajha@gmail.com</span>
+                  <div className={styles.readerBody}>
+                    <p className={styles.summaryHighlight}>{activeNotice.summary}</p>
+                    <p className={styles.fullContent}>{activeNotice.fullContent}</p>
                   </div>
-                  <Link to="/admissions" className="btn btn-gold btn-sm" style={{ marginTop: "14px" }}>
-                    <span>Online Admission Open &rarr;</span>
-                  </Link>
+
+                  <div className={styles.readerFooter}>
+                    <p>For inquiries regarding this circular, please contact the administrative desk:</p>
+                    <div className={styles.contactFooter}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Phone size={14} /> Helpline: 9534105012</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Mail size={14} /> Email: gpsjhajha@gmail.com</span>
+                    </div>
+                    <Link to="/admissions" className="btn btn-gold btn-sm" style={{ marginTop: "14px" }}>
+                      <span>Online Admission Open &rarr;</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className={styles.readerBox} style={{ textAlign: "center", padding: "60px 20px" }}>
+                  <p style={{ color: "#94a3b8" }}>No circulars currently published.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

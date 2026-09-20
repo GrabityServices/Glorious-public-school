@@ -4,18 +4,19 @@ import { Calendar, MapPin, Clock, ArrowRight, Tag } from "lucide-react";
 import styles from "./events.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { EVENTS_DATA } from "@/data/eventsData";
+import { useData } from "@/context/DataContext";
 
 export default function EventsPage() {
   useDocumentTitle("School Events & Competitions | Glorious Public School");
+  const { events } = useData();
   const [activeCategory, setActiveCategory] = useState("All");
 
   const categories = ["All", "Cultural", "Competition", "Sports", "Academic"];
 
   const filteredEvents =
     activeCategory === "All"
-      ? EVENTS_DATA
-      : EVENTS_DATA.filter((e) => e.category === activeCategory);
+      ? events
+      : events.filter((e) => e.category === activeCategory);
 
   return (
     <div className={styles.pageWrapper}>
