@@ -17,12 +17,14 @@ import {
 import styles from "./AdminLayout.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
+import useBackendStatus from "@/hooks/useBackendStatus";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { adminUser, logout } = useAuth();
   const { notices, events, staff, inquiries, gallery } = useData();
+  const backendStatus = useBackendStatus();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -207,10 +209,37 @@ export default function AdminLayout() {
           </div>
 
           <div className={styles.topbarRight}>
-            <span className={styles.modeBadge} title="Running on Local Data Store. Ready for database integration.">
-              <Database size={14} />
-              <span>Local Store Active</span>
-            </span>
+            {backendStatus.connected ? (
+              <button
+                type="button"
+                className={`${styles.modeBadge} ${styles.modeBadgeConnected}`}
+                title={`MongoDB Atlas Connected: ${backendStatus.host || ""} (${backendStatus.database || "glorious_school"}) - Click to refresh`}
+                onClick={backendStatus.refresh}
+              >
+                <span className={styles.pulseDotGreen} />
+                <span>🍃 MongoDB Connected</span>
+              </button>
+            ) : backendStatus.serverOnline ? (
+              <button
+                type="button"
+                className={`${styles.modeBadge} ${styles.modeBadgeWarning}`}
+                title={`MongoDB Disconnected: ${backendStatus.message} - Click to retry`}
+                onClick={backendStatus.refresh}
+              >
+                <span className={styles.pulseDotAmber} />
+                <span>⚠️ MongoDB Disconnected</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`${styles.modeBadge} ${styles.modeBadgeOffline}`}
+                title="Backend server offline. Running on Local Browser Store. Run 'npm start' to connect MongoDB."
+                onClick={backendStatus.refresh}
+              >
+                <Database size={13} />
+                <span>Local Store Active</span>
+              </button>
+            )}
             <Link
               to="/"
               target="_blank"

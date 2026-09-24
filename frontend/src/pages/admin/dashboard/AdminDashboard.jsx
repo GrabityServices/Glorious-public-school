@@ -13,16 +13,20 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
+  RotateCw,
+  AlertTriangle,
 } from "lucide-react";
 import styles from "./AdminDashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import useBackendStatus from "@/hooks/useBackendStatus";
 
 export default function AdminDashboard() {
   useDocumentTitle("Dashboard Overview | Glorious Admin");
   const { adminUser } = useAuth();
   const { notices, events, staff, schoolInfo, inquiries } = useData();
+  const backendStatus = useBackendStatus();
 
   // Metrics definition
   const metrics = [
@@ -199,21 +203,69 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Database Readiness Notification Card */}
-      <div className={styles.dbCard}>
+      {/* Database Readiness & Live Cluster Status Card */}
+      <div
+        className={`${styles.dbCard} ${
+          backendStatus.connected
+            ? styles.dbCardConnected
+            : backendStatus.serverOnline
+            ? styles.dbCardWarning
+            : ""
+        }`}
+      >
         <div className={styles.dbInfo}>
           <h3>
             <Database size={18} />
-            <span>Storage Architecture: Local Storage Store Active</span>
+            <span>
+              {backendStatus.connected
+                ? "Database Status: MongoDB Atlas Cluster Connected"
+                : backendStatus.serverOnline
+                ? "Database Status: MongoDB Disconnected / Pending"
+                : "Storage Architecture: Local Storage Store Active"}
+            </span>
           </h3>
           <p>
-            All create, update, and delete changes are immediately cached and reflected live on the public website.
-            When your backend database (Node.js/Express, MongoDB, or PostgreSQL) is provisioned, the storage service layer can connect seamlessly with zero frontend refactoring.
+            {backendStatus.connected
+              ? `Connected to MongoDB Atlas cluster (${backendStatus.host}). Database '${backendStatus.database || "glorious_school"}' is live and synced. Browser cache serves as instant offline fallback.`
+              : backendStatus.serverOnline
+              ? `${backendStatus.message}. Please check your credentials in backend/.env.`
+              : "All administrative changes are cached in browser storage. Start the backend server with 'npm start' to enable live MongoDB Atlas synchronization."}
           </p>
         </div>
-        <div className={styles.dbStatusPill}>
-          <CheckCircle2 size={16} style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }} />
-          Database Ready
+        <div
+          className={`${styles.dbStatusPill} ${
+            backendStatus.connected
+              ? styles.dbStatusPillConnected
+              : backendStatus.serverOnline
+              ? styles.dbStatusPillWarning
+              : ""
+          }`}
+        >
+          {backendStatus.connected ? (
+            <>
+              <CheckCircle2 size={16} />
+              <span>MongoDB Connected</span>
+            </>
+          ) : backendStatus.serverOnline ? (
+            <>
+              <AlertTriangle size={16} />
+              <span>Check .env Config</span>
+            </>
+          ) : (
+            <>
+              <Database size={16} />
+              <span>Local Store Active</span>
+            </>
+          )}
+          <button
+            type="button"
+            className={`${styles.refreshBtn} ${backendStatus.loading ? styles.refreshBtnSpinning : ""}`}
+            onClick={backendStatus.refresh}
+            title="Check connection now"
+            aria-label="Refresh database connection status"
+          >
+            <RotateCw size={13} />
+          </button>
         </div>
       </div>
     </div>
