@@ -12,10 +12,11 @@ import { m } from "framer-motion";
 import styles from "./contact.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { SCHOOL_INFO } from "@/data/schoolData";
+import { useData } from "@/context/DataContext";
 
 export default function ContactPage() {
   useDocumentTitle("Contact Us | Glorious Public School, Jhajha");
+  const { addInquiry, schoolInfo } = useData();
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -24,9 +25,17 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [isSent, setIsSent] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (name.trim() && phone.trim() && message.trim()) {
+    if (name.trim() && message.trim()) {
+      await addInquiry({
+        name,
+        studentName: name,
+        phone,
+        email: email || "inquiry@gloriouspublicschool.com",
+        gradeApplying: subject,
+        message,
+      });
       setIsSent(true);
       setTimeout(() => {
         setName("");
@@ -43,20 +52,20 @@ export default function ContactPage() {
     {
       icon: <MapPin size={22} />,
       title: "Campus Location",
-      desc: SCHOOL_INFO.address,
+      desc: schoolInfo?.address || "Koltex, Petrol Pump, Jhajha, Jamui, Bihar 811308",
       note: "Near Koltex, Petrol Pump, Jhajha",
     },
     {
       icon: <Phone size={22} />,
       title: "Direct Phone Helpline",
-      desc: SCHOOL_INFO.phone,
+      desc: schoolInfo?.phone || "9534105012",
       note: "Available Mon - Sat: 8:00 AM - 4:00 PM",
       isPhone: true,
     },
     {
       icon: <Mail size={22} />,
       title: "Email Correspondence",
-      desc: SCHOOL_INFO.email,
+      desc: schoolInfo?.email || "gpsjhajha@gmail.com",
       note: "Admissions & administrative queries",
       isEmail: true,
     },

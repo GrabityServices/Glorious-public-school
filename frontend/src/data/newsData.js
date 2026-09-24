@@ -1,7 +1,8 @@
 export const NEWS_NOTICES = [
   {
     id: "admission-open-2026",
-    title: "Admission is Going On for Nursery to Class 10th (Session 2026-2027)",
+    title:
+      "Admission is Going On for Nursery to Class 10th (Session 2026-2027)",
     date: "02 Dec, 2025",
     category: "Admission",
     author: "Admission Cell",

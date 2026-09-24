@@ -1,22 +1,26 @@
 import { Phone, Mail, GraduationCap, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import styles from "./TopHeader.module.css";
-import { SCHOOL_INFO } from "@/data/schoolData";
+import { useData } from "@/context/DataContext";
 
 export default function TopHeader() {
+  const { schoolInfo } = useData();
+  const phone = schoolInfo?.phone || "9534105012";
+  const email = schoolInfo?.email || "gpsjhajha@gmail.com";
+
   return (
     <div className={styles.topBar}>
       <div className={styles.container}>
         {/* Contact info */}
         <div className={styles.contactGroup}>
-          <a href={`tel:${SCHOOL_INFO.phone}`} className={styles.contactItem}>
+          <a href={`tel:${phone}`} className={styles.contactItem}>
             <Phone size={14} className={styles.icon} />
-            <span>{SCHOOL_INFO.phone}</span>
+            <span>{phone}</span>
           </a>
           <span className={styles.divider}>|</span>
-          <a href={`mailto:${SCHOOL_INFO.email}`} className={styles.contactItem}>
+          <a href={`mailto:${email}`} className={styles.contactItem}>
             <Mail size={14} className={styles.icon} />
-            <span>{SCHOOL_INFO.email}</span>
+            <span>{email}</span>
           </a>
         </div>
 

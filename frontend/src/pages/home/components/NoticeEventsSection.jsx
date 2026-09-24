@@ -2,14 +2,12 @@ import { Link } from "react-router-dom";
 import { Calendar, MapPin, ArrowRight, Bell, Clock, ChevronRight } from "lucide-react";
 import styles from "./NoticeEventsSection.module.css";
 import FadeUp from "@/components/motion/FadeUp";
-import { EVENTS_DATA } from "@/data/eventsData";
-import { NEWS_NOTICES } from "@/data/newsData";
 import { useData } from "@/context/DataContext";
 
 export default function NoticeEventsSection() {
-  const { notices: liveNotices, events: liveEvents } = useData();
-  const displayEvents = liveEvents || EVENTS_DATA;
-  const displayNotices = liveNotices || NEWS_NOTICES;
+  const { notices, events } = useData();
+  const displayEvents = events || [];
+  const displayNotices = notices || [];
 
   return (
     <section className={styles.section}>

@@ -379,15 +379,94 @@
 .modeBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 13px;
-  background: #ecfdf5;
-  border: 1.5px solid #a7f3d0;
-  color: #047857;
-  font-size: 0.75rem;
+  gap: 7px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
   font-weight: 700;
   border-radius: 999px;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  background: transparent;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.modeBadgeConnected {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #047857;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+}
+
+.modeBadgeConnected:hover {
+  background: #d1fae5;
+  transform: translateY(-1px);
+}
+
+.modeBadgeWarning {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #b45309;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+}
+
+.modeBadgeWarning:hover {
+  background: #fef3c7;
+  transform: translateY(-1px);
+}
+
+.modeBadgeOffline {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.modeBadgeOffline:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.pulseDotGreen {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.pulseDotAmber {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+  animation: pulseAmber 2s infinite;
+}
+
+@keyframes pulseAmber {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
 }
 
 .liveSiteBtn {

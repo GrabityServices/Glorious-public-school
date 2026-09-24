@@ -11,9 +11,13 @@ import {
   Heart,
 } from "lucide-react";
 import styles from "./Footer.module.css";
-import { SCHOOL_INFO } from "@/data/schoolData";
+import { useData } from "@/context/DataContext";
 
 export default function Footer() {
+  const { schoolInfo } = useData();
+  const phone = schoolInfo?.phone || "9534105012";
+  const address = schoolInfo?.address || "Koltex, Petrol Pump, Jhajha, Jamui, Bihar 811308";
+  const email = schoolInfo?.email || "gpsjhajha@gmail.com";
   return (
     <footer className={styles.footer}>
       {/* Top Banner inside Footer */}
@@ -32,9 +36,9 @@ export default function Footer() {
                 <span>Apply Online Now</span>
                 <ArrowRight size={16} />
               </Link>
-              <a href={`tel:${SCHOOL_INFO.phone}`} className="btn btn-secondary">
+              <a href={`tel:${phone}`} className="btn btn-secondary">
                 <Phone size={16} />
-                <span>Call {SCHOOL_INFO.phone}</span>
+                <span>Call {phone}</span>
               </a>
             </div>
           </div>
@@ -115,7 +119,7 @@ export default function Footer() {
                 <MapPin size={20} className={styles.contactIcon} />
                 <div>
                   <strong>Campus Address:</strong>
-                  <p>Glorious Public School, Koltex, Petrol Pump, Jhajha, Jamui, Bihar 811308</p>
+                  <p>{address}</p>
                 </div>
               </div>
 
@@ -123,7 +127,7 @@ export default function Footer() {
                 <Phone size={18} className={styles.contactIcon} />
                 <div>
                   <strong>Direct Helpline:</strong>
-                  <p><a href={`tel:${SCHOOL_INFO.phone}`}>{SCHOOL_INFO.phone}</a></p>
+                  <p><a href={`tel:${phone}`}>{phone}</a></p>
                 </div>
               </div>
 
@@ -131,7 +135,7 @@ export default function Footer() {
                 <Mail size={18} className={styles.contactIcon} />
                 <div>
                   <strong>Email Correspondence:</strong>
-                  <p><a href={`mailto:${SCHOOL_INFO.email}`}>{SCHOOL_INFO.email}</a></p>
+                  <p><a href={`mailto:${email}`}>{email}</a></p>
                 </div>
               </div>
             </div>
