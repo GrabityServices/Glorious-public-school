@@ -11,7 +11,7 @@ try {
     ).trim();
 
     if (output) {
-      const pids = [...new Set(output.split(/\r?\n/).map((p) => p.trim()).filter(Boolean))];
+      const pids = [...new Set(output.split(/\r?\n/).map((p) => p.trim()).filter((p) => p && p !== "0"))];
       for (const pid of pids) {
         try {
           execSync(`powershell -NoProfile -Command "Stop-Process -Id ${pid} -Force"`);

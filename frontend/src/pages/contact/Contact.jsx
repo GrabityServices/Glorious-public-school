@@ -77,6 +77,18 @@ export default function ContactPage() {
     },
   ];
 
+  const openingHours = schoolInfo?.openingHours?.length
+    ? schoolInfo.openingHours
+    : [
+        { day: "Monday", time: "8:00 AM - 2:30 PM", status: "Open" },
+        { day: "Tuesday", time: "8:00 AM - 2:30 PM", status: "Open" },
+        { day: "Wednesday", time: "8:00 AM - 2:30 PM", status: "Open" },
+        { day: "Thursday", time: "8:00 AM - 2:30 PM", status: "Open" },
+        { day: "Friday", time: "8:00 AM - 2:30 PM", status: "Open" },
+        { day: "Saturday", time: "8:00 AM - 1:00 PM", status: "Half Day" },
+        { day: "Sunday", time: "Closed", status: "Holiday" },
+      ];
+
   return (
     <div className={styles.pageWrapper}>
       {/* Hero Header */}
@@ -136,7 +148,7 @@ export default function ContactPage() {
                   <h3>Official School Timings</h3>
                   <table className={styles.hoursTable}>
                     <tbody>
-                      {SCHOOL_INFO.openingHours.map((oh, i) => (
+                      {openingHours.map((oh, i) => (
                         <tr key={i}>
                           <td><strong>{oh.day}</strong></td>
                           <td>{oh.time}</td>
