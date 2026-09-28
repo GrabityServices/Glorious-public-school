@@ -5,10 +5,10 @@ import FadeUp from "@/components/motion/FadeUp";
 import { ACADEMIC_WINGS } from "@/data/academicsData";
 
 const WING_IMAGES = {
-  "pre-primary": "/images/expert_guidance.png",
-  "primary": "/images/hero_meditation.png",
-  "middle": "/images/how_we_work.png",
-  "secondary": "/images/blog1.png",
+  "pre-primary": "/images/pre-primary.webp",
+  "primary": "/images/pre-primary-2.webp",
+  "middle": "/images/middle-wing.webp",
+  "secondary": "/images/senior-high.webp",
 };
 
 export default function AcademicsSnapshot() {

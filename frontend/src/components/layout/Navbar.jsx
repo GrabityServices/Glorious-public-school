@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, GraduationCap, Award, Phone } from "lucide-react";
+import { Menu, X, Award, Phone, ChevronDown, Bell, ArrowRight } from "lucide-react";
 import { AnimatePresence, m } from "framer-motion";
 import styles from "./Navbar.module.css";
 import { easeCalm } from "@/lib/motion/easing";
@@ -9,7 +9,30 @@ import { SCHOOL_INFO } from "@/data/schoolData";
 export default function Navbar({ isScrolled }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isEventsPopupOpen, setIsEventsPopupOpen] = useState(false);
+  const [mobileEventsOpen, setMobileEventsOpen] = useState(false);
+  const closeTimeoutRef = useRef(null);
   const { pathname } = useLocation();
+
+  const handleEventsMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setIsEventsPopupOpen(true);
+  };
+
+  const handleEventsMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsEventsPopupOpen(false);
+    }, 180);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,9 +48,11 @@ export default function Navbar({ isScrolled }) {
 
   const activeScrolled = isScrolled !== undefined ? isScrolled : scrolled;
 
-  // Close mobile drawer on route change
+  // Close mobile drawer & popups on route change
   useEffect(() => {
     setIsOpen(false);
+    setIsEventsPopupOpen(false);
+    setMobileEventsOpen(false);
   }, [pathname]);
 
   const navLinks = [
@@ -78,7 +103,7 @@ export default function Navbar({ isScrolled }) {
         {/* School Logo & Title */}
         <Link to="/" className={styles.brand}>
           <img
-            src="/images/glorious-public-school-logo.png"
+            src="/images/glorious-public-school.png"
             alt="Glorious Public School Logo"
             className={styles.logoImg}
           />
@@ -95,6 +120,69 @@ export default function Navbar({ isScrolled }) {
               link.href === "/"
                 ? pathname === "/"
                 : pathname === link.href || pathname.startsWith(link.href + "/");
+
+            if (link.name === "Events") {
+              return (
+                <div
+                  key={link.name}
+                  className={styles.dropdownWrapper}
+                  onMouseEnter={handleEventsMouseEnter}
+                  onMouseLeave={handleEventsMouseLeave}
+                >
+                  <Link
+                    to={link.href}
+                    className={`${styles.navItem} ${styles.dropdownTrigger} ${
+                      isActive || isEventsPopupOpen ? styles.active : ""
+                    }`}
+                    onClick={() => setIsEventsPopupOpen(false)}
+                  >
+                    <span className={styles.navLabel}>{link.name}</span>
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={2.4}
+                      className={`${styles.navChevron} ${
+                        isEventsPopupOpen ? styles.navChevronRotated : ""
+                      }`}
+                    />
+                    {isActive && (
+                      <m.div
+                        layoutId="activeNavPill"
+                        className={styles.activePill}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+
+                  {/* Clean, Premium Dropdown with News link */}
+                  <AnimatePresence>
+                    {isEventsPopupOpen && (
+                      <m.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className={styles.simpleDropdown}
+                      >
+                        <Link
+                          to="/news"
+                          className={styles.simpleDropdownLink}
+                          onClick={() => setIsEventsPopupOpen(false)}
+                        >
+                          <div className={styles.dropdownLinkContent}>
+                            <span className={styles.dropdownIconCircle}>
+                              <Bell size={14} />
+                            </span>
+                            <span className={styles.dropdownLinkText}>News</span>
+                          </div>
+                          <ArrowRight size={13} className={styles.dropdownLinkArrow} />
+                        </Link>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={link.name}
@@ -153,6 +241,52 @@ export default function Navbar({ isScrolled }) {
                   link.href === "/"
                     ? pathname === "/"
                     : pathname === link.href || pathname.startsWith(link.href + "/");
+
+                if (link.name === "Events") {
+                  return (
+                    <m.div key={link.name} variants={mobileLinkVariants}>
+                      <div className={styles.mobileEventsAccordion}>
+                        <div className={styles.mobileEventsHeaderRow}>
+                          <Link
+                            to={link.href}
+                            className={`${styles.mobileLink} ${isActive ? styles.mobileActive : ""}`}
+                            onClick={() => setIsOpen(false)}
+                            style={{ flex: 1 }}
+                          >
+                            <span className={styles.mobileLinkLabel}>{link.name}</span>
+                            {isActive && <span className={styles.activePip} />}
+                          </Link>
+                          <button
+                            type="button"
+                            className={styles.mobileSubToggleBtn}
+                            onClick={() => setMobileEventsOpen(!mobileEventsOpen)}
+                            aria-label="Toggle events sub-menu"
+                          >
+                            <ChevronDown
+                              size={18}
+                              className={`${styles.mobileSubChevron} ${
+                                mobileEventsOpen ? styles.mobileSubChevronRotated : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {mobileEventsOpen && (
+                          <div className={styles.mobileSubList}>
+                            <Link
+                              to="/news"
+                              className={styles.mobileSubLink}
+                              onClick={() => setIsOpen(false)}
+                            >
+                              <span>News</span>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </m.div>
+                  );
+                }
+
                 return (
                   <m.div key={link.name} variants={mobileLinkVariants}>
                     <Link

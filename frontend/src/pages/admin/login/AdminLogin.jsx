@@ -68,7 +68,7 @@ export default function AdminLogin() {
         <div className={styles.cardHeader}>
           <div className={styles.logoWrap}>
             <img
-              src="/images/glorious-public-school-logo.png"
+              src="/images/glorious-public-school.png"
               alt="Glorious Public School Logo"
               className={styles.loginLogoImg}
             />

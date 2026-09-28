@@ -145,7 +145,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className={styles.bottomBar}>
           <p className={styles.copyright}>
-            Copyright &copy; 2023-2026 <strong>Glorious Public School</strong>. All rights reserved.
+            Copyright &copy; 2019-2026 <strong>Glorious Public School</strong>. All rights reserved.
           </p>
           <div className={styles.legalLinks}>
             <Link to="/privacy">Privacy Policy</Link>

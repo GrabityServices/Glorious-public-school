@@ -189,30 +189,141 @@
   color: var(--accent-gold);
 }
 
+.noticesWrapper {
+  position: relative;
+  overflow: hidden;
+  height: 295px;
+}
+
 .noticesList {
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: 380px;
+  padding: 16px 24px 16px 20px;
+  height: 100%;
+  max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-gold) rgba(0, 0, 0, 0.06);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
 }
 
 .noticesList::-webkit-scrollbar {
+  display: none;
+}
+
+.noticesInner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Modern Custom Floating Scrollbar Rail */
+.modernScrollRail {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 6px;
   width: 6px;
+  background: rgba(18, 18, 20, 0.06);
+  border-radius: 9999px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transform: translateX(6px) scaleY(0.96);
+  pointer-events: none;
+  /* Velvet unshow transition: gentle 0.45s ease-out with 0.12s decay buffer */
+  transition:
+    opacity 0.45s cubic-bezier(0.25, 1, 0.5, 1) 0.12s,
+    transform 0.45s cubic-bezier(0.25, 1, 0.5, 1) 0.12s,
+    width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    background 0.25s ease;
+  user-select: none;
 }
 
-.noticesList::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
+.modernScrollRail.railHidden {
+  display: none !important;
 }
 
-.noticesList::-webkit-scrollbar-thumb {
-  background: var(--accent-gold);
-  border-radius: 4px;
+/* Silky smooth show transition on hover, active dragging, or touch */
+.noticeBoardCard:hover .modernScrollRail,
+.noticesWrapper:hover .modernScrollRail,
+.modernScrollRail:hover,
+.modernScrollRail.railActive {
+  opacity: 1;
+  transform: translateX(0) scaleY(1);
+  pointer-events: auto;
+  /* Instant silky responsive entrance */
+  transition:
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    background 0.25s ease;
+}
+
+@media (hover: none) {
+  .modernScrollRail {
+    opacity: 0.85;
+    transform: translateX(0) scaleY(1);
+    pointer-events: auto;
+  }
+}
+
+.modernScrollRail:hover {
+  width: 8px;
+  background: rgba(18, 18, 20, 0.12);
+}
+
+/* Theme-Matching Academic Crimson Floating Pill Thumb */
+.modernScrollThumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.38), 0 0 1px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.modernScrollThumb:hover {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 50%, #991b1b 100%);
+  box-shadow: 0 2px 14px rgba(220, 38, 38, 0.58), 0 0 1px rgba(0, 0, 0, 0.25);
+  transform: scaleX(1.15);
+}
+
+.modernScrollThumb.isDragging {
+  cursor: grabbing;
+  background: linear-gradient(180deg, #fca5a5 0%, #dc2626 40%, #7f1d1d 100%);
+  box-shadow: 0 2px 18px rgba(220, 38, 38, 0.78), 0 0 2px rgba(0, 0, 0, 0.3);
+  transform: scaleX(1.22);
+}
+
+/* Micro tactile grip ridges */
+.thumbGripLines {
+  width: 3px;
+  height: 8px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.85);
+  opacity: 0.9;
+  display: block;
 }
 
 .noticeItem {

@@ -215,6 +215,7 @@
   background-color: #ffffff;
   outline: none;
   transition: border-color 0.2s;
+  resize: none;
 }
 
 .input:focus,

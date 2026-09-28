@@ -56,7 +56,7 @@ export default function SplashWelcome({ onEnter }) {
               className={styles.logoWrapper}
             >
               <img
-                src="/images/glorious-public-school-logo.png"
+                src="/images/glorious-public-school.png"
                 alt="Glorious Public School Crest"
                 className={styles.splashLogo}
               />
