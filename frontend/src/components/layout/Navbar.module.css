@@ -26,13 +26,13 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  flex-shrink: 0;
 }
-
 
 .logoImg {
   height: 48px;
-  width: auto;
-  max-width: 50px;
+  width: 48px;
+  max-width: 48px;
   object-fit: contain;
   flex-shrink: 0;
   transition: transform 0.2s ease;
@@ -46,15 +46,16 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .brandTitle {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: 1.22rem;
   font-weight: 700;
   color: var(--primary-dark);
   line-height: 1.1;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .brandSub {
@@ -63,25 +64,27 @@
   color: var(--accent-brown);
   letter-spacing: 0.12em;
   margin-top: 2px;
+  white-space: nowrap;
 }
 
 
 .desktopNav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .navItem {
   position: relative;
-  padding: 8px 16px;
-  font-size: 0.92rem;
+  padding: 8px 12px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--border-radius-xl);
   transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   justify-content: center;
 }
@@ -258,25 +261,23 @@
   }
   .brand {
     gap: 11px;
-    min-width: 0;
+    flex-shrink: 0;
   }
   .logoImg {
-    height: 46px;
-    width: auto;
-    max-width: 48px;
+    height: 44px;
+    width: 44px;
+    max-width: 44px;
   }
   .brandInfo {
-    min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    flex-shrink: 0;
   }
   .brandTitle {
     font-size: 1.05rem;
     line-height: 1.2;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .brandSub {
     display: block !important;
@@ -311,40 +312,255 @@
 @media (max-width: 400px) {
   .container {
     min-height: 66px;
-    padding: 10px 12px;
+    padding: 10px 10px;
     gap: 8px;
   }
   .brand {
-    gap: 9px;
+    gap: 8px;
+    flex-shrink: 0;
   }
   .logoImg {
-    height: 42px;
-    width: auto;
-    max-width: 44px;
+    height: 38px;
+    width: 38px;
+    max-width: 38px;
+  }
+  .brandInfo {
+    flex-shrink: 0;
   }
   .brandTitle {
-    font-size: 0.96rem;
+    font-size: 0.90rem;
     line-height: 1.2;
+    white-space: nowrap;
   }
   .brandSub {
     display: block !important;
-    font-size: 0.54rem;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
+    font-size: 0.52rem;
+    letter-spacing: 0.05em;
+    margin-top: 1px;
+    white-space: nowrap;
   }
   .ctaGroup {
     gap: 6px;
   }
   .navApplyBtn {
-    padding: 7px 11px;
-    font-size: 0.74rem;
-    gap: 5px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    gap: 4px;
   }
   .navApplyIcon {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
   }
   .mobileMenuBtn {
     padding: 6px;
   }
 }
+
+/* ==========================================================================
+   Institution-Grade Events & News Mega Dropdown Popup
+   ========================================================================== */
+
+.dropdownWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navChevron {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), color 0.2s ease;
+  margin-top: 1px;
+}
+
+.navItem:hover .navChevron {
+  color: var(--primary-dark);
+}
+
+.navItem.active .navChevron {
+  color: var(--accent-red);
+}
+
+.navChevronRotated {
+  transform: rotate(180deg) translateY(0.5px);
+  color: var(--accent-red) !important;
+}
+
+/* Premium Hover Dropdown for Events */
+.simpleDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 190px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(18, 18, 20, 0.08);
+  box-shadow: 0 16px 36px -6px rgba(18, 18, 20, 0.16), 0 0 1px rgba(18, 18, 20, 0.1);
+  padding: 8px;
+  z-index: 1050;
+  overflow: hidden;
+}
+
+/* Invisible bridge so mouse does not leave hover area */
+.simpleDropdown::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: transparent;
+}
+
+.simpleDropdownLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  text-decoration: none;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.simpleDropdownLink:hover {
+  background: #fef2f2;
+  border-color: rgba(220, 38, 38, 0.15);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.06);
+}
+
+.dropdownLinkContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdownIconCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.simpleDropdownLink:hover .dropdownIconCircle {
+  background: #dc2626;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.dropdownLinkText {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  transition: color 0.2s ease;
+}
+
+.simpleDropdownLink:hover .dropdownLinkText {
+  color: var(--accent-red);
+}
+
+.dropdownLinkArrow {
+  color: var(--text-light);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.simpleDropdownLink:hover .dropdownLinkArrow {
+  color: var(--accent-red);
+  transform: translateX(3px);
+}
+
+/* Mobile Accordion Sub-Menu */
+.mobileEventsAccordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileEventsHeaderRow {
+  display: flex;
+  align-items: center;
+}
+
+.mobileSubToggleBtn {
+  background: transparent;
+  border: none;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileSubChevron {
+  transition: transform 0.25s ease;
+}
+
+.mobileSubChevronRotated {
+  transform: rotate(180deg);
+  color: var(--accent-red);
+}
+
+.mobileSubList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 12px 12px 28px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.mobileSubLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.mobileSubLink:hover {
+  background: #ffffff;
+  color: var(--primary-dark);
+}
+
+.mobileSubLinkHighlight {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.mobileNewBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+

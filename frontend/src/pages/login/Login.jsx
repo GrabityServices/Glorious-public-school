@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Lock, User, GraduationCap, ArrowRight, ShieldCheck } from "lucide-react";
+import { Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
 import styles from "./login.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
@@ -31,7 +31,11 @@ export default function LoginPage() {
             <div className={styles.loginCard}>
               <div className={styles.headerArea}>
                 <div className={styles.logoBadge}>
-                  <GraduationCap size={28} color="#fef08a" />
+                  <img
+                    src="/images/glorious-public-school-logo.png"
+                    alt="Glorious Public School Logo"
+                    className={styles.loginLogoImg}
+                  />
                 </div>
                 <h2>Glorious Public School</h2>
                 <p>Student & Parent Management System</p>

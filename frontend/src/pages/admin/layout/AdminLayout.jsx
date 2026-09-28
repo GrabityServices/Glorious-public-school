@@ -113,7 +113,7 @@ export default function AdminLayout() {
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
         <div className={styles.sidebarBrand}>
           <img
-            src="/images/glorious-public-school-logo.png"
+            src="/images/glorious-public-school.png"
             alt="Glorious Public School Logo"
             className={styles.brandLogoImg}
           />
