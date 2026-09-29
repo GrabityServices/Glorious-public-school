@@ -7,6 +7,7 @@ import Image from "@/components/common/Image";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 import { useData } from "@/context/DataContext";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function StaffPage() {
   useDocumentTitle("Our Teachers & Staff | Glorious Public School");
@@ -53,34 +54,51 @@ export default function StaffPage() {
             ))}
           </div>
 
-          <div className={styles.staffGrid}>
-            {filteredStaff.map((member, idx) => (
-              <FadeUp key={member.id} delay={0.08 * (idx + 1)}>
-                <div className={styles.staffCard}>
-                  <div className={styles.imageWrap}>
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      className={styles.avatarImg}
-                    />
-                    <span className={styles.wingTag}>{member.wing}</span>
-                  </div>
-
-                  <div className={styles.cardContent}>
-                    <h2 className={styles.memberName}>{member.name}</h2>
-                    <p className={styles.memberRole}>{member.role}</p>
-
-                    <div className={styles.metaBox}>
-                      <span className={styles.qual}>{member.qualification}</span>
-                      <span className={styles.exp}>{member.experience}</span>
+          {/* Staff Grid or Empty State */}
+          {filteredStaff.length > 0 ? (
+            <div className={styles.staffGrid}>
+              {filteredStaff.map((member, idx) => (
+                <FadeUp key={member.id} delay={0.08 * (idx + 1)}>
+                  <div className={styles.staffCard}>
+                    <div className={styles.imageWrap}>
+                      <Image
+                        src={member.image}
+                        alt={member.name}
+                        className={styles.avatarImg}
+                      />
+                      <span className={styles.wingTag}>{member.wing}</span>
                     </div>
 
-                    <p className={styles.memberBio}>{member.bio}</p>
+                    <div className={styles.cardContent}>
+                      <h2 className={styles.memberName}>{member.name}</h2>
+                      <p className={styles.memberRole}>{member.role}</p>
+
+                      <div className={styles.metaBox}>
+                        <span className={styles.qual}>{member.qualification}</span>
+                        <span className={styles.exp}>{member.experience}</span>
+                      </div>
+
+                      <p className={styles.memberBio}>{member.bio}</p>
+                    </div>
                   </div>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
+                </FadeUp>
+              ))}
+            </div>
+          ) : (
+            <FadeUp>
+              <EmptyState
+                icon={GraduationCap}
+                title="No Faculty Members Found"
+                description={
+                  filterWing === "All"
+                    ? "Faculty directory is currently being updated. Please check back shortly."
+                    : `No teachers or staff listed under the "${filterWing}" wing. Try viewing all departments.`
+                }
+                actionText={filterWing !== "All" ? "View All Staff" : undefined}
+                onAction={filterWing !== "All" ? () => setFilterWing("All") : undefined}
+              />
+            </FadeUp>
+          )}
         </div>
       </section>
 

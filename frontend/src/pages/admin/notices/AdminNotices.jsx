@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Plus, Search, Edit2, Trash2, CheckCircle, X, Bell } from "lucide-react";
 import styles from "./AdminNotices.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminNotices() {
   useDocumentTitle("Manage Notices & News | Glorious Admin");
   const { notices, addNotice, updateNotice, deleteNotice, toggleNoticeImportant } = useData();
+  const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -68,8 +71,16 @@ export default function AdminNotices() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id, title) => {
-    if (window.confirm(`Are you sure you want to delete notice:\n"${title}"?`)) {
+  const handleDelete = async (id, title) => {
+    const confirmed = await confirm({
+      title: "Delete Notice",
+      message: "Are you sure you want to delete this notice? It will be permanently removed from the website circulars board.",
+      itemName: title,
+      confirmText: "Delete Notice",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       deleteNotice(id);
       showToast("Notice removed successfully.");
     }
@@ -202,8 +213,19 @@ export default function AdminNotices() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className={styles.emptyState}>
-                    No notices found matching your criteria.
+                  <td colSpan={5} style={{ padding: "32px 16px" }}>
+                    <EmptyState
+                      icon={Bell}
+                      title="No Notices or Circulars Found"
+                      description={
+                        searchQuery || selectedCategory !== "All"
+                          ? "No notices match your current search or category filter."
+                          : "No notices have been published to the notice board yet."
+                      }
+                      actionText="Publish New Notice"
+                      onAction={handleOpenAdd}
+                      compact
+                    />
                   </td>
                 </tr>
               )}

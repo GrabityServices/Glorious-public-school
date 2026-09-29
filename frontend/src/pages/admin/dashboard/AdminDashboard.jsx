@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import useBackendStatus from "@/hooks/useBackendStatus";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminDashboard() {
   useDocumentTitle("Dashboard Overview | Glorious Admin");
@@ -150,21 +151,32 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className={styles.widgetList}>
-            {notices.slice(0, 3).map((notice) => (
-              <div key={notice.id} className={styles.widgetItem}>
-                <div className={styles.itemInfo}>
-                  <h4>{notice.title}</h4>
-                  <div className={styles.itemMeta}>
-                    <span className={styles.categoryTag}>{notice.category}</span>
-                    <span>{notice.date}</span>
-                    <span>by {notice.author}</span>
+            {notices.length > 0 ? (
+              notices.slice(0, 3).map((notice) => (
+                <div key={notice.id} className={styles.widgetItem}>
+                  <div className={styles.itemInfo}>
+                    <h4>{notice.title}</h4>
+                    <div className={styles.itemMeta}>
+                      <span className={styles.categoryTag}>{notice.category}</span>
+                      <span>{notice.date}</span>
+                      <span>by {notice.author}</span>
+                    </div>
                   </div>
+                  {notice.isImportant && (
+                    <span className={styles.itemBadge}>Important</span>
+                  )}
                 </div>
-                {notice.isImportant && (
-                  <span className={styles.itemBadge}>Important</span>
-                )}
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={Bell}
+                title="No Notices Available"
+                description="No notices have been published to the notice board yet."
+                actionText="Create Notice"
+                actionLink="/admin/notices"
+                compact
+              />
+            )}
           </div>
         </div>
 
@@ -181,24 +193,35 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className={styles.widgetList}>
-            {events.slice(0, 3).map((event) => (
-              <div key={event.id} className={styles.widgetItem}>
-                <div className={styles.itemInfo}>
-                  <h4>{event.title}</h4>
-                  <div className={styles.itemMeta}>
-                    <span className={styles.categoryTag}>{event.category}</span>
-                    <span>
-                      <Clock size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
-                      {event.date}
-                    </span>
-                    <span>
-                      <MapPin size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
-                      {event.venue ? event.venue.split(",")[0] : "Campus"}
-                    </span>
+            {events.length > 0 ? (
+              events.slice(0, 3).map((event) => (
+                <div key={event.id} className={styles.widgetItem}>
+                  <div className={styles.itemInfo}>
+                    <h4>{event.title}</h4>
+                    <div className={styles.itemMeta}>
+                      <span className={styles.categoryTag}>{event.category}</span>
+                      <span>
+                        <Clock size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
+                        {event.date}
+                      </span>
+                      <span>
+                        <MapPin size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
+                        {event.venue ? event.venue.split(",")[0] : "Campus"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={Calendar}
+                title="No Events Scheduled"
+                description="No school events are currently listed on the calendar."
+                actionText="Create Event"
+                actionLink="/admin/events"
+                compact
+              />
+            )}
           </div>
         </div>
       </div>

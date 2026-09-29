@@ -83,17 +83,30 @@
   color: var(--text-muted);
   cursor: pointer;
   transition: var(--transition-fast);
+  user-select: none;
 }
 
-.filterBtn:hover {
+.filterBtn:not(.filterBtnActive):hover {
   border-color: var(--primary-medium);
   color: var(--primary-dark);
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
 }
 
-.filterBtnActive {
+.filterBtnActive,
+.filterBtn.filterBtnActive {
   background-color: var(--primary-dark);
-  color: #ffffff;
+  color: #ffffff !important;
   border-color: var(--primary-dark);
+  box-shadow: 0 4px 12px rgba(18, 18, 20, 0.15);
+}
+
+.filterBtnActive:hover,
+.filterBtn.filterBtnActive:hover {
+  background-color: var(--primary-medium);
+  color: #ffffff !important;
+  border-color: var(--primary-medium);
+  transform: translateY(-1px);
 }
 
 .eventsGrid {

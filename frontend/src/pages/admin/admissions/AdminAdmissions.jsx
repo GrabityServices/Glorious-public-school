@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Search, Trash2, CheckCircle, Phone, Mail, Clock, User, Filter } from "lucide-react";
 import styles from "./AdminAdmissions.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminAdmissions() {
   useDocumentTitle("Admissions & Inquiries | Glorious Admin");
   const { inquiries, updateInquiryStatus, deleteInquiry } = useData();
+  const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -34,8 +37,16 @@ export default function AdminAdmissions() {
     showToast(`Inquiry status updated to "${newStatus}".`);
   };
 
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Are you sure you want to delete inquiry for ${name}?`)) {
+  const handleDelete = async (id, name) => {
+    const confirmed = await confirm({
+      title: "Delete Admission Inquiry",
+      message: "Are you sure you want to delete this admission application inquiry? This record will be permanently removed.",
+      itemName: name,
+      confirmText: "Delete Inquiry",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       deleteInquiry(id);
       showToast("Inquiry deleted.");
     }
@@ -190,8 +201,26 @@ export default function AdminAdmissions() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className={styles.emptyState}>
-                    No admission inquiries found.
+                  <td colSpan={7} style={{ padding: "36px 16px" }}>
+                    <EmptyState
+                      icon={User}
+                      title="No Admission Inquiries Found"
+                      description={
+                        searchQuery || selectedStatus !== "All"
+                          ? "No inquiries match your current search criteria or status filter."
+                          : "No admission inquiries have been submitted yet."
+                      }
+                      actionText={
+                        searchQuery || selectedStatus !== "All"
+                          ? "Reset Filters"
+                          : null
+                      }
+                      onAction={() => {
+                        setSearchQuery("");
+                        setSelectedStatus("All");
+                      }}
+                      compact
+                    />
                   </td>
                 </tr>
               )}

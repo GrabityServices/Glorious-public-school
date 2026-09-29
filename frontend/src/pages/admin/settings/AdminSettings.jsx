@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Settings, Award, Phone, Mail, MapPin, AlertTriangle, CheckCircle, RefreshCw, Save } from "lucide-react";
 import styles from "./AdminSettings.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export default function AdminSettings() {
   useDocumentTitle("School Information & Stats | Glorious Admin");
   const { schoolInfo, updateSchoolInfo, updateStat, resetToDefaults } = useData();
+  const confirm = useConfirm();
 
   const [toast, setToast] = useState("");
 
@@ -47,11 +49,15 @@ export default function AdminSettings() {
     showToast("School contact and announcement banner updated!");
   };
 
-  const handleResetData = () => {
-    const confirmation = window.prompt(
-      'Type "RESET" to restore all website data (notices, events, staff, stats) back to default file data:'
-    );
-    if (confirmation === "RESET") {
+  const handleResetData = async () => {
+    const confirmed = await confirm({
+      title: "Reset Website Data",
+      message: "Are you sure you want to restore all notices, events, faculty members, and statistics back to factory defaults? Any custom added records will be overwritten.",
+      confirmText: "Yes, Reset All Data",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       resetToDefaults();
       setStats(schoolInfo.stats);
       showToast("All data successfully reset to factory defaults.");

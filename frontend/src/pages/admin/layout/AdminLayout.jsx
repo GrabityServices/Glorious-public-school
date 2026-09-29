@@ -17,25 +17,31 @@ import {
 import styles from "./AdminLayout.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useBackendStatus from "@/hooks/useBackendStatus";
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { adminUser, logout } = useAuth();
   const { notices, events, staff, inquiries, gallery } = useData();
   const backendStatus = useBackendStatus();
   const location = useLocation();
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
-  const handleLogoutClick = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const handleConfirmLogout = () => {
-    setShowLogoutConfirm(false);
-    logout();
-    navigate("/admin/login", { replace: true });
+  const handleLogoutClick = async () => {
+    const confirmed = await confirm({
+      title: "Confirm Sign Out",
+      message: "Are you sure you want to log out of the Glorious Public School Admin Portal? You will need your administrator credentials to sign in again.",
+      confirmText: "Yes, Log Out",
+      cancelText: "Stay Signed In",
+      variant: "warning",
+      iconType: "logout",
+    });
+    if (confirmed) {
+      logout();
+      navigate("/admin/login", { replace: true });
+    }
   };
 
   const navItems = [
@@ -258,46 +264,6 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
-
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div
-          className={styles.logoutModalBackdrop}
-          onClick={() => setShowLogoutConfirm(false)}
-          data-lenis-prevent="true"
-        >
-          <div
-            className={styles.logoutModalCard}
-            onClick={(e) => e.stopPropagation()}
-            data-lenis-prevent="true"
-          >
-            <div className={styles.logoutIconWrap}>
-              <LogOut size={26} />
-            </div>
-            <h3 className={styles.logoutModalTitle}>Confirm Sign Out</h3>
-            <p className={styles.logoutModalDesc}>
-              Are you sure you want to log out of the Glorious Public School Admin Portal? You will need your administrator credentials to sign in again.
-            </p>
-            <div className={styles.logoutModalActions}>
-              <button
-                type="button"
-                className={styles.logoutCancelBtn}
-                onClick={() => setShowLogoutConfirm(false)}
-              >
-                Stay Signed In
-              </button>
-              <button
-                type="button"
-                className={styles.logoutConfirmBtn}
-                onClick={handleConfirmLogout}
-              >
-                <LogOut size={16} />
-                <span>Yes, Log Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Send,
   Heart,
+  ExternalLink,
 } from "lucide-react";
 import styles from "./Footer.module.css";
 import { useData } from "@/context/DataContext";
@@ -147,6 +148,24 @@ export default function Footer() {
           <p className={styles.copyright}>
             Copyright &copy; 2019-2026 <strong>Glorious Public School</strong>. All rights reserved.
           </p>
+
+          <div className={styles.developerCredit}>
+            <span className={styles.creditText}>Crafted with</span>
+            <Heart size={13} className={styles.creditHeart} />
+            <span className={styles.creditText}>by</span>
+            <a
+              href="https://gravityservices.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.creditBadge}
+              title="Gravity Services — Web Development & Digital Solutions"
+            >
+              <span className={styles.creditDot} />
+              <span className={styles.companyName}>Gravity Services</span>
+              <ExternalLink size={12} className={styles.creditArrow} />
+            </a>
+          </div>
+
           <div className={styles.legalLinks}>
             <Link to="/privacy">Privacy Policy</Link>
             <span>•</span>

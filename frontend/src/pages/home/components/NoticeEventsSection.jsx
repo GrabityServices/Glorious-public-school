@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import styles from "./NoticeEventsSection.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import { useData } from "@/context/DataContext";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function NoticeEventsSection() {
   const { notices, events } = useData();
@@ -174,35 +175,44 @@ export default function NoticeEventsSection() {
               </Link>
             </div>
 
-            <div className={styles.eventsList}>
-              {displayEvents.slice(0, 2).map((ev, i) => (
-                <FadeUp key={ev.id} delay={0.1 * (i + 1)} fullHeight>
-                  <div className={styles.eventCard}>
-                    <div className={styles.dateBadge}>
-                      <span className={styles.dateDays}>{ev.date.split(" ")[0]}</span>
-                      <span className={styles.dateMonth}>{ev.date.split(" ").slice(1).join(" ")}</span>
-                    </div>
+            {displayEvents.length > 0 ? (
+              <div className={styles.eventsList}>
+                {displayEvents.slice(0, 2).map((ev, i) => (
+                  <FadeUp key={ev.id} delay={0.1 * (i + 1)} fullHeight>
+                    <div className={styles.eventCard}>
+                      <div className={styles.dateBadge}>
+                        <span className={styles.dateDays}>{ev.date.split(" ")[0]}</span>
+                        <span className={styles.dateMonth}>{ev.date.split(" ").slice(1).join(" ")}</span>
+                      </div>
 
-                    <div className={styles.eventBody}>
-                      <span className={styles.eventCat}>{ev.category}</span>
-                      <h3 className={styles.eventTitle}>
-                        <Link to={`/events/${ev.id}`}>{ev.title}</Link>
-                      </h3>
-                      <p className={styles.eventDesc}>{ev.shortDesc}</p>
+                      <div className={styles.eventBody}>
+                        <span className={styles.eventCat}>{ev.category}</span>
+                        <h3 className={styles.eventTitle}>
+                          <Link to={`/events/${ev.id}`}>{ev.title}</Link>
+                        </h3>
+                        <p className={styles.eventDesc}>{ev.shortDesc}</p>
 
-                      <div className={styles.eventMeta}>
-                        <span className={styles.metaItem}>
-                          <MapPin size={14} /> {ev.venue}
-                        </span>
-                        <span className={styles.metaItem}>
-                          <Clock size={14} /> {ev.time}
-                        </span>
+                        <div className={styles.eventMeta}>
+                          <span className={styles.metaItem}>
+                            <MapPin size={14} /> {ev.venue}
+                          </span>
+                          <span className={styles.metaItem}>
+                            <Clock size={14} /> {ev.time}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </FadeUp>
-              ))}
-            </div>
+                  </FadeUp>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Calendar}
+                title="No Upcoming Events"
+                description="New school events and competitions will be scheduled and displayed here."
+                compact
+              />
+            )}
           </div>
 
           {/* Right Column: Notice Board */}
@@ -225,48 +235,61 @@ export default function NoticeEventsSection() {
               </div>
 
               <div className={styles.noticesWrapper}>
-                <div
-                  ref={listRef}
-                  className={styles.noticesList}
-                  data-lenis-prevent="true"
-                  onScroll={updateThumb}
-                >
-                  <div ref={contentRef} className={styles.noticesInner}>
-                    {displayNotices.map((notice, idx) => (
-                      <div key={notice.id || notice._id || idx} className={styles.noticeItem}>
-                        <div className={styles.noticeHeader}>
-                          <span className={styles.noticeDate}>{notice.date}</span>
-                          {notice.isImportant && (
-                            <span className={styles.importantTag}>Important</span>
-                          )}
-                        </div>
-                        <h4 className={styles.noticeHeading}>
-                          <Link to="/news">{notice.title}</Link>
-                        </h4>
-                        <p className={styles.noticeSummary}>{notice.summary}</p>
+                {displayNotices.length > 0 ? (
+                  <>
+                    <div
+                      ref={listRef}
+                      className={styles.noticesList}
+                      data-lenis-prevent="true"
+                      onScroll={updateThumb}
+                    >
+                      <div ref={contentRef} className={styles.noticesInner}>
+                        {displayNotices.map((notice, idx) => (
+                          <div key={notice.id || notice._id || idx} className={styles.noticeItem}>
+                            <div className={styles.noticeHeader}>
+                              <span className={styles.noticeDate}>{notice.date}</span>
+                              {notice.isImportant && (
+                                <span className={styles.importantTag}>Important</span>
+                              )}
+                            </div>
+                            <h4 className={styles.noticeHeading}>
+                              <Link to="/news">{notice.title}</Link>
+                            </h4>
+                            <p className={styles.noticeSummary}>{notice.summary}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                {/* Modern Custom Floating Scrollbar */}
-                <div
-                  ref={railRef}
-                  className={`${styles.modernScrollRail} ${isDragging ? styles.railActive : ""} ${!hasOverflow ? styles.railHidden : ""}`}
-                  onClick={handleRailClick}
-                  title="Drag or click to scroll announcements"
-                >
-                  <div
-                    className={`${styles.modernScrollThumb} ${isDragging ? styles.isDragging : ""}`}
-                    style={{
-                      height: `${thumbHeight}px`,
-                      transform: `translateY(${thumbTop}px)`,
-                    }}
-                    onMouseDown={handleThumbMouseDown}
-                  >
-                    <span className={styles.thumbGripLines} />
+                    {/* Modern Custom Floating Scrollbar */}
+                    <div
+                      ref={railRef}
+                      className={`${styles.modernScrollRail} ${isDragging ? styles.railActive : ""} ${!hasOverflow ? styles.railHidden : ""}`}
+                      onClick={handleRailClick}
+                      title="Drag or click to scroll announcements"
+                    >
+                      <div
+                        className={`${styles.modernScrollThumb} ${isDragging ? styles.isDragging : ""}`}
+                        style={{
+                          height: `${thumbHeight}px`,
+                          transform: `translateY(${thumbTop}px)`,
+                        }}
+                        onMouseDown={handleThumbMouseDown}
+                      >
+                        <span className={styles.thumbGripLines} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: "32px 16px" }}>
+                    <EmptyState
+                      icon={Bell}
+                      title="Notice Board Clear"
+                      description="No circulars or notices published at this moment."
+                      compact
+                    />
                   </div>
-                </div>
+                )}
               </div>
 
               <div className={styles.noticeFooter}>

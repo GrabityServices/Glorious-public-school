@@ -191,7 +191,7 @@
 }
 
 .textarea {
-  resize: vertical;
+  resize: none;
 }
 
 .successBlock {
