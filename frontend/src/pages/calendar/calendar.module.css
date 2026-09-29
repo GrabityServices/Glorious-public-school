@@ -714,6 +714,8 @@
     max-width: 100% !important;
     width: 100% !important;
     overflow: visible !important;
+    display: block !important;
+    position: static !important;
   }
 
   .calendarCard {
@@ -721,8 +723,8 @@
     border: 1px solid #94a3b8 !important;
     border-radius: 8px !important;
     margin-bottom: 16px !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .cardNavHeader {
@@ -810,8 +812,8 @@
 
   .agendaSection {
     margin-top: 16px !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .agendaHeader {

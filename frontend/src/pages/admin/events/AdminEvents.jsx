@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Plus, Search, Edit2, Trash2, CheckCircle, X, Calendar, MapPin, Clock } from "lucide-react";
 import styles from "./AdminEvents.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminEvents() {
   useDocumentTitle("Manage School Events | Glorious Admin");
   const { events, addEvent, updateEvent, deleteEvent } = useData();
+  const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -77,8 +80,16 @@ export default function AdminEvents() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id, title) => {
-    if (window.confirm(`Are you sure you want to delete event:\n"${title}"?`)) {
+  const handleDelete = async (id, title) => {
+    const confirmed = await confirm({
+      title: "Delete Event",
+      message: "Are you sure you want to delete this event? It will be permanently removed from the school events schedule.",
+      itemName: title,
+      confirmText: "Delete Event",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       deleteEvent(id);
       showToast("Event deleted successfully.");
     }
@@ -204,8 +215,18 @@ export default function AdminEvents() {
             </div>
           ))
         ) : (
-          <div className={styles.emptyState}>
-            No events found matching your search.
+          <div style={{ gridColumn: "1 / -1" }}>
+            <EmptyState
+              icon={Calendar}
+              title="No School Events Found"
+              description={
+                searchQuery || selectedCategory !== "All"
+                  ? "No events match your current filter criteria. You can clear the search or publish a new event."
+                  : "No events are currently scheduled in the admin database. Click below to add an event."
+              }
+              actionText="Add School Event"
+              onAction={handleOpenAdd}
+            />
           </div>
         )}
       </div>

@@ -249,6 +249,118 @@
   color: var(--accent-red);
 }
 
+/* Developer Credit Pill */
+.developerCredit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 12px 4px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+
+.developerCredit:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.creditText {
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.creditHeart {
+  color: #ef4444;
+  fill: #ef4444;
+  display: inline-block;
+  animation: beatHeart 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes beatHeart {
+  0%, 100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.28);
+  }
+  24% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.18);
+  }
+  48% {
+    transform: scale(1);
+  }
+}
+
+.creditBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  background: rgba(14, 165, 233, 0.1);
+  color: #38bdf8;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+}
+
+.creditBadge:hover {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+}
+
+.creditDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  display: inline-block;
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0);
+  }
+}
+
+.companyName {
+  letter-spacing: 0.02em;
+}
+
+.creditArrow {
+  opacity: 0.75;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.creditBadge:hover .creditArrow {
+  opacity: 1;
+  transform: translate(1.5px, -1.5px);
+}
+
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr 1fr;
@@ -265,5 +377,10 @@
   .bottomBar {
     flex-direction: column;
     text-align: center;
+    gap: 16px;
+  }
+  .developerCredit {
+    padding: 6px 14px;
+    font-size: 0.8rem;
   }
 }

@@ -7,6 +7,9 @@ import {
   Send,
   CheckCircle,
   Building,
+  Navigation,
+  ExternalLink,
+  Car,
 } from "lucide-react";
 import { m } from "framer-motion";
 import styles from "./contact.module.css";
@@ -264,6 +267,101 @@ export default function ContactPage() {
               </FadeUp>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Interactive Location & Google Map Section */}
+      <section className={styles.mapSection}>
+        <div className={styles.container}>
+          <FadeUp>
+            <div className={styles.mapHeader}>
+              <div>
+                <span className="section-subtitle">Campus Navigation</span>
+                <h2 className={styles.mapTitle}>Find Glorious Public School</h2>
+                <p className={styles.mapSubtitle}>
+                  Conveniently situated in Jhajha, Jamui (Bihar) near Koltex Petrol Pump. Easily accessible via road and rail networks with ample parking and bus drop-off points.
+                </p>
+              </div>
+              <div className={styles.mapActionBtns}>
+                <a
+                  href="https://www.google.com/maps/place/GLORIOUS+PUBLIC+SCHOOL/@24.7894414,86.3606226,924m/data=!3m2!1e3!4b1!4m6!3m5!1s0x39f1799161588b47:0x346c18dae33527a9!8m2!3d24.7894414!4d86.3631975!16s%2Fg%2F11qby1bx8v?entry=ttu&g_ep=EgoyMDI2MDkyMy4wIKXMDSoASAFQAw%3D%3D"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-gold"
+                >
+                  <MapPin size={16} />
+                  <span>Open in Google Maps</span>
+                  <ExternalLink size={14} />
+                </a>
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=24.7894414,86.3631975"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                >
+                  <Navigation size={16} />
+                  <span>Get Driving Directions</span>
+                </a>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* Travel / Landmark Highlights */}
+          <div className={styles.landmarkGrid}>
+            <FadeUp delay={0.08}>
+              <div className={styles.landmarkCard}>
+                <div className={styles.landmarkIconWrap}>
+                  <MapPin size={22} />
+                </div>
+                <div>
+                  <h4 className={styles.landmarkTitle}>Prime Landmark</h4>
+                  <p className={styles.landmarkDesc}>Adjacent to Koltex Petrol Pump, Main Road, Jhajha</p>
+                </div>
+              </div>
+            </FadeUp>
+
+            <FadeUp delay={0.16}>
+              <div className={styles.landmarkCard}>
+                <div className={styles.landmarkIconWrap}>
+                  <Car size={22} />
+                </div>
+                <div>
+                  <h4 className={styles.landmarkTitle}>Rail & Transit</h4>
+                  <p className={styles.landmarkDesc}>2.5 km (~7 mins) from Jhajha Railway Station (JAJ)</p>
+                </div>
+              </div>
+            </FadeUp>
+
+            <FadeUp delay={0.24}>
+              <div className={styles.landmarkCard}>
+                <div className={styles.landmarkIconWrap}>
+                  <Building size={22} />
+                </div>
+                <div>
+                  <h4 className={styles.landmarkTitle}>School Bus Coverage</h4>
+                  <p className={styles.landmarkDesc}>Dedicated daily bus routes connecting all major neighborhoods</p>
+                </div>
+              </div>
+            </FadeUp>
+          </div>
+
+          {/* Interactive Map Frame */}
+          <FadeUp delay={0.3}>
+            <div className={styles.mapContainer}>
+              <iframe
+                title="Glorious Public School Campus Google Map"
+                src="https://maps.google.com/maps?q=24.7894414,86.3631975+(GLORIOUS+PUBLIC+SCHOOL)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
+                className={styles.mapIframe}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <div className={styles.mapOverlayPill}>
+                <span className={styles.mapLiveDot} />
+                <span>Glorious Public School • Koltex, Jhajha</span>
+              </div>
+            </div>
+          </FadeUp>
         </div>
       </section>
     </div>

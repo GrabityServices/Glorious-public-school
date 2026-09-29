@@ -260,3 +260,187 @@
     padding: 24px 16px;
   }
 }
+
+/* ==========================================================================
+   Campus Map & Location Navigation Section
+   ========================================================================== */
+
+.mapSection {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: 80px 0;
+}
+
+.mapHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.mapTitle {
+  font-size: 2.2rem;
+  color: var(--primary-dark);
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.mapSubtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 620px;
+  line-height: 1.6;
+}
+
+.mapActionBtns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.landmarkGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.landmarkCard {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+}
+
+.landmarkCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.landmarkIconWrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.landmarkTitle {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 2px;
+}
+
+.landmarkDesc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 460px;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  background-color: #e2e8f0;
+}
+
+.mapIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.mapOverlayPill {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(18, 18, 20, 0.1);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.mapLiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+  }
+}
+
+@media (max-width: 992px) {
+  .landmarkGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .mapContainer {
+    height: 380px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mapSection {
+    padding: 60px 0;
+  }
+  .mapTitle {
+    font-size: 1.85rem;
+  }
+  .mapActionBtns {
+    width: 100%;
+  }
+  .mapActionBtns a {
+    width: 100%;
+    justify-content: center;
+  }
+  .mapContainer {
+    height: 320px;
+  }
+  .mapOverlayPill {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    top: 10px;
+    left: 10px;
+  }
+}

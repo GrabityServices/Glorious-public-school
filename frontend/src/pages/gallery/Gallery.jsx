@@ -8,6 +8,7 @@ import Image from "@/components/common/Image";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { useData } from "@/context/DataContext";
 import { GALLERY_CATEGORIES } from "@/data/galleryData";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function GalleryPage() {
   useDocumentTitle("Photo Gallery | Glorious Public School, Jhajha");
@@ -55,33 +56,49 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {/* Grid of Images */}
-          <div className={styles.galleryGrid}>
-            {filteredItems.map((item, idx) => (
-              <FadeUp key={item.id} delay={0.08 * (idx + 1)}>
-                <div
-                  className={styles.galleryCard}
-                  onClick={() => setActiveModalItem(item)}
-                >
-                  <div className={styles.imageWrap}>
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      className={styles.img}
-                    />
-                    <div className={styles.overlay}>
-                      <span className={styles.cardCat}>{item.category}</span>
-                      <h3 className={styles.cardTitle}>{item.title}</h3>
-                      <Maximize2 size={20} className={styles.expandIcon} />
+          {/* Grid of Images or Empty State */}
+          {filteredItems.length > 0 ? (
+            <div className={styles.galleryGrid}>
+              {filteredItems.map((item, idx) => (
+                <FadeUp key={item.id} delay={0.08 * (idx + 1)}>
+                  <div
+                    className={styles.galleryCard}
+                    onClick={() => setActiveModalItem(item)}
+                  >
+                    <div className={styles.imageWrap}>
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        className={styles.img}
+                      />
+                      <div className={styles.overlay}>
+                        <span className={styles.cardCat}>{item.category}</span>
+                        <h3 className={styles.cardTitle}>{item.title}</h3>
+                        <Maximize2 size={20} className={styles.expandIcon} />
+                      </div>
+                    </div>
+                    <div className={styles.captionArea}>
+                      <p>{item.caption}</p>
                     </div>
                   </div>
-                  <div className={styles.captionArea}>
-                    <p>{item.caption}</p>
-                  </div>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
+                </FadeUp>
+              ))}
+            </div>
+          ) : (
+            <FadeUp>
+              <EmptyState
+                icon={ImageIcon}
+                title="No Photos Found"
+                description={
+                  activeCategory === "All"
+                    ? "There are currently no photos uploaded to the gallery. Please check back later."
+                    : `No photos currently available in the "${activeCategory}" album. Try selecting another album.`
+                }
+                actionText={activeCategory !== "All" ? "View All Photos" : undefined}
+                onAction={activeCategory !== "All" ? () => setActiveCategory("All") : undefined}
+              />
+            </FadeUp>
+          )}
         </div>
       </section>
 

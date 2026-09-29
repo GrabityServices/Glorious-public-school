@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Plus, Search, Edit2, Trash2, CheckCircle, X, Award, Briefcase, GraduationCap } from "lucide-react";
 import styles from "./AdminStaff.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminStaff() {
   useDocumentTitle("Manage Faculty & Staff | Glorious Admin");
   const { staff, addStaff, updateStaff, deleteStaff } = useData();
+  const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWing, setSelectedWing] = useState("All");
@@ -70,8 +73,16 @@ export default function AdminStaff() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Are you sure you want to remove faculty member:\n"${name}"?`)) {
+  const handleDelete = async (id, name) => {
+    const confirmed = await confirm({
+      title: "Remove Faculty Profile",
+      message: "Are you sure you want to remove this faculty profile from the school teachers directory?",
+      itemName: name,
+      confirmText: "Remove Teacher",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       deleteStaff(id);
       showToast("Faculty profile removed.");
     }
@@ -188,8 +199,18 @@ export default function AdminStaff() {
             </div>
           ))
         ) : (
-          <div className={styles.emptyState}>
-            No faculty members found matching your search.
+          <div style={{ gridColumn: "1 / -1" }}>
+            <EmptyState
+              icon={GraduationCap}
+              title="No Faculty Members Found"
+              description={
+                searchQuery || selectedWing !== "All"
+                  ? "No faculty members match your current search or wing filter. Clear your filter or add a teacher."
+                  : "No teachers or staff currently added to the faculty database."
+              }
+              actionText="Add Teacher Profile"
+              onAction={handleOpenAdd}
+            />
           </div>
         )}
       </div>

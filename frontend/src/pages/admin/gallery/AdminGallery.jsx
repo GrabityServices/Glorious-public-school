@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 import styles from "./AdminGallery.module.css";
 import { useData } from "@/context/DataContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import EmptyState from "@/components/common/EmptyState";
 
 const PRESET_IMAGES = [
   { url: "/images/hero_meditation.png", label: "Assembly Courtyard" },
@@ -30,6 +32,7 @@ const CATEGORIES = ["All", "Campus", "Events", "Sports", "Academics"];
 export default function AdminGallery() {
   useDocumentTitle("Photo Gallery Manager | GPS Admin");
   const { gallery, addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
+  const confirm = useConfirm();
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,8 +86,16 @@ export default function AdminGallery() {
     setModalOpen(false);
   };
 
-  const handleDelete = (id, title) => {
-    if (window.confirm(`Are you sure you want to remove "${title}" from the school gallery?`)) {
+  const handleDelete = async (id, title) => {
+    const confirmed = await confirm({
+      title: "Remove Photo",
+      message: "Are you sure you want to remove this photograph from the school photo gallery?",
+      itemName: title,
+      confirmText: "Remove Photo",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
       deleteGalleryItem(id);
     }
   };
@@ -214,10 +225,17 @@ export default function AdminGallery() {
           ))}
         </div>
       ) : (
-        <div className={styles.emptyState}>
-          <ImageIcon size={48} style={{ opacity: 0.4 }} />
-          <p>No photos found matching your search or category filter.</p>
-        </div>
+        <EmptyState
+          icon={ImageIcon}
+          title="No Photos Found"
+          description={
+            searchTerm || selectedCategory !== "All"
+              ? "No photos match your current search or album category filter."
+              : "No photos currently uploaded to the gallery database."
+          }
+          actionText="Add New Photo"
+          onAction={handleOpenAdd}
+        />
       )}
 
       {/* Add / Edit Modal */}
