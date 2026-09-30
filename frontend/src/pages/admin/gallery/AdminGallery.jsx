@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Plus,
   Search,
   Trash2,
   Edit2,
   X,
+  Upload,
   Image as ImageIcon,
-  Check,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import styles from "./AdminGallery.module.css";
 import { useData } from "@/context/DataContext";
@@ -14,24 +16,11 @@ import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import EmptyState from "@/components/common/EmptyState";
 
-const PRESET_IMAGES = [
-  { url: "/images/hero_meditation.png", label: "Assembly Courtyard" },
-  { url: "/images/blog1.png", label: "Cultural Event" },
-  { url: "/images/blog2.png", label: "Painting Contest" },
-  { url: "/images/blog3.png", label: "Sports Ground" },
-  { url: "/images/how_we_work.png", label: "Science / Computer Lab" },
-  { url: "/images/expert_guidance.png", label: "Classroom" },
-  { url: "/images/guide1.png", label: "Faculty 1" },
-  { url: "/images/guide2.png", label: "Faculty 2" },
-  { url: "/images/guide3.png", label: "Faculty 3" },
-  { url: "/images/guide4.png", label: "Faculty 4" },
-];
-
 const CATEGORIES = ["All", "Campus", "Events", "Sports", "Academics"];
 
 export default function AdminGallery() {
   useDocumentTitle("Photo Gallery Manager | GPS Admin");
-  const { gallery, addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
+  const { gallery, addGalleryItem, updateGalleryItem, deleteGalleryItem, uploadGalleryImage } = useData();
   const confirm = useConfirm();
 
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -42,61 +31,95 @@ export default function AdminGallery() {
   // Form State
   const [formTitle, setFormTitle] = useState("");
   const [formCategory, setFormCategory] = useState("Campus");
-  const [formImage, setFormImage] = useState("/images/blog1.png");
+  const [formImage, setFormImage] = useState("");
   const [formCaption, setFormCaption] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef(null);
 
   const handleOpenAdd = () => {
     setEditingItem(null);
     setFormTitle("");
     setFormCategory("Campus");
-    setFormImage("/images/blog1.png");
+    setFormImage("");
     setFormCaption("");
+    setUploadError("");
     setModalOpen(true);
   };
 
   const handleOpenEdit = (item) => {
     setEditingItem(item);
-    setFormTitle(item.title);
+    setFormTitle(item.title || "");
     setFormCategory(item.category || "Campus");
-    setFormImage(item.image);
+    setFormImage(item.image || "");
     setFormCaption(item.caption || "");
+    setUploadError("");
     setModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  // Upload photograph directly from device / local storage
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setUploadError("Photo size must be under 15MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError("");
+    try {
+      const res = await uploadGalleryImage(file);
+      if (res && res.fileUrl) {
+        setFormImage(res.fileUrl);
+      }
+    } catch (err) {
+      setUploadError(err.message || "Failed to upload photo. Please try again.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formTitle.trim()) return;
+    if (!formImage) {
+      setUploadError("Please select and upload a photograph from your device.");
+      return;
+    }
+
+    const payload = {
+      title: formTitle.trim(),
+      category: formCategory,
+      image: formImage,
+      caption: formCaption.trim(),
+    };
 
     if (editingItem) {
-      updateGalleryItem(editingItem.id, {
-        title: formTitle.trim(),
-        category: formCategory,
-        image: formImage,
-        caption: formCaption.trim(),
-      });
+      const editId = editingItem.id || editingItem._id;
+      await updateGalleryItem(editId, payload);
     } else {
-      addGalleryItem({
-        title: formTitle.trim(),
-        category: formCategory,
-        image: formImage,
-        caption: formCaption.trim(),
-      });
+      await addGalleryItem(payload);
     }
 
     setModalOpen(false);
   };
 
-  const handleDelete = async (id, title) => {
+  const handleDelete = async (item) => {
+    const itemId = item.id || item._id;
     const confirmed = await confirm({
-      title: "Remove Photo",
-      message: "Are you sure you want to remove this photograph from the school photo gallery?",
-      itemName: title,
-      confirmText: "Remove Photo",
+      title: "Delete Photograph?",
+      message:
+        "Are you sure you want to permanently remove this photo from the school photo gallery? Any uploaded file will also be deleted from disk. This action cannot be undone.",
+      itemName: item.title,
+      confirmText: "Yes, Delete",
       cancelText: "Cancel",
       variant: "danger",
     });
     if (confirmed) {
-      deleteGalleryItem(id);
+      await deleteGalleryItem(itemId);
     }
   };
 
@@ -104,7 +127,7 @@ export default function AdminGallery() {
     const matchesCategory =
       selectedCategory === "All" || item.category === selectedCategory;
     const matchesSearch =
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (item.caption && item.caption.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
@@ -179,59 +202,62 @@ export default function AdminGallery() {
       {/* Photo Grid */}
       {filteredItems.length > 0 ? (
         <div className={styles.galleryGrid}>
-          {filteredItems.map((item) => (
-            <div key={item.id} className={styles.photoCard}>
-              <div className={styles.imageContainer}>
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className={styles.photoImg}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = "/images/blog1.png";
-                  }}
-                />
-                <span className={`${styles.badgeCategory} ${getCategoryClass(item.category)}`}>
-                  {item.category || "Campus"}
-                </span>
-              </div>
-              <div className={styles.cardBody}>
-                <h4 className={styles.photoTitle}>{item.title}</h4>
-                <p className={styles.photoCaption}>
-                  {item.caption || "No description provided."}
-                </p>
-                <div className={styles.cardActions}>
-                  <button
-                    type="button"
-                    className={styles.actionBtn}
-                    onClick={() => handleOpenEdit(item)}
-                    title="Edit details"
-                  >
-                    <Edit2 size={14} />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                    onClick={() => handleDelete(item.id, item.title)}
-                    title="Delete photo"
-                  >
-                    <Trash2 size={14} />
-                    <span>Delete</span>
-                  </button>
+          {filteredItems.map((item) => {
+            const itemId = item.id || item._id;
+            return (
+              <div key={itemId} className={styles.photoCard}>
+                <div className={styles.imageContainer}>
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className={styles.photoImg}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.src = "/images/dance-&-cultural-fest.webp";
+                    }}
+                  />
+                  <span className={`${styles.badgeCategory} ${getCategoryClass(item.category)}`}>
+                    {item.category || "Campus"}
+                  </span>
+                </div>
+                <div className={styles.cardBody}>
+                  <h4 className={styles.photoTitle}>{item.title}</h4>
+                  <p className={styles.photoCaption}>
+                    {item.caption || "No description provided."}
+                  </p>
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={styles.editBtn}
+                      onClick={() => handleOpenEdit(item)}
+                      title="Edit Photo Info"
+                    >
+                      <Edit2 size={14} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      onClick={() => handleDelete(item)}
+                      title="Delete Photo"
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <EmptyState
           icon={ImageIcon}
-          title="No Photos Found"
+          title="No Photographs Found"
           description={
             searchTerm || selectedCategory !== "All"
-              ? "No photos match your current search or album category filter."
-              : "No photos currently uploaded to the gallery database."
+              ? "No photos match your current filter. Clear search or pick another category."
+              : "No gallery photographs uploaded yet. Click above to add your first photo."
           }
           actionText="Add New Photo"
           onAction={handleOpenAdd}
@@ -240,32 +266,50 @@ export default function AdminGallery() {
 
       {/* Add / Edit Modal */}
       {modalOpen && (
-        <div className={styles.modalBackdrop} data-lenis-prevent="true">
+        <div
+          className={styles.modalOverlay}
+          data-lenis-prevent="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalOpen(false);
+          }}
+        >
           <div className={styles.modalContent} data-lenis-prevent="true">
             <div className={styles.modalHeader}>
-              <h3>{editingItem ? "Edit Photo Information" : "Add Photo to Gallery"}</h3>
+              <div>
+                <h3>{editingItem ? "Edit Photograph" : "Upload New Photograph"}</h3>
+                <p style={{ fontSize: "0.82rem", color: "#64748b", margin: 0 }}>
+                  Upload high-resolution event, campus, or laboratory pictures.
+                </p>
+              </div>
               <button
                 type="button"
                 className={styles.closeBtn}
                 onClick={() => setModalOpen(false)}
+                title="Close"
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Photo Title */}
               <div className={styles.formGroup}>
-                <label className={styles.label}>Photo Title</label>
+                <div className={styles.labelHeader}>
+                  <label className={styles.label}>Photo Title *</label>
+                  <span className={styles.charCount}>{formTitle.length}/90 chars</span>
+                </div>
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Annual Science Exhibition 2026"
+                  maxLength={90}
+                  placeholder="e.g., Annual Science Exhibition 2026 or Modern Computer Lab"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   className={styles.input}
                 />
               </div>
 
+              {/* Category */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>Category</label>
                 <select
@@ -280,41 +324,121 @@ export default function AdminGallery() {
                 </select>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Image Path / URL</label>
+              {/* Single Feature: Upload Photograph from Device */}
+              <div className={styles.photoUploadSection}>
+                <div className={styles.labelHeader}>
+                  <span className={styles.photoHeading}>
+                    <ImageIcon size={15} /> Photograph File *
+                  </span>
+                  {formImage && (
+                    <span className={styles.photoUploadedTag}>
+                      {formImage.startsWith("/uploads/") ? "Uploaded from Device" : "Selected Photo"}
+                    </span>
+                  )}
+                </div>
+
                 <input
-                  type="text"
-                  required
-                  placeholder="/images/blog1.png or external URL"
-                  value={formImage}
-                  onChange={(e) => setFormImage(e.target.value)}
-                  className={styles.input}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
+                  style={{ display: "none" }}
+                  onChange={handlePhotoUpload}
                 />
 
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
-                  Or pick from school asset library:
-                </span>
-                <div className={styles.presetGrid}>
-                  {PRESET_IMAGES.map((preset) => (
-                    <button
-                      key={preset.url}
-                      type="button"
-                      className={`${styles.presetThumb} ${
-                        formImage === preset.url ? styles.presetThumbSelected : ""
-                      }`}
-                      onClick={() => setFormImage(preset.url)}
-                      title={preset.label}
-                    >
-                      <img src={preset.url} alt={preset.label} />
-                    </button>
-                  ))}
-                </div>
+                {formImage ? (
+                  <div className={styles.selectedPhotoCard}>
+                    <div className={styles.photoPreviewWrap}>
+                      <img
+                        src={formImage}
+                        alt="Gallery preview"
+                        className={styles.photoPreviewImg}
+                        onError={(e) => {
+                          e.target.src = "/images/dance-&-cultural-fest.webp";
+                        }}
+                      />
+                    </div>
+
+                    <div className={styles.photoMeta}>
+                      <div className={styles.photoMetaTitle}>
+                        {formImage.split("/").pop()}
+                      </div>
+                      <p className={styles.photoMetaSub}>
+                        {formImage.startsWith("/uploads/")
+                          ? "Stored in dedicated gallery storage"
+                          : "School media asset"}
+                      </p>
+
+                      <div className={styles.photoBtnRow}>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className={styles.changePhotoBtn}
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader2 size={13} className={styles.spinIcon} />
+                              <span>Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={13} />
+                              <span>Change Photo from Device</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormImage("")}
+                          className={styles.removePhotoBtn}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={styles.uploadDropzone}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className={styles.dropzoneIconWrap}>
+                      {isUploading ? (
+                        <Loader2 size={24} className={styles.spinIcon} />
+                      ) : (
+                        <Upload size={24} />
+                      )}
+                    </div>
+                    <div className={styles.dropzoneText}>
+                      <span className={styles.dropzoneTitle}>
+                        {isUploading
+                          ? "Uploading photo from storage..."
+                          : "Click to Select Photograph from Device"}
+                      </span>
+                      <span className={styles.dropzoneSub}>
+                        Supports JPG, PNG, WEBP, or JFIF (Max 15MB)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {uploadError && (
+                  <div className={styles.errorAlert}>
+                    <AlertCircle size={15} />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
               </div>
 
+              {/* Caption / Description */}
               <div className={styles.formGroup}>
-                <label className={styles.label}>Caption / Description</label>
+                <div className={styles.labelHeader}>
+                  <label className={styles.label}>Caption / Description</label>
+                  <span className={styles.charCount}>{formCaption.length}/300 chars</span>
+                </div>
                 <textarea
-                  placeholder="Brief description of the activity, venue, or students involved..."
+                  maxLength={300}
+                  placeholder="Brief description of the activity, venue, students, or facilities involved..."
                   value={formCaption}
                   onChange={(e) => setFormCaption(e.target.value)}
                   className={styles.textarea}
@@ -322,6 +446,7 @@ export default function AdminGallery() {
                 />
               </div>
 
+              {/* Modal Footer */}
               <div className={styles.modalFooter}>
                 <button
                   type="button"

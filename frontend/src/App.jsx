@@ -8,11 +8,11 @@ export default function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <ConfirmProvider>
-          <MotionProvider>
+        <MotionProvider>
+          <ConfirmProvider>
             <AppRoutes />
-          </MotionProvider>
-        </ConfirmProvider>
+          </ConfirmProvider>
+        </MotionProvider>
       </DataProvider>
     </AuthProvider>
   );

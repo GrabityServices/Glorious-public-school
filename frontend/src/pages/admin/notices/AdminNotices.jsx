@@ -1,5 +1,19 @@
-import { useState } from "react";
-import { Plus, Search, Edit2, Trash2, CheckCircle, X, Bell } from "lucide-react";
+import { useState, useRef } from "react";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  CheckCircle,
+  X,
+  Bell,
+  Paperclip,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import styles from "./AdminNotices.module.css";
 import { useData } from "@/context/DataContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -8,7 +22,14 @@ import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminNotices() {
   useDocumentTitle("Manage Notices & News | Glorious Admin");
-  const { notices, addNotice, updateNotice, deleteNotice, toggleNoticeImportant } = useData();
+  const {
+    notices,
+    addNotice,
+    updateNotice,
+    deleteNotice,
+    toggleNoticeImportant,
+    uploadNoticeAttachment,
+  } = useData();
   const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,7 +46,15 @@ export default function AdminNotices() {
     isImportant: false,
     summary: "",
     fullContent: "",
+    attachmentUrl: "",
+    attachmentType: "",
+    attachmentName: "",
+    attachmentSize: 0,
   });
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef(null);
 
   const categories = ["All", "Admission", "Academic", "Notice", "Event"];
 
@@ -47,6 +76,7 @@ export default function AdminNotices() {
 
   const handleOpenAdd = () => {
     setEditingId(null);
+    setUploadError("");
     setFormData({
       title: "",
       category: "Notice",
@@ -54,35 +84,90 @@ export default function AdminNotices() {
       isImportant: false,
       summary: "",
       fullContent: "",
+      attachmentUrl: "",
+      attachmentType: "",
+      attachmentName: "",
+      attachmentSize: 0,
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (notice) => {
-    setEditingId(notice.id);
+    setEditingId(notice.id || notice._id);
+    setUploadError("");
+    const attachUrl = notice.attachmentUrl || notice.pdfUrl || "";
+    const isPdf =
+      notice.attachmentType === "pdf" ||
+      attachUrl.toLowerCase().endsWith(".pdf");
     setFormData({
-      title: notice.title,
-      category: notice.category,
+      title: notice.title || "",
+      category: notice.category || "Notice",
       author: notice.author || "Principal Desk",
       isImportant: !!notice.isImportant,
       summary: notice.summary || "",
       fullContent: notice.fullContent || "",
+      attachmentUrl: attachUrl,
+      attachmentType: isPdf ? "pdf" : attachUrl ? "image" : "",
+      attachmentName: notice.attachmentName || (attachUrl ? attachUrl.split("/").pop() : ""),
+      attachmentSize: notice.attachmentSize || 0,
     });
     setIsModalOpen(true);
   };
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setUploadError("File is too large. Maximum size is 15MB.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadError("");
+    try {
+      const res = await uploadNoticeAttachment(file);
+      if (res && res.fileUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          attachmentUrl: res.fileUrl,
+          attachmentType: res.attachmentType,
+          attachmentName: res.attachmentName,
+          attachmentSize: res.attachmentSize,
+        }));
+        showToast("File uploaded successfully.");
+      }
+    } catch (err) {
+      setUploadError(err.message || "Failed to upload file");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveAttachment = () => {
+    setFormData((prev) => ({
+      ...prev,
+      attachmentUrl: "",
+      attachmentType: "",
+      attachmentName: "",
+      attachmentSize: 0,
+    }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleDelete = async (id, title) => {
     const confirmed = await confirm({
-      title: "Delete Notice",
-      message: "Are you sure you want to delete this notice? It will be permanently removed from the website circulars board.",
+      title: "Delete Notice?",
+      message: "Are you sure you want to permanently delete this notice? This action cannot be undone.",
       itemName: title,
-      confirmText: "Delete Notice",
+      confirmText: "Yes, Delete",
       cancelText: "Cancel",
       variant: "danger",
     });
     if (confirmed) {
       deleteNotice(id);
-      showToast("Notice removed successfully.");
+      showToast("Notice permanently deleted.");
     }
   };
 
@@ -161,7 +246,31 @@ export default function AdminNotices() {
                 filteredNotices.map((notice) => (
                   <tr key={notice.id}>
                     <td className={styles.noticeTitleCol}>
-                      <h4>{notice.title}</h4>
+                      <h4>
+                        <span>{notice.title}</span>
+                        {(notice.attachmentUrl || notice.pdfUrl) && (
+                          <a
+                            href={notice.attachmentUrl || notice.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.attachmentPill}
+                            title="View / Download attached file"
+                          >
+                            {notice.attachmentType === "pdf" ||
+                            (notice.attachmentUrl || notice.pdfUrl).toLowerCase().endsWith(".pdf") ? (
+                              <>
+                                <FileText size={12} color="#dc2626" />
+                                <span>PDF</span>
+                              </>
+                            ) : (
+                              <>
+                                <ImageIcon size={12} color="#0284c7" />
+                                <span>Image</span>
+                              </>
+                            )}
+                          </a>
+                        )}
+                      </h4>
                       <p className={styles.noticeSummary}>{notice.summary}</p>
                     </td>
                     <td>
@@ -250,11 +359,22 @@ export default function AdminNotices() {
             </div>
 
             <form onSubmit={handleFormSubmit} className={styles.modalForm} data-lenis-prevent="true">
+              {/* Notice Title with Character Limit */}
               <label>
-                <span>Notice Title *</span>
+                <div className={styles.fieldHeader}>
+                  <span>Notice Title *</span>
+                  <span
+                    className={`${styles.charCounter} ${
+                      formData.title.length > 90 ? styles.charNearLimit : ""
+                    } ${formData.title.length >= 100 ? styles.charAtLimit : ""}`}
+                  >
+                    {formData.title.length} / 100 chars
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   placeholder="e.g. Admission Open for Session 2026-2027"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -276,9 +396,19 @@ export default function AdminNotices() {
                 </label>
 
                 <label>
-                  <span>Author / Desk</span>
+                  <div className={styles.fieldHeader}>
+                    <span>Author / Desk</span>
+                    <span
+                      className={`${styles.charCounter} ${
+                        formData.author.length > 35 ? styles.charNearLimit : ""
+                      }`}
+                    >
+                      {formData.author.length} / 40 chars
+                    </span>
+                  </div>
                   <input
                     type="text"
+                    maxLength={40}
                     placeholder="e.g. Principal Desk, Admission Cell"
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
@@ -286,28 +416,138 @@ export default function AdminNotices() {
                 </label>
               </div>
 
+              {/* Card Summary with Character Limit */}
               <label>
-                <span>Brief Summary (Shown on Cards) *</span>
+                <div className={styles.fieldHeader}>
+                  <span>Brief Summary (Shown on Cards) *</span>
+                  <span
+                    className={`${styles.charCounter} ${
+                      formData.summary.length > 160 ? styles.charNearLimit : ""
+                    } ${formData.summary.length >= 180 ? styles.charAtLimit : ""}`}
+                  >
+                    {formData.summary.length} / 180 chars
+                  </span>
+                </div>
                 <textarea
                   required
                   rows={2}
+                  maxLength={180}
                   data-lenis-prevent="true"
-                  placeholder="Short summary highlighting key dates or instructions..."
+                  placeholder="Short summary highlighting key dates or instructions (max 180 chars)..."
                   value={formData.summary}
                   onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                 />
               </label>
 
+              {/* Full Description with Character Limit */}
               <label>
-                <span>Full Circular Content (Shown in Detail View)</span>
+                <div className={styles.fieldHeader}>
+                  <span>Full Circular Content (Shown in Detail View)</span>
+                  <span
+                    className={`${styles.charCounter} ${
+                      formData.fullContent.length > 1100 ? styles.charNearLimit : ""
+                    } ${formData.fullContent.length >= 1200 ? styles.charAtLimit : ""}`}
+                  >
+                    {formData.fullContent.length} / 1200 chars
+                  </span>
+                </div>
                 <textarea
-                  rows={5}
+                  rows={4}
+                  maxLength={1200}
                   data-lenis-prevent="true"
-                  placeholder="Complete announcement, detailed rules, timings, or venue details..."
+                  placeholder="Complete announcement, detailed rules, timings, or venue details (max 1200 chars)..."
                   value={formData.fullContent}
                   onChange={(e) => setFormData({ ...formData, fullContent: e.target.value })}
                 />
               </label>
+
+              {/* Attachment Upload Section */}
+              <div className={styles.attachmentSection}>
+                <div className={styles.attachmentTitleRow}>
+                  <span className={styles.attachmentTitle}>
+                    <Paperclip size={15} color="#dc2626" />
+                    <span>Notice Photo or PDF Document</span>
+                  </span>
+                  <span className={styles.attachmentBadgeOptional}>Optional</span>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+                  style={{ display: "none" }}
+                />
+
+                {uploadError && <div className={styles.uploadError}>{uploadError}</div>}
+
+                {formData.attachmentUrl ? (
+                  <div className={styles.filePreviewCard}>
+                    <div className={styles.filePreviewLeft}>
+                      {formData.attachmentType === "image" ? (
+                        <img
+                          src={formData.attachmentUrl}
+                          alt="Notice Attachment Preview"
+                          className={styles.fileThumbImg}
+                        />
+                      ) : (
+                        <div className={styles.filePdfBadge}>
+                          <FileText size={18} />
+                          <span>PDF</span>
+                        </div>
+                      )}
+                      <div className={styles.fileInfo}>
+                        <span className={styles.fileName}>
+                          {formData.attachmentName || "Attached Notice File"}
+                        </span>
+                        <span className={styles.fileMeta}>
+                          {formData.attachmentType === "pdf" ? "PDF Document" : "Official Image"}
+                          {formData.attachmentSize > 0 &&
+                            ` • ${(formData.attachmentSize / 1024).toFixed(1)} KB`}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveAttachment}
+                      className={styles.removeFileBtn}
+                      title="Remove attachment"
+                    >
+                      <Trash2 size={13} />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className={styles.uploadDropzone}
+                    onClick={() => !uploading && fileInputRef.current?.click()}
+                  >
+                    <div className={styles.uploadIconWrap}>
+                      {uploading ? (
+                        <Loader2
+                          size={20}
+                          className="spin"
+                          style={{ animation: "spin 1s linear infinite" }}
+                        />
+                      ) : (
+                        <Upload size={20} />
+                      )}
+                    </div>
+                    <div className={styles.uploadPrompt}>
+                      {uploading ? (
+                        "Uploading file to server..."
+                      ) : (
+                        <>
+                          <span className={styles.uploadPromptHighlight}>Click to upload</span> photo or PDF circular
+                        </>
+                      )}
+                    </div>
+                    <div className={styles.uploadSubtext}>
+                      Supports PNG, JPG, JPEG, WEBP, GIF, or PDF (Max 15MB)
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <label style={{ flexDirection: "row", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <input

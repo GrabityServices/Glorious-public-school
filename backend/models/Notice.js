@@ -16,9 +16,12 @@ const NoticeSchema = new mongoose.Schema(
     author: { type: String, default: "Admin Desk" },
     isImportant: { type: Boolean, default: false },
     summary: { type: String, default: "" },
-    description: { type: String, default: "" },
     fullContent: { type: String, default: "" },
     pdfUrl: { type: String, default: "" },
+    attachmentUrl: { type: String, default: "" },
+    attachmentType: { type: String, default: "" }, // "image" | "pdf"
+    attachmentName: { type: String, default: "" },
+    attachmentSize: { type: Number, default: 0 },
   },
   {
     timestamps: true,

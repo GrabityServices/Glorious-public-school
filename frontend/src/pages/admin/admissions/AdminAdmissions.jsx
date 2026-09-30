@@ -39,16 +39,16 @@ export default function AdminAdmissions() {
 
   const handleDelete = async (id, name) => {
     const confirmed = await confirm({
-      title: "Delete Admission Inquiry",
-      message: "Are you sure you want to delete this admission application inquiry? This record will be permanently removed.",
+      title: "Delete Inquiry?",
+      message: "Are you sure you want to permanently delete this admission application inquiry? This action cannot be undone.",
       itemName: name,
-      confirmText: "Delete Inquiry",
+      confirmText: "Yes, Delete",
       cancelText: "Cancel",
       variant: "danger",
     });
     if (confirmed) {
       deleteInquiry(id);
-      showToast("Inquiry deleted.");
+      showToast("Admission inquiry permanently deleted.");
     }
   };
 

@@ -105,491 +105,70 @@ export default function CalendarPage() {
   };
 
   const handlePrint = () => {
-    try {
-      // Remove any existing print frame
-      const oldFrame = document.getElementById("gps-calendar-print-frame");
-      if (oldFrame && oldFrame.parentNode) {
-        oldFrame.parentNode.removeChild(oldFrame);
-      }
+    window.print();
+  };
 
-      // Create an isolated hidden iframe for fast, conflict-free printing
-      const printFrame = document.createElement("iframe");
-      printFrame.id = "gps-calendar-print-frame";
-      printFrame.style.position = "fixed";
-      printFrame.style.right = "0";
-      printFrame.style.bottom = "0";
-      printFrame.style.width = "0";
-      printFrame.style.height = "0";
-      printFrame.style.border = "0";
-      printFrame.style.visibility = "hidden";
-      document.body.appendChild(printFrame);
-
-      // Build grid cells HTML
-      let cellsHtml = "";
-      calendarCells.forEach((cell) => {
-        if (cell.isBlank) {
-          cellsHtml += `<div class="blank-cell"></div>`;
-        } else {
-          const eventsList = (cell.events || [])
-            .map((ev) => {
-              const catClass = `cat-${ev.category || "celebration"}`;
-              return `<div class="event-pill ${catClass}"><strong>${ev.title}</strong></div>`;
-            })
-            .join("");
-
-          const sundayClass = cell.isSunday ? "is-sunday" : "";
-          const sundayTag = cell.isSunday ? `<span class="sunday-tag">Holiday</span>` : "";
-
-          cellsHtml += `
-            <div class="day-cell ${sundayClass}">
-              <div class="day-header">
-                <span class="day-num">${cell.day}</span>
-                ${sundayTag}
-              </div>
-              <div class="events-list">
-                ${eventsList}
-              </div>
-            </div>
-          `;
-        }
-      });
-
-      // Build Agenda table rows HTML
-      let agendaRowsHtml = "";
-      if (monthEvents.length === 0) {
-        agendaRowsHtml = `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 12px; color: #64748b;">
-              No special holidays or scheduled events in this category. Regular classes continue as per standard school routine.
-            </td>
-          </tr>
-        `;
-      } else {
-        monthEvents.forEach((ev) => {
-          const catClass = `cat-${ev.category || "celebration"}`;
-          agendaRowsHtml += `
-            <tr>
-              <td class="agenda-date"><strong>${ev.date}</strong></td>
-              <td class="agenda-title">
-                <span class="pill-badge ${catClass}">${ev.categoryLabel}</span>
-                <strong>${ev.title}</strong>
-              </td>
-              <td class="agenda-grades">${ev.grades || "All Classes"}</td>
-              <td class="agenda-meta">${ev.time || "School Hours"}<br/><small style="color: #64748b;">${ev.venue || "Campus"}</small></td>
-              <td class="agenda-desc">${ev.description || "—"}</td>
-            </tr>
-          `;
-        });
-      }
-
-      const printableHtml = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Glorious Public School - Academic Calendar - ${activeMonthObj.fullName}</title>
-  <style>
-    @page {
-      size: portrait;
-      margin: 8mm 10mm 10mm 10mm;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #0f172a;
-      background: #ffffff;
-      padding: 4px;
-      font-size: 11px;
-      line-height: 1.3;
-    }
-    .print-header {
-      text-align: center;
-      padding-bottom: 8px;
-      margin-bottom: 8px;
-      border-bottom: 2px solid #0f172a;
-    }
-    .school-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.01em;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-    .school-subtitle {
-      font-size: 10px;
-      color: #475569;
-      margin-bottom: 6px;
-    }
-    .meta-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f1f5f9;
-      padding: 6px 10px;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-      font-size: 11px;
-    }
-    .meta-month {
-      font-size: 13px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .meta-info {
-      color: #334155;
-      font-size: 10.5px;
-    }
-
-    /* Weekdays header */
-    .weekdays-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      background: #0f172a;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 10px;
-      text-align: center;
-      margin-top: 8px;
-      border-radius: 4px 4px 0 0;
-      overflow: hidden;
-    }
-    .weekday-col {
-      padding: 5px 2px;
-      border-right: 1px solid #334155;
-    }
-    .weekday-col:last-child {
-      border-right: none;
-      background: #dc2626;
-    }
-
-    /* Days Matrix */
-    .matrix-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      border: 1px solid #cbd5e1;
-      border-top: none;
-      background: #e2e8f0;
-      gap: 1px;
-      margin-bottom: 12px;
-    }
-    .blank-cell {
-      background: #f8fafc;
-      min-height: 52px;
-    }
-    .day-cell {
-      background: #ffffff;
-      min-height: 52px;
-      padding: 3px 4px;
-      display: flex;
-      flex-direction: column;
-    }
-    .day-cell.is-sunday {
-      background: #fff5f5;
-    }
-    .day-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2px;
-    }
-    .day-num {
-      font-weight: 700;
-      font-size: 10px;
-      color: #0f172a;
-    }
-    .day-cell.is-sunday .day-num {
-      color: #dc2626;
-    }
-    .sunday-tag {
-      font-size: 8px;
-      font-weight: 700;
-      color: #dc2626;
-      background: #fee2e2;
-      padding: 1px 3px;
-      border-radius: 2px;
-      line-height: 1;
-    }
-    .events-list {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .event-pill {
-      font-size: 8.5px;
-      padding: 1.5px 3px;
-      border-radius: 2px;
-      line-height: 1.15;
-      border: 1px solid transparent;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    /* Category colors matching school theme */
-    .cat-holiday {
-      background: #fee2e2 !important;
-      color: #991b1b !important;
-      border-color: #fca5a5 !important;
-    }
-    .cat-exam {
-      background: #dbeafe !important;
-      color: #1e40af !important;
-      border-color: #93c5fd !important;
-    }
-    .cat-celebration {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
-      border-color: #6ee7b7 !important;
-    }
-    .cat-ptm {
-      background: #fef3c7 !important;
-      color: #92400e !important;
-      border-color: #fcd34d !important;
-    }
-
-    /* Agenda Table */
-    .agenda-title-bar {
-      font-size: 12px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #cbd5e1;
-      padding-bottom: 4px;
-    }
-    table.agenda-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 12px;
-      font-size: 10px;
-    }
-    table.agenda-table th {
-      background: #f1f5f9;
-      color: #0f172a;
-      font-weight: 700;
-      padding: 5px 6px;
-      border: 1px solid #cbd5e1;
-      text-align: left;
-    }
-    table.agenda-table td {
-      padding: 4px 6px;
-      border: 1px solid #cbd5e1;
-      vertical-align: top;
-    }
-    .agenda-date {
-      white-space: nowrap;
-      width: 85px;
-    }
-    .agenda-title {
-      width: 170px;
-    }
-    .agenda-grades {
-      width: 90px;
-      color: #334155;
-    }
-    .agenda-meta {
-      width: 130px;
-      color: #334155;
-    }
-    .pill-badge {
-      display: inline-block;
-      font-size: 8px;
-      font-weight: 700;
-      padding: 1px 4px;
-      border-radius: 3px;
-      margin-right: 4px;
-    }
-    .agenda-desc {
-      color: #475569;
-      font-size: 9.5px;
-    }
-
-    /* Print Footer */
-    .print-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      border-top: 1px solid #cbd5e1;
-      padding-top: 6px;
-      font-size: 9px;
-      color: #64748b;
-      margin-top: 10px;
-      page-break-inside: avoid;
-    }
-    .signature-area {
-      text-align: right;
-    }
-    .sig-line {
-      width: 140px;
-      border-top: 1px solid #0f172a;
-      margin-top: 22px;
-      margin-bottom: 3px;
-      display: inline-block;
-    }
-  </style>
-</head>
-<body>
-  <div class="print-header">
-    <div class="school-title">Glorious Public School</div>
-    <div class="school-subtitle">
-      Recognized English Medium Co-Educational Institution (Nursery to Class 10th) • Koltex, Petrol Pump, Jhajha, Jamui, Bihar
-    </div>
-    <div class="meta-bar">
-      <div class="meta-month">Official Academic Calendar: ${activeMonthObj.fullName}</div>
-      <div class="meta-info">Academic Session 2026 - 2027 • Printed: ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
-    </div>
-  </div>
-
-  <div class="weekdays-grid">
-    <div class="weekday-col">Monday</div>
-    <div class="weekday-col">Tuesday</div>
-    <div class="weekday-col">Wednesday</div>
-    <div class="weekday-col">Thursday</div>
-    <div class="weekday-col">Friday</div>
-    <div class="weekday-col">Saturday</div>
-    <div class="weekday-col">Sunday</div>
-  </div>
-
-  <div class="matrix-grid">
-    ${cellsHtml}
-  </div>
-
-  <div class="agenda-title-bar">
-    <span>Events, Examinations & Holidays Schedule (${activeMonthObj.fullName})</span>
-    <span style="font-size: 10px; font-weight: normal; color: #64748b;">${monthEvents.length} Event(s) Registered</span>
-  </div>
-
-  <table class="agenda-table">
-    <thead>
-      <tr>
-        <th style="width: 85px;">Date</th>
-        <th style="width: 170px;">Event Title & Category</th>
-        <th style="width: 90px;">Classes</th>
-        <th style="width: 130px;">Timing & Venue</th>
-        <th>Event Guidance & Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${agendaRowsHtml}
-    </tbody>
-  </table>
-
-  <div class="print-footer">
-    <div>
-      <strong>Glorious Public School Administrative Desk</strong><br />
-      Address: Koltex, Petrol Pump, Jhajha • Helpline: 9534105012 • Email: gpsjhajha@gmail.com
-    </div>
-    <div class="signature-area">
-      <div class="sig-line"></div><br />
-      <strong>Principal / Examination In-Charge</strong>
-    </div>
-  </div>
-</body>
-</html>
-      `;
-
-      const frameDoc = printFrame.contentWindow.document;
-      frameDoc.open();
-      frameDoc.write(printableHtml);
-      frameDoc.close();
-
-      // Trigger print after iframe renders
-      setTimeout(() => {
-        try {
-          printFrame.contentWindow.focus();
-          printFrame.contentWindow.print();
-        } catch (err) {
-          console.error("Iframe print error, falling back to window.print():", err);
-          window.print();
-        } finally {
-          // Cleanup iframe after print dialog completes
-          setTimeout(() => {
-            const el = document.getElementById("gps-calendar-print-frame");
-            if (el && el.parentNode) {
-              el.parentNode.removeChild(el);
-            }
-          }, 30000);
-        }
-      }, 150);
-    } catch (e) {
-      console.error("Print generation error, fallback to window.print():", e);
-      window.print();
+  const getCategoryPrintClass = (cat) => {
+    switch (cat) {
+      case "holiday":
+        return styles.printCatHoliday;
+      case "exam":
+        return styles.printCatExam;
+      case "celebration":
+        return styles.printCatCelebration;
+      case "ptm":
+        return styles.printCatPtm;
+      default:
+        return styles.printCatCelebration;
     }
   };
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Hero Header */}
-      <section className={styles.heroHeader}>
-        <div className={styles.container}>
-          <FadeUp>
-            <div className={styles.sessionBadge}>
-              <CalendarCheck2 size={16} />
-              <span>Academic Session 2026 - 2027</span>
-            </div>
-            <h1 className={styles.title}>School Academic Calendar</h1>
-            <p className={styles.subtitle}>
-              Keep track of key academic milestones, examination schedules, festival holidays, sports meets, and parent-teacher meetings for Glorious Public School, Jhajha.
-            </p>
-          </FadeUp>
-
-          <FadeUp delay={0.15}>
-            <div className={styles.heroActions}>
-              <button
-                type="button"
-                onClick={() => setCurrentMonthIndex(0)}
-                className="btn btn-gold btn-sm"
-              >
-                <CalendarIcon size={15} />
-                <span>Session Opening (April 2026)</span>
-              </button>
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="btn btn-secondary btn-sm"
-              >
-                <Printer size={15} />
-                <span>Print Monthly Calendar</span>
-              </button>
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* Main Calendar Workspace */}
-      <section className={styles.calendarSection}>
-        <div className={styles.container}>
-          {/* Print-Only School & Calendar Header */}
-          <div className={styles.printHeader}>
-            <div className={styles.printHeaderTop}>
-              <h1 className={styles.printSchoolTitle}>Glorious Public School</h1>
-              <p className={styles.printSchoolSubtitle}>
-                Recognized Co-Educational English Medium School (Nursery to Class 10th) • Jhajha, Jamui, Bihar
-              </p>
-            </div>
-            <div className={styles.printHeaderMeta}>
-              <div className={styles.printMetaLeft}>
-                <strong>School Academic Calendar:</strong> {activeMonthObj.fullName}
-              </div>
-              <div className={styles.printMetaRight}>
+      {/* Screen Interactive View */}
+      <div className={styles.screenView}>
+        {/* Hero Header */}
+        <section className={styles.heroHeader}>
+          <div className={styles.container}>
+            <FadeUp>
+              <div className={styles.sessionBadge}>
+                <CalendarCheck2 size={16} />
                 <span>Academic Session 2026 - 2027</span>
-                <span className={styles.printDateText}>
-                  Printed: {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                </span>
               </div>
-            </div>
-          </div>
+              <h1 className={styles.title}>School Academic Calendar</h1>
+              <p className={styles.subtitle}>
+                Keep track of key academic milestones, examination schedules, festival holidays, sports meets, and parent-teacher meetings for Glorious Public School, Jhajha.
+              </p>
+            </FadeUp>
 
-          {/* Category Filter Tabs */}
-          <div className={styles.filterBar}>
+            <FadeUp delay={0.15}>
+              <div className={styles.heroActions}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex(0)}
+                  className="btn btn-gold btn-sm"
+                >
+                  <CalendarIcon size={15} />
+                  <span>Session Opening (April 2026)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="btn btn-secondary btn-sm"
+                >
+                  <Printer size={15} />
+                  <span>Print Monthly Calendar</span>
+                </button>
+              </div>
+            </FadeUp>
+          </div>
+        </section>
+
+        {/* Main Calendar Workspace */}
+        <section className={styles.calendarSection}>
+          <div className={styles.container}>
+            {/* Category Filter Tabs */}
+            <div className={styles.filterBar}>
             <span className={styles.filterLabel}>Filter by Category:</span>
             <div className={styles.categoryPills}>
               {CALENDAR_CATEGORIES.map((cat) => {
@@ -880,6 +459,83 @@ export default function CalendarPage() {
           </div>
         )}
       </AnimatePresence>
+      </div>
+
+      {/* Official Print-Only Academic Document (Lightweight Test Version) */}
+      <div className={styles.printDocument}>
+        <div className={styles.printHeader}>
+          <div className={styles.printSchoolTitle}>Glorious Public School</div>
+          <div className={styles.printSchoolSubtitle}>
+            Recognized English Medium Co-Educational Institution (Nursery to Class 10th) • Koltex, Petrol Pump, Jhajha, Jamui, Bihar
+          </div>
+          <div className={styles.printPillBadge}>
+            Official Academic Calendar • Session 2026 - 2027
+          </div>
+        </div>
+
+        <div className={styles.printSummaryCard}>
+          <div className={styles.printSummaryTitle}>Academic Month Overview</div>
+          <div className={styles.printMetaRow}>
+            <span><strong>Month:</strong> {activeMonthObj.fullName}</span>
+            <span><strong>Academic Session:</strong> 2026 - 2027</span>
+          </div>
+          <div className={styles.printMetaRow}>
+            <span><strong>Total Scheduled Events:</strong> {monthEvents.length} Events</span>
+            <span><strong>Printed At:</strong> {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
+        </div>
+
+        <div className={styles.printTableHeading}>
+          Scheduled Events & Milestones ({activeMonthObj.fullName})
+        </div>
+
+        <table className={styles.printAgendaTable}>
+          <thead>
+            <tr>
+              <th style={{ width: "100px" }}>Date</th>
+              <th>Event Title & Category</th>
+              <th style={{ width: "110px" }}>Classes</th>
+              <th style={{ width: "160px" }}>Timing & Venue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {monthEvents.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ textAlign: "center", padding: "12px", color: "#64748b" }}>
+                  No scheduled events or holidays in this category. Regular school routine continues.
+                </td>
+              </tr>
+            ) : (
+              monthEvents.map((ev) => (
+                <tr key={ev.id}>
+                  <td className={styles.printAgendaDate}>{ev.date}</td>
+                  <td className={styles.printAgendaTitle}>
+                    <strong>{ev.title}</strong>
+                    <span className={`${styles.printCatBadge} ${getCategoryPrintClass(ev.category)}`}>
+                      {ev.categoryLabel}
+                    </span>
+                  </td>
+                  <td className={styles.printAgendaGrades}>{ev.grades || "All Classes"}</td>
+                  <td className={styles.printAgendaMeta}>
+                    {ev.time || "School Hours"} • {ev.venue || "Campus"}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+
+        <div className={styles.printFooter}>
+          <div>
+            <strong>Glorious Public School Administrative Desk</strong><br />
+            Address: Koltex, Petrol Pump, Jhajha • Helpline: 9534105012 • Email: gpsjhajha@gmail.com
+          </div>
+          <div className={styles.printSignatureArea}>
+            <div className={styles.printSigLine} /><br />
+            <strong>Principal / Examination In-Charge</strong>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

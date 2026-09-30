@@ -98,6 +98,11 @@ textarea,
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Enforce non-resizable textarea across the entire website */
+textarea {
+  resize: none !important;
+}
+
 /* Prevent accidental text selection and mobile callouts on interactive elements */
 button,
 .btn,
@@ -415,6 +420,81 @@ img {
   margin-top: 16px;
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-sm);
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.tableScroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tableScroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 14px;
+}
+
+.tableScroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.tableScroll::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* =========================================================
+   GLOBAL LUXURY INSET SCROLLBAR SYSTEM
+   Prevents scrollbars from bleeding outside containers with border-radius
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Universal protection for all modal dialog content across the entire application */
+[class*="modalContent"],
+[class*="ModalContent"] {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+[class*="modalContent"]::-webkit-scrollbar,
+[class*="ModalContent"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[class*="modalContent"]::-webkit-scrollbar-track,
+[class*="ModalContent"]::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 18px 0;
+}
+
+[class*="modalContent"]::-webkit-scrollbar-thumb,
+[class*="ModalContent"]::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[class*="modalContent"]::-webkit-scrollbar-thumb:hover,
+[class*="ModalContent"]::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
 /* Common Layout Elements */

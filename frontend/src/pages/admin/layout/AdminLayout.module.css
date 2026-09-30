@@ -76,9 +76,30 @@
   flex: 1;
   padding: 18px 14px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.navSection::-webkit-scrollbar {
+  width: 5px;
+}
+
+.navSection::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+
+.navSection::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+}
+
+.navSection::-webkit-scrollbar-thumb:hover {
+  background-color: #cbd5e1;
 }
 
 .navLabel {

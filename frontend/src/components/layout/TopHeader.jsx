@@ -24,15 +24,21 @@ export default function TopHeader() {
           </a>
         </div>
 
-        {/* Marquee Ticker
-        <div className={styles.tickerWrapper}>
-          <div className={styles.tickerContent}>
-            <span className={styles.tickerBadge}>ADMISSION OPEN</span>
-            <span className={styles.tickerText}>
-               Admissions are going on for Nursery to Class 10th (Session 2026-2027). Enroll your child today!
-            </span>
-          </div>
-        </div> */}
+        {/* Marquee Ticker */}
+        {schoolInfo?.showAdmissionNotice !== false && schoolInfo?.admissionNotice && (
+          <Link
+            to="/admissions"
+            className={styles.tickerWrapper}
+            title="Click to view admissions details"
+          >
+            <div className={styles.tickerContent}>
+              <span className={styles.tickerBadge}>ADMISSION OPEN</span>
+              <span className={styles.tickerText}>
+                {schoolInfo.admissionNotice}
+              </span>
+            </div>
+          </Link>
+        )}
 
         {/* Quick Action Links */}
         <div className={styles.actionGroup}>

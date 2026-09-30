@@ -35,7 +35,8 @@
   }
 
   .layoutWrapper,
-  .mainContent {
+  .mainContent,
+  .mainContent > * {
     min-height: 0 !important;
     height: auto !important;
     max-height: none !important;

@@ -1,11 +1,11 @@
 export const STAFF_MEMBERS = [
   {
     id: 1,
-    name: "Dr. R. K. Sharma",
+    name: "Mrs. Binod Kumar",
     role: "Principal & Academic Director",
     qualification: "M.Sc., M.Ed., Ph.D. in Educational Leadership",
     experience: "18+ Years Experience",
-    image: "/images/guide1.png",
+    image: "/images/binod-kumar.jpg",
     bio: "Passionate educationist dedicated to instilling character, integrity, and scientific temperament in young minds from Nursery through Class 10th.",
     wing: "Administration",
   },

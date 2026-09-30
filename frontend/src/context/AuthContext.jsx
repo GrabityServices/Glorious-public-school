@@ -9,9 +9,9 @@ export const DEFAULT_ADMIN = {
   email: "admin@glorious.edu",
   username: "admin",
   password: "admin123",
-  name: "Dr. R. K. Sharma",
+  name: "Mrs. Binod Kumar",
   role: "Super Administrator",
-  avatar: "/images/guide1.png",
+  avatar: "/images/binod-kumar.jpg",
 };
 
 export function AuthProvider({ children }) {

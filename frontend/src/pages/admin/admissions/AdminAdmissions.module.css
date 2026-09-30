@@ -177,6 +177,26 @@
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 14px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
 .table {
@@ -330,6 +350,43 @@
   padding: 48px 24px;
   text-align: center;
   color: #64748b;
+}
+
+.toastAlert {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 99999;
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #334155;
+  border-left: 4px solid #10b981;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideToastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+.toastAlert svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+@keyframes slideToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 900px) {

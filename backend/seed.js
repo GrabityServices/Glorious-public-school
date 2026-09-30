@@ -71,7 +71,7 @@ const INITIAL_EVENTS = [
     year: "Annual Event",
     time: "10:00 AM - 04:30 PM",
     venue: "Jhajha Town Hall, Main Market, Jhajha",
-    image: "/images/blog1.png",
+    image: "/images/dance-&-cultural-fest.webp",
     shortDesc: "Our talented students showcase classical and folk dance performances at Jhajha Town Hall.",
     fullDesc:
       "Glorious Public School students proudly perform in the grand Inter-School Dance & Cultural Celebration held at Jhajha Town Hall. Students from Nursery to Class 10th compete across folk, classical, semi-classical, and patriotic themes, winning accolades for their graceful coordination, vibrant costumes, and expressive choreography.",
@@ -89,7 +89,7 @@ const INITIAL_EVENTS = [
     year: "National Festival",
     time: "08:30 AM - 12:30 PM",
     venue: "School Main Courtyard & Assembly Ground",
-    image: "/images/blog2.png",
+    image: "/images/art-competition.jpg",
     shortDesc: "Students participate in patriotic painting and drawing competitions celebrating national pride.",
     fullDesc:
       "Students celebrate Independence Day on 15th August with flag hoisting, patriotic songs, and a spirited painting competition. The art event provides a creative platform for young minds to express their love for the country through tricolor motifs, freedom fighter portraits, and environmental sustainability themes.",
@@ -107,7 +107,7 @@ const INITIAL_EVENTS = [
     year: "Annual Meet",
     time: "08:00 AM - 02:00 PM",
     venue: "Glorious Public School Athletic Grounds",
-    image: "/images/blog3.png",
+    image: "/images/annual-sports-meet.jpg",
     shortDesc: "Sprint races, relay challenges, shotput, and exciting obstacle courses for all wings.",
     fullDesc:
       "A high-energy day of sportsmanship and athletic fervor. House teams compete fiercely in track events, 100m/200m sprints, 4x100m relays, long jump, tug of war, and gymnastics drills. Pre-primary toddlers participate in lemon-and-spoon races and sack races.",
@@ -125,7 +125,7 @@ const INITIAL_EVENTS = [
     year: "Academic Showcase",
     time: "09:30 AM - 03:00 PM",
     venue: "Junior & Senior Science Labs, Main Hall",
-    image: "/images/blog1.png",
+    image: "/images/science-exhibition.jpg",
     shortDesc: "Working models of solar energy, robotics, water conservation, and interactive math puzzles.",
     fullDesc:
       "Young scientists present innovative working prototypes addressing real-world environmental and technological challenges. Parents and visitors interact with students explaining hydraulic cranes, automatic street lighting, organic farming models, and Vedic mathematics shortcuts.",
@@ -140,110 +140,25 @@ const INITIAL_EVENTS = [
 
 const INITIAL_STAFF = [
   {
-    name: "Dr. R. K. Sharma",
+    name: "Mrs. Binod Kumar",
     role: "Principal & Academic Director",
     qualification: "M.Sc., M.Ed., Ph.D. in Educational Leadership",
     experience: "18+ Years Experience",
-    image: "/images/guide1.png",
+    image: "/images/binod-kumar.jpg",
     bio: "Passionate educationist dedicated to instilling character, integrity, and scientific temperament in young minds from Nursery through Class 10th.",
     wing: "Administration",
     category: "Administration",
-  },
-  {
-    name: "Mrs. Ananya Verma",
-    role: "Headmistress - Pre-Primary Wing",
-    qualification: "M.A. (English), B.Ed., ECCEd (Early Childhood)",
-    experience: "12+ Years Experience",
-    image: "/images/guide2.png",
-    bio: "Specialist in phonics-based language acquisition, sensory development, and joyful play-way methodology for Nursery, LKG, and UKG.",
-    wing: "Pre-Primary",
-    category: "Teaching",
-  },
-  {
-    name: "Mr. Manoj Kumar Singh",
-    role: "Senior Secondary Mathematics Lead",
-    qualification: "M.Sc. (Mathematics), B.Ed.",
-    experience: "14+ Years Experience",
-    image: "/images/guide3.png",
-    bio: "Renowned for simplifying complex algebraic theorems, geometry problems, and preparing Class 9th and 10th students for board distinctions.",
-    wing: "Secondary",
-    category: "Teaching",
-  },
-  {
-    name: "Pooja Kumari",
-    role: "Senior Science & Lab Instructor",
-    qualification: "M.Sc. (Physics), B.Ed.",
-    experience: "9+ Years Experience",
-    image: "/images/user1.png",
-    bio: "Guides hands-on laboratory experimentation, science exhibition projects, and environmental awareness initiatives.",
-    wing: "Secondary",
-    category: "Teaching",
-  },
-  {
-    name: "Rajesh Paswan",
-    role: "Physical Education & Sports Coach",
-    qualification: "B.P.Ed., Certified Athletics Coach",
-    experience: "10+ Years Experience",
-    image: "/images/user2.png",
-    bio: "Directs inter-school tournaments, morning yoga drills, track events, and self-discipline across all grades.",
-    wing: "Sports",
-    category: "Sports",
-  },
-  {
-    name: "Sunita Mishra",
-    role: "Primary Languages & Cultural Coordinator",
-    qualification: "M.A. (Hindi & Sanskrit), B.Ed.",
-    experience: "11+ Years Experience",
-    image: "/images/user3.png",
-    bio: "Mentors elocution, theater, painting contests, and coordinates annual cultural events including the Jhajha Town Hall showcase.",
-    wing: "Primary",
-    category: "Teaching",
-  },
+  }
 ];
 
 const INITIAL_GALLERY = [
   {
     title: "School Campus & Morning Assembly",
     category: "Campus",
-    image: "/images/hero_meditation.png",
+    image: "/images/glorious-public-school-logo.png",
     caption: "Students gathering in the central courtyard for morning prayer, pledge, and daily news broadcast.",
     date: "10 Oct, 2025",
-  },
-  {
-    title: "Jhajha Town Hall Cultural Performances",
-    category: "Events",
-    image: "/images/blog1.png",
-    caption: "Spectacular dance and traditional folk performances by students at Jhajha Town Hall.",
-    date: "02 Oct, 2025",
-  },
-  {
-    title: "Independence Day Painting & Art Contest",
-    category: "Events",
-    image: "/images/blog2.png",
-    caption: "Young artists expressing patriotic colors and themes during the Independence Day exhibition.",
-    date: "15 Aug, 2025",
-  },
-  {
-    title: "Annual Sports Day Sprint Championship",
-    category: "Sports",
-    image: "/images/blog3.png",
-    caption: "Exciting track and field competitions with house flags flying high on the athletic ground.",
-    date: "20 Dec, 2025",
-  },
-  {
-    title: "Modern Science & Computer Lab Sessions",
-    category: "Academics",
-    image: "/images/how_we_work.png",
-    caption: "Students actively exploring practical experiments and computational skills.",
-    date: "12 Sep, 2025",
-  },
-  {
-    title: "Interactive Pre-Primary Classrooms",
-    category: "Campus",
-    image: "/images/expert_guidance.png",
-    caption: "Vibrant, cheerful classrooms stimulating creative play and early childhood phonics.",
-    date: "05 Jul, 2025",
-  },
+  }
 ];
 
 const INITIAL_INQUIRIES = [
@@ -256,27 +171,7 @@ const INITIAL_INQUIRIES = [
     date: "19 Sep, 2026",
     status: "Pending",
     message: "Inquiring about hostel accommodation and evening faculty tuition availability for Class 6th.",
-  },
-  {
-    studentName: "Priya Kumari",
-    parentName: "Vikram Sharma",
-    email: "vikram.sharma@yahoo.com",
-    phone: "9123456780",
-    gradeApplying: "Nursery",
-    date: "18 Sep, 2026",
-    status: "Reviewed",
-    message: "Seeking admission in Nursery with school bus service from Gidhaur route.",
-  },
-  {
-    studentName: "Rohan Verma",
-    parentName: "Deepak Verma",
-    email: "deepak.verma@gmail.com",
-    phone: "9432156789",
-    gradeApplying: "Class 9th",
-    date: "15 Sep, 2026",
-    status: "Admitted",
-    message: "Transferred from Patna. Interested in strong science lab foundation and board preparation.",
-  },
+  }
 ];
 
 const INITIAL_SCHOOL_INFO = {
@@ -295,6 +190,7 @@ const INITIAL_SCHOOL_INFO = {
   pincode: "811308",
   landmark: "Near Koltex, Petrol Pump",
   admissionNotice: "ADMISSION OPEN FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY!",
+  showAdmissionNotice: true,
   aboutText:
     "Glorious Public School is dedicated to create erudite, upright leaders of tomorrow's world. Glorious strives to develop an all-rounded personality in its students. The school nurtures the creative and independent thinking of every student, and brings out the leadership skills inherent in every child. There is special emphasis on ethics and stress on individual character and integrity of the child.",
   vision:

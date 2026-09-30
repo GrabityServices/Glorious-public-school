@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, ArrowRight, Bell, Clock, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, Bell, Clock, ChevronRight, FileText, Image as ImageIcon } from "lucide-react";
 import Lenis from "lenis";
 import styles from "./NoticeEventsSection.module.css";
 import FadeUp from "@/components/motion/FadeUp";
@@ -247,7 +247,25 @@ export default function NoticeEventsSection() {
                         {displayNotices.map((notice, idx) => (
                           <div key={notice.id || notice._id || idx} className={styles.noticeItem}>
                             <div className={styles.noticeHeader}>
-                              <span className={styles.noticeDate}>{notice.date}</span>
+                              <div className={styles.noticeHeaderLeft}>
+                                <span className={styles.noticeDate}>{notice.date}</span>
+                                {notice.attachmentUrl && (
+                                  <span
+                                    className={styles.attachmentBadge}
+                                    title={notice.attachmentName || "Attachment available"}
+                                  >
+                                    {notice.attachmentType === "pdf" ? (
+                                      <>
+                                        <FileText size={11} className={styles.attachIcon} /> PDF
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ImageIcon size={11} className={styles.attachIcon} /> Image
+                                      </>
+                                    )}
+                                  </span>
+                                )}
+                              </div>
                               {notice.isImportant && (
                                 <span className={styles.importantTag}>Important</span>
                               )}

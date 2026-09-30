@@ -1,5 +1,17 @@
-import { useState } from "react";
-import { Plus, Search, Edit2, Trash2, CheckCircle, X, Award, Briefcase, GraduationCap } from "lucide-react";
+import { useState, useRef } from "react";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  CheckCircle,
+  X,
+  Upload,
+  User,
+  AlertCircle,
+  Loader2,
+  GraduationCap,
+} from "lucide-react";
 import styles from "./AdminStaff.module.css";
 import { useData } from "@/context/DataContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -8,7 +20,7 @@ import EmptyState from "@/components/common/EmptyState";
 
 export default function AdminStaff() {
   useDocumentTitle("Manage Faculty & Staff | Glorious Admin");
-  const { staff, addStaff, updateStaff, deleteStaff } = useData();
+  const { staff, addStaff, updateStaff, deleteStaff, uploadStaffPhoto } = useData();
   const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,14 +30,18 @@ export default function AdminStaff() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: "",
-    role: "",
-    qualification: "",
-    experience: "",
+    role: "Senior Educator",
+    qualification: "M.Sc., B.Ed.",
+    experience: "5+ Years Experience",
     wing: "Secondary",
-    image: "/images/guide1.png",
-    bio: "",
+    image: "",
+    bio: "Dedicated faculty member fostering intellectual curiosity and academic discipline in students.",
   });
 
   const wings = ["All", "Administration", "Pre-Primary", "Primary", "Secondary", "Sports"];
@@ -39,35 +55,37 @@ export default function AdminStaff() {
     const matchesWing = selectedWing === "All" || member.wing === selectedWing;
     const query = searchQuery.toLowerCase();
     const matchesSearch =
-      member.name.toLowerCase().includes(query) ||
-      member.role.toLowerCase().includes(query) ||
+      (member.name && member.name.toLowerCase().includes(query)) ||
+      (member.role && member.role.toLowerCase().includes(query)) ||
       (member.qualification && member.qualification.toLowerCase().includes(query));
     return matchesWing && matchesSearch;
   });
 
   const handleOpenAdd = () => {
     setEditingId(null);
+    setUploadError("");
     setFormData({
       name: "",
       role: "Senior Educator",
       qualification: "M.Sc., B.Ed.",
       experience: "5+ Years Experience",
       wing: "Secondary",
-      image: "/images/user1.png",
+      image: "",
       bio: "Dedicated faculty member fostering intellectual curiosity and academic discipline in students.",
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (member) => {
-    setEditingId(member.id);
+    setEditingId(member.id || member._id);
+    setUploadError("");
     setFormData({
-      name: member.name,
-      role: member.role,
+      name: member.name || "",
+      role: member.role || "",
       qualification: member.qualification || "",
       experience: member.experience || "",
       wing: member.wing || "Secondary",
-      image: member.image || "/images/guide1.png",
+      image: member.image || "",
       bio: member.bio || "",
     });
     setIsModalOpen(true);
@@ -75,36 +93,68 @@ export default function AdminStaff() {
 
   const handleDelete = async (id, name) => {
     const confirmed = await confirm({
-      title: "Remove Faculty Profile",
-      message: "Are you sure you want to remove this faculty profile from the school teachers directory?",
+      title: "Remove Faculty Member?",
+      message:
+        "Are you sure you want to permanently remove this teacher from the faculty directory? Any custom uploaded photo will also be removed. This action cannot be undone.",
       itemName: name,
-      confirmText: "Remove Teacher",
+      confirmText: "Yes, Delete",
       cancelText: "Cancel",
       variant: "danger",
     });
     if (confirmed) {
-      deleteStaff(id);
-      showToast("Faculty profile removed.");
+      await deleteStaff(id);
+      showToast("Faculty profile permanently removed.");
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
+    const dataToSave = {
+      ...formData,
+      image: formData.image || "/images/guide1.png",
+    };
+
     if (editingId) {
-      updateStaff(editingId, formData);
+      await updateStaff(editingId, dataToSave);
       showToast("Staff profile updated successfully.");
     } else {
-      addStaff(formData);
+      await addStaff(dataToSave);
       showToast("New teacher profile added to website.");
     }
     setIsModalOpen(false);
   };
 
+  // Upload custom teacher photo from local storage / computer
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Photo size must be under 10MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError("");
+    try {
+      const res = await uploadStaffPhoto(file);
+      if (res && res.fileUrl) {
+        setFormData((prev) => ({ ...prev, image: res.fileUrl }));
+        showToast("Teacher photo uploaded from storage successfully.");
+      }
+    } catch (err) {
+      setUploadError(err.message || "Failed to upload photo. Please try again.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className={styles.pageWrapper}>
-      {/* Toast */}
+      {/* Toast Alert */}
       {toast && (
         <div className={styles.toastAlert}>
           <CheckCircle size={18} />
@@ -148,56 +198,59 @@ export default function AdminStaff() {
       {/* Staff Cards Grid */}
       <div className={styles.staffGrid}>
         {filteredStaff.length > 0 ? (
-          filteredStaff.map((member) => (
-            <div key={member.id} className={styles.staffCard}>
-              <div className={styles.avatarWrap}>
-                <img
-                  src={member.image || "/images/guide1.png"}
-                  alt={member.name}
-                  className={styles.avatarImg}
-                  onError={(e) => {
-                    e.target.src = "/images/guide1.png";
-                  }}
-                />
-              </div>
+          filteredStaff.map((member) => {
+            const memberId = member.id || member._id;
+            return (
+              <div key={memberId} className={styles.staffCard}>
+                <div className={styles.avatarWrap}>
+                  <img
+                    src={member.image || "/images/guide1.png"}
+                    alt={member.name}
+                    className={styles.avatarImg}
+                    onError={(e) => {
+                      e.target.src = "/images/guide1.png";
+                    }}
+                  />
+                </div>
 
-              <h3 className={styles.staffName}>{member.name}</h3>
-              <p className={styles.staffRole}>{member.role}</p>
-              <span
-                className={`${styles.wingBadge} ${
-                  styles[`wing_${(member.wing || "").toLowerCase().replace(/[^a-z]/g, "")}`] || ""
-                }`}
-              >
-                {member.wing} Wing
-              </span>
-
-              <div className={styles.staffInfo}>
-                <div>{member.qualification}</div>
-                <div className={styles.staffExperience}>{member.experience}</div>
-              </div>
-
-              <p className={styles.staffBio}>{member.bio}</p>
-
-              <div className={styles.cardFooter}>
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(member)}
-                  className={styles.actionBtn}
+                <h3 className={styles.staffName}>{member.name}</h3>
+                <p className={styles.staffRole}>{member.role}</p>
+                <span
+                  className={`${styles.wingBadge} ${
+                    styles[`wing_${(member.wing || "").toLowerCase().replace(/[^a-z]/g, "")}`] || ""
+                  }`}
                 >
-                  <Edit2 size={14} />
-                  <span>Edit Profile</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(member.id, member.name)}
-                  className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                >
-                  <Trash2 size={14} />
-                  <span>Delete</span>
-                </button>
+                  {member.wing} Wing
+                </span>
+
+                <div className={styles.staffInfo}>
+                  <div>{member.qualification}</div>
+                  <div className={styles.staffExperience}>{member.experience}</div>
+                </div>
+
+                <p className={styles.staffBio}>{member.bio}</p>
+
+                <div className={styles.cardFooter}>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(member)}
+                    className={styles.actionBtn}
+                  >
+                    <Edit2 size={14} />
+                    <span>Edit Profile</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(memberId, member.name)}
+                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div style={{ gridColumn: "1 / -1" }}>
             <EmptyState
@@ -217,38 +270,64 @@ export default function AdminStaff() {
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
+        <div
+          className={styles.modalBackdrop}
+          data-lenis-prevent="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
+          <div className={styles.modalContent} data-lenis-prevent="true">
             <div className={styles.modalHeader}>
-              <h3>{editingId ? "Edit Faculty Profile" : "Add Teacher Profile"}</h3>
+              <div>
+                <h3>{editingId ? "Edit Faculty Profile" : "Add Teacher Profile"}</h3>
+                <p className={styles.modalSubtitle}>
+                  Publish educator details, academic qualifications, and teaching experience.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 className={styles.closeModalBtn}
+                title="Close"
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleFormSubmit} className={styles.modalForm}>
+              {/* Full Name */}
               <label>
-                <span>Full Name *</span>
+                <div className={styles.labelHeader}>
+                  <span>Full Name *</span>
+                  <span className={styles.charCount}>
+                    {formData.name.length}/60 chars
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. R. K. Sharma or Mrs. Ananya Verma"
+                  maxLength={60}
+                  placeholder="e.g. Sudhanshu Kumar or Dr. R. K. Sharma"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </label>
 
+              {/* Role & Academic Wing */}
               <div className={styles.formGrid}>
                 <label>
-                  <span>Role / Designation *</span>
+                  <div className={styles.labelHeader}>
+                    <span>Role / Designation *</span>
+                    <span className={styles.charCount}>
+                      {formData.role.length}/70 chars
+                    </span>
+                  </div>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Senior Secondary Mathematics Lead"
+                    maxLength={70}
+                    placeholder="e.g. Senior Educator or PGT Mathematics Lead"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   />
@@ -269,53 +348,171 @@ export default function AdminStaff() {
                 </label>
               </div>
 
+              {/* Educational Qualification & Teaching Experience */}
               <div className={styles.formGrid}>
                 <label>
-                  <span>Educational Qualification</span>
+                  <div className={styles.labelHeader}>
+                    <span>Educational Qualification</span>
+                    <span className={styles.charCount}>
+                      {formData.qualification.length}/80 chars
+                    </span>
+                  </div>
                   <input
                     type="text"
-                    placeholder="e.g. M.Sc. (Mathematics), B.Ed."
+                    maxLength={80}
+                    placeholder="e.g. M.Sc. (Physics), B.Ed., CTET"
                     value={formData.qualification}
-                    onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, qualification: e.target.value })
+                    }
                   />
                 </label>
 
                 <label>
-                  <span>Teaching Experience</span>
+                  <div className={styles.labelHeader}>
+                    <span>Teaching Experience</span>
+                    <span className={styles.charCount}>
+                      {formData.experience.length}/40 chars
+                    </span>
+                  </div>
                   <input
                     type="text"
-                    placeholder="e.g. 14+ Years Experience"
+                    maxLength={40}
+                    placeholder="e.g. 5+ Years Experience"
                     value={formData.experience}
-                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, experience: e.target.value })
+                    }
                   />
                 </label>
               </div>
 
-              <label>
-                <span>Photo Avatar</span>
-                <select
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                >
-                  <option value="/images/guide1.png">Male Faculty 1 (/images/guide1.png)</option>
-                  <option value="/images/guide2.png">Female Faculty 1 (/images/guide2.png)</option>
-                  <option value="/images/guide3.png">Male Faculty 2 (/images/guide3.png)</option>
-                  <option value="/images/user1.png">Female Faculty 2 (/images/user1.png)</option>
-                  <option value="/images/user2.png">Sports Coach (/images/user2.png)</option>
-                  <option value="/images/user3.png">Language Teacher (/images/user3.png)</option>
-                </select>
-              </label>
+              {/* Photo Upload: Single Direct Feature from Local Storage */}
+              <div className={styles.photoUploadSection}>
+                <div className={styles.labelHeader}>
+                  <span className={styles.photoHeading}>
+                    <User size={15} /> Teacher Photograph *
+                  </span>
+                  {formData.image && (
+                    <span className={styles.photoUploadedTag}>
+                      {formData.image.startsWith("/uploads/")
+                        ? "Photo Uploaded from Storage"
+                        : "Current Photo"}
+                    </span>
+                  )}
+                </div>
 
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
+                  style={{ display: "none" }}
+                  onChange={handlePhotoUpload}
+                />
+
+                {formData.image ? (
+                  <div className={styles.selectedPhotoCard}>
+                    <div className={styles.photoPreviewWrap}>
+                      <img
+                        src={formData.image}
+                        alt="Teacher photo preview"
+                        className={styles.photoPreviewImg}
+                        onError={(e) => {
+                          e.target.src = "/images/guide1.png";
+                        }}
+                      />
+                    </div>
+
+                    <div className={styles.photoMeta}>
+                      <div className={styles.photoMetaTitle}>
+                        {formData.image.split("/").pop()}
+                      </div>
+                      <p className={styles.photoMetaSub}>
+                        {formData.image.startsWith("/uploads/")
+                          ? "Saved in dedicated uploads storage"
+                          : "School directory image"}
+                      </p>
+
+                      <div className={styles.photoBtnRow}>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className={styles.changePhotoBtn}
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader2 size={13} className={styles.spinIcon} />
+                              <span>Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={13} />
+                              <span>Change Photo from Device</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, image: "" }))}
+                          className={styles.removePhotoBtn}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={styles.uploadDropzone}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className={styles.dropzoneIconWrap}>
+                      {isUploading ? (
+                        <Loader2 size={24} className={styles.spinIcon} />
+                      ) : (
+                        <Upload size={24} />
+                      )}
+                    </div>
+                    <div className={styles.dropzoneText}>
+                      <span className={styles.dropzoneTitle}>
+                        {isUploading
+                          ? "Uploading photo from storage..."
+                          : "Click to Select Teacher Photo from Storage"}
+                      </span>
+                      <span className={styles.dropzoneSub}>
+                        Supports JPG, PNG, WEBP, or JFIF (Max 10MB)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {uploadError && (
+                  <div className={styles.errorAlert}>
+                    <AlertCircle size={15} />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Bio / Teaching Philosophy */}
               <label>
-                <span>Bio / Teaching Philosophy</span>
+                <div className={styles.labelHeader}>
+                  <span>Bio / Teaching Philosophy</span>
+                  <span className={styles.charCount}>
+                    {formData.bio.length}/400 chars
+                  </span>
+                </div>
                 <textarea
                   rows={3}
-                  placeholder="Short background, teaching methodology, achievements, subjects taught..."
+                  maxLength={400}
+                  placeholder="Dedicated faculty member fostering intellectual curiosity and academic discipline in students..."
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                 />
               </label>
 
+              {/* Modal Actions */}
               <div className={styles.modalActions}>
                 <button
                   type="button"
