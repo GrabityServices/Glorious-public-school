@@ -1,5 +1,15 @@
-import { useState } from "react";
-import { Settings, Award, Phone, Mail, MapPin, AlertTriangle, CheckCircle, RefreshCw, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Settings,
+  Award,
+  Phone,
+  Mail,
+  MapPin,
+  AlertTriangle,
+  CheckCircle,
+  RefreshCw,
+  Save,
+} from "lucide-react";
 import styles from "./AdminSettings.module.css";
 import { useData } from "@/context/DataContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -22,11 +32,43 @@ export default function AdminSettings() {
     email: schoolInfo.email || "",
     address: schoolInfo.address || "",
     admissionNotice: schoolInfo.admissionNotice || "",
+    showAdmissionNotice: schoolInfo.showAdmissionNotice !== false,
   });
+
+  // Sync state when schoolInfo is updated from MongoDB
+  useEffect(() => {
+    if (schoolInfo) {
+      if (schoolInfo.stats) setStats(schoolInfo.stats);
+      setContactForm({
+        phone: schoolInfo.phone || "",
+        phoneAlt: schoolInfo.phoneAlt || "",
+        email: schoolInfo.email || "",
+        address: schoolInfo.address || "",
+        admissionNotice: schoolInfo.admissionNotice || "",
+        showAdmissionNotice: schoolInfo.showAdmissionNotice !== false,
+      });
+    }
+  }, [schoolInfo]);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3500);
+  };
+
+  // Instant toggle switch handler for Top Announcement Banner (updates immediately with no refresh needed)
+  const handleToggleShowNotice = async (checked) => {
+    setContactForm((prev) => ({
+      ...prev,
+      showAdmissionNotice: checked,
+    }));
+    await updateSchoolInfo({
+      showAdmissionNotice: checked,
+    });
+    showToast(
+      checked
+        ? "Announcement banner is ON — now showing live on website!"
+        : "Announcement banner is OFF — now hidden from website."
+    );
   };
 
   const handleStatChange = (index, value) => {
@@ -163,8 +205,50 @@ export default function AdminSettings() {
               <textarea
                 rows={2}
                 value={contactForm.admissionNotice}
-                onChange={(e) => setContactForm({ ...contactForm, admissionNotice: e.target.value })}
+                onChange={(e) =>
+                  setContactForm({ ...contactForm, admissionNotice: e.target.value })
+                }
+                placeholder="Enter announcement text to scroll in the header..."
               />
+
+              {/* Small toggle control below the textarea */}
+              <div className={styles.smallToggleBox}>
+                <div className={styles.smallToggleInfo}>
+                  <div className={styles.smallToggleTitleRow}>
+                    <strong className={styles.smallToggleTitle}>Show Announcement Banner on Website</strong>
+                    <span
+                      className={
+                        contactForm.showAdmissionNotice
+                          ? styles.pillShow
+                          : styles.pillHide
+                      }
+                    >
+                      {contactForm.showAdmissionNotice ? (
+                        <>
+                          <span className={styles.statusDotGreen} />
+                          Currently: SHOW on website
+                        </>
+                      ) : (
+                        <>
+                          <span className={styles.statusDotGray} />
+                          Currently: HIDDEN from website
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  <p className={styles.smallToggleDesc}>
+                    When enabled, visitors will see this announcement ticker running in the top bar across the entire website.
+                  </p>
+                </div>
+                <label className={styles.switch} title="Toggle Announcement Banner on Website">
+                  <input
+                    type="checkbox"
+                    checked={!!contactForm.showAdmissionNotice}
+                    onChange={(e) => handleToggleShowNotice(e.target.checked)}
+                  />
+                  <span className={styles.slider} />
+                </label>
+              </div>
             </div>
           </div>
 

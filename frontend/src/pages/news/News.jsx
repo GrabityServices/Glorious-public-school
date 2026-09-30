@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Calendar, User, FileText, ArrowRight, Sparkles, Phone, Mail } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  User,
+  FileText,
+  ArrowRight,
+  Sparkles,
+  Phone,
+  Mail,
+  Download,
+  Paperclip,
+  ExternalLink,
+  Image as ImageIcon,
+} from "lucide-react";
 import styles from "./news.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
@@ -14,6 +27,15 @@ export default function NewsPage() {
 
   const activeNotice =
     notices.find((n) => n.id === selectedNoticeId) || notices[0] || null;
+
+  const getAttachmentUrl = (notice) => {
+    return notice?.attachmentUrl || notice?.pdfUrl || "";
+  };
+
+  const isAttachmentPdf = (notice) => {
+    const url = getAttachmentUrl(notice);
+    return notice?.attachmentType === "pdf" || url.toLowerCase().endsWith(".pdf");
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -41,6 +63,8 @@ export default function NewsPage() {
                 <div className={styles.noticesList}>
                   {notices.map((notice) => {
                     const isSelected = activeNotice && activeNotice.id === notice.id;
+                    const hasAttachment = Boolean(getAttachmentUrl(notice));
+                    const isPdf = isAttachmentPdf(notice);
                     return (
                       <div
                         key={notice.id}
@@ -54,6 +78,12 @@ export default function NewsPage() {
                           <span className={styles.catTag}>{notice.category}</span>
                           {notice.isImportant && (
                             <span className={styles.importantTag}>Important</span>
+                          )}
+                          {hasAttachment && (
+                            <span className={styles.attachChip}>
+                              <Paperclip size={10} />
+                              <span>{isPdf ? "PDF Circular" : "Photo"}</span>
+                            </span>
                           )}
                         </div>
                         <h3 className={styles.cardTitle}>{notice.title}</h3>
@@ -77,6 +107,14 @@ export default function NewsPage() {
                         <span className={styles.authorRow}>
                           <User size={14} /> By: {activeNotice.author}
                         </span>
+                        {getAttachmentUrl(activeNotice) && (
+                          <span className={styles.attachChip}>
+                            <Paperclip size={11} />
+                            <span>
+                              {isAttachmentPdf(activeNotice) ? "PDF Document Attached" : "Photo Attached"}
+                            </span>
+                          </span>
+                        )}
                       </div>
                       <h2>{activeNotice.title}</h2>
                     </div>
@@ -86,11 +124,81 @@ export default function NewsPage() {
                       <p className={styles.fullContent}>{activeNotice.fullContent}</p>
                     </div>
 
+                    {/* Official Attachment Preview & Download */}
+                    {getAttachmentUrl(activeNotice) && (
+                      <div className={styles.noticeAttachmentCard}>
+                        <div className={styles.attachmentCardHeader}>
+                          <span className={styles.attachmentCardTitle}>
+                            <Paperclip size={16} color="#dc2626" />
+                            <span>Official Notice Attachment</span>
+                          </span>
+                          <span className={styles.attachmentTypeTag}>
+                            {isAttachmentPdf(activeNotice) ? "PDF Document" : "Official Notice Photo"}
+                          </span>
+                        </div>
+
+                        {!isAttachmentPdf(activeNotice) ? (
+                          <div className={styles.imagePreviewWrap}>
+                            <img
+                              src={getAttachmentUrl(activeNotice)}
+                              alt={activeNotice.title}
+                              className={styles.attachedImage}
+                            />
+                          </div>
+                        ) : (
+                          <div className={styles.pdfDocBanner}>
+                            <FileText size={36} color="#dc2626" />
+                            <div className={styles.pdfDocInfo}>
+                              <h4>
+                                {activeNotice.attachmentName || `${activeNotice.title}.pdf`}
+                              </h4>
+                              <p>Official School Circular Document</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className={styles.attachmentCardActions}>
+                          <a
+                            href={`/api/download?file=${encodeURIComponent(
+                              getAttachmentUrl(activeNotice)
+                            )}&name=${encodeURIComponent(
+                              activeNotice.attachmentName ||
+                                `${activeNotice.title}${isAttachmentPdf(activeNotice) ? ".pdf" : ".jpg"}`
+                            )}`}
+                            download={
+                              activeNotice.attachmentName ||
+                              `${activeNotice.title}${isAttachmentPdf(activeNotice) ? ".pdf" : ".jpg"}`
+                            }
+                            className={styles.downloadDocBtn}
+                          >
+                            <Download size={16} />
+                            <span>
+                              Download {isAttachmentPdf(activeNotice) ? "PDF Circular" : "Notice Photo"}
+                            </span>
+                          </a>
+
+                          <a
+                            href={getAttachmentUrl(activeNotice)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.viewOnlineBtn}
+                          >
+                            <ExternalLink size={14} />
+                            <span>View Full Screen</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
                     <div className={styles.readerFooter}>
                       <p>For inquiries regarding this circular, please contact the administrative desk:</p>
                       <div className={styles.contactFooter}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Phone size={14} /> Helpline: 9534105012</span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><Mail size={14} /> Email: gpsjhajha@gmail.com</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <Phone size={14} /> Helpline: 9534105012
+                        </span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <Mail size={14} /> Email: gpsjhajha@gmail.com
+                        </span>
                       </div>
                       <Link to="/admissions" className="btn btn-gold btn-sm" style={{ marginTop: "14px" }}>
                         <span>Online Admission Open &rarr;</span>

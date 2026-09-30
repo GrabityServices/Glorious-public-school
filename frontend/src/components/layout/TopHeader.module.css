@@ -54,6 +54,12 @@
   max-width: 540px;
   display: flex;
   align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tickerWrapper:hover .tickerContent {
+  animation-play-state: paused;
 }
 
 .tickerContent {

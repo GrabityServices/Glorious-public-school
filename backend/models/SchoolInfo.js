@@ -26,6 +26,10 @@ const SchoolInfoSchema = new mongoose.Schema(
       type: String,
       default: "ADMISSION OPEN FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY!",
     },
+    showAdmissionNotice: {
+      type: Boolean,
+      default: true,
+    },
     aboutText: { type: String, default: "" },
     vision: { type: String, default: "" },
     mission: { type: String, default: "" },

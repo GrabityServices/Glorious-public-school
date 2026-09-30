@@ -4,7 +4,7 @@
   "description": "Simple backend server for Glorious Public School website",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --watch server.js",
     "test-db": "node test-db.js",
     "free-port": "node ../scripts/free-port.js"
   },
@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^18.0.3",
     "express": "^4.21.2",
-    "mongoose": "^9.10.2"
+    "mongoose": "^9.10.2",
+    "multer": "^2.4.0"
   }
 }

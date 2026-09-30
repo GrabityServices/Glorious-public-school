@@ -30,9 +30,22 @@ export default function MotionProvider({ children }) {
 
     animId = requestAnimationFrame(raf);
 
+    // Pause Lenis smooth scroll during printing to eliminate print preview hangs
+    const handleBeforePrint = () => {
+      lenis.stop();
+    };
+    const handleAfterPrint = () => {
+      lenis.start();
+    };
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
     // Clean up on unmount
     return () => {
       cancelAnimationFrame(animId);
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
       lenis.destroy();
       lenisRef.current = null;
     };

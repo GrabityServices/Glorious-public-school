@@ -34,6 +34,7 @@ export function DataProvider({ children }) {
     pincode: "811308",
     landmark: "Near Koltex, Petrol Pump",
     admissionNotice: "ADMISSION OPEN FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY!",
+    showAdmissionNotice: true,
     stats: [
       { label: "Dedicated Teachers", value: "25+", suffix: "" },
       { label: "Enrolled Students", value: "800+", suffix: "" },
@@ -99,7 +100,16 @@ export function DataProvider({ children }) {
       }
       if (infoRes.status === "fulfilled" && infoRes.value.ok) {
         const data = await infoRes.value.json();
-        if (data && data.name) setSchoolInfo(data);
+        if (data && data.name) {
+          setSchoolInfo((prev) => ({
+            ...prev,
+            ...data,
+            showAdmissionNotice:
+              typeof data.showAdmissionNotice === "boolean"
+                ? data.showAdmissionNotice
+                : prev.showAdmissionNotice ?? true,
+          }));
+        }
       }
     } catch (err) {
       console.error("Error fetching data from MongoDB:", err);
@@ -166,6 +176,26 @@ export function DataProvider({ children }) {
     await updateNotice(id, { isImportant: !target.isImportant });
   };
 
+  const uploadNoticeAttachment = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/notice-attachment", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      const msg = errData.error || (res.status === 404 ? "Upload service not responding. Please restart the backend server." : `Upload failed (Status ${res.status})`);
+      throw new Error(msg);
+    } catch (err) {
+      console.error("Notice attachment upload error:", err);
+      throw err;
+    }
+  };
+
   // --- CRUD: Events (MongoDB Atlas) ---
   const addEvent = async (newEvent) => {
     try {
@@ -211,6 +241,25 @@ export function DataProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to delete event from MongoDB:", err);
+    }
+  };
+
+  const uploadEventImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/event-image", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Upload failed (Status ${res.status})`);
+    } catch (err) {
+      console.error("Event image upload error:", err);
+      throw err;
     }
   };
 
@@ -262,6 +311,25 @@ export function DataProvider({ children }) {
     }
   };
 
+  const uploadStaffPhoto = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/staff-photo", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Upload failed (Status ${res.status})`);
+    } catch (err) {
+      console.error("Staff photo upload error:", err);
+      throw err;
+    }
+  };
+
   // --- CRUD: Gallery (MongoDB Atlas) ---
   const addGalleryItem = async (newItem) => {
     try {
@@ -307,6 +375,25 @@ export function DataProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to delete gallery item from MongoDB:", err);
+    }
+  };
+
+  const uploadGalleryImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/gallery-image", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Upload failed (Status ${res.status})`);
+    } catch (err) {
+      console.error("Gallery photo upload error:", err);
+      throw err;
     }
   };
 
@@ -361,6 +448,12 @@ export function DataProvider({ children }) {
 
   // --- CRUD: School Info & Stats (MongoDB Atlas) ---
   const updateSchoolInfo = async (updatedFields) => {
+    // 1. Optimistically update local React state immediately so UI changes without refresh
+    setSchoolInfo((prev) => ({
+      ...prev,
+      ...updatedFields,
+    }));
+
     try {
       const nextInfo = { ...schoolInfo, ...updatedFields };
       const res = await fetch("/api/school-info", {
@@ -370,7 +463,14 @@ export function DataProvider({ children }) {
       });
       if (res.ok) {
         const saved = await res.json();
-        setSchoolInfo(saved);
+        setSchoolInfo((prev) => ({
+          ...prev,
+          ...saved,
+          showAdmissionNotice:
+            typeof saved.showAdmissionNotice === "boolean"
+              ? saved.showAdmissionNotice
+              : prev.showAdmissionNotice ?? true,
+        }));
         return saved;
       }
     } catch (err) {
@@ -397,16 +497,19 @@ export function DataProvider({ children }) {
         updateNotice,
         deleteNotice,
         toggleNoticeImportant,
+        uploadNoticeAttachment,
 
         events,
         addEvent,
         updateEvent,
         deleteEvent,
+        uploadEventImage,
 
         staff,
         addStaff,
         updateStaff,
         deleteStaff,
+        uploadStaffPhoto,
 
         schoolInfo,
         updateSchoolInfo,
@@ -421,6 +524,7 @@ export function DataProvider({ children }) {
         addGalleryItem,
         updateGalleryItem,
         deleteGalleryItem,
+        uploadGalleryImage,
 
         refreshData,
         resetToDefaults,

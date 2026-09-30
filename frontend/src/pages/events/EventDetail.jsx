@@ -8,7 +8,7 @@ import { useData } from "@/context/DataContext";
 export default function EventDetailPage() {
   const { id } = useParams();
   const { events } = useData();
-  const event = events.find((e) => e.id === id) || events[0] || {};
+  const event = events.find((e) => e.id === id || e._id === id) || events[0] || {};
 
   useDocumentTitle(`${event.title || "Event Details"} | Glorious Public School`);
 
@@ -35,20 +35,34 @@ export default function EventDetailPage() {
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.detailCard}>
+            {event.image && (
+              <div style={{ marginBottom: "28px", borderRadius: "14px", overflow: "hidden", maxHeight: "420px", border: "1px solid var(--border-color, #e2e8f0)" }}>
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onError={(e) => {
+                    e.target.src = "/images/dance-&-cultural-fest.webp";
+                  }}
+                />
+              </div>
+            )}
             <h2>About this Event</h2>
-            <p className={styles.fullParagraph}>{event.fullDesc}</p>
+            <p className={styles.fullParagraph}>{event.fullDesc || event.shortDesc}</p>
 
-            <div className={styles.highlightsContainer}>
-              <h3>Key Highlights & Results:</h3>
-              <ul className={styles.highlightsList}>
-                {event.highlights.map((hl, i) => (
-                  <li key={i}>
-                    <CheckCircle2 size={18} className={styles.checkIcon} />
-                    <span>{hl}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {event.highlights && event.highlights.length > 0 && (
+              <div className={styles.highlightsContainer}>
+                <h3>Key Highlights & Results:</h3>
+                <ul className={styles.highlightsList}>
+                  {event.highlights.map((hl, i) => (
+                    <li key={i}>
+                      <CheckCircle2 size={18} className={styles.checkIcon} />
+                      <span>{hl}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className={styles.actionBanner}>
               <div>

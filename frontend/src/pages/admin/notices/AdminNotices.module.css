@@ -127,6 +127,26 @@
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 14px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
 .table {
@@ -304,9 +324,11 @@
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: #fca5a5 #f8fafc;
+  scrollbar-color: #cbd5e1 transparent;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -315,16 +337,23 @@
 }
 
 .modalContent::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modalContent::-webkit-scrollbar-thumb {
-  background: #fca5a5;
-  border-radius: 4px;
+  width: 8px;
 }
 
 .modalContent::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: transparent;
+  margin: 18px 0;
+}
+
+.modalContent::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
 .modalHeader {
@@ -390,7 +419,7 @@
 }
 
 .modalForm textarea {
-  resize: vertical;
+  resize: none;
   min-height: 80px;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -457,6 +486,232 @@
 
 .saveBtn:hover {
   opacity: 0.92;
+}
+
+/* Field Header & Character Limits */
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.charCounter {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+}
+
+.charNearLimit {
+  color: #d97706;
+}
+
+.charAtLimit {
+  color: #dc2626;
+}
+
+/* Attachment Upload Zone */
+.attachmentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.attachmentTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.attachmentTitle {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.attachmentBadgeOptional {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.uploadDropzone {
+  border: 2px dashed #cbd5e1;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.uploadDropzone:hover {
+  border-color: #dc2626;
+  background: #fffafa;
+}
+
+.uploadIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.uploadPrompt {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.uploadPromptHighlight {
+  color: #dc2626;
+}
+
+.uploadSubtext {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.uploadError {
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 600;
+  background: #fee2e2;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+/* File Preview Card (Once uploaded) */
+.filePreviewCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.filePreviewLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.fileThumbImg {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.filePdfBadge {
+  width: 44px;
+  height: 44px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.fileName {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileMeta {
+  font-size: 0.72rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.removeFileBtn {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeFileBtn:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Attachment Pill in Table */
+.attachmentPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+.attachmentPill:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
 }
 
 @media (max-width: 640px) {

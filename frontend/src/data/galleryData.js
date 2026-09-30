@@ -5,7 +5,7 @@ export const GALLERY_ITEMS = [
     id: 1,
     title: "School Campus & Morning Assembly",
     category: "Campus",
-    image: "/images/hero_meditation.png",
+    image: "/images/glorious-public-school-logo.png",
     caption: "Students gathering in the central courtyard for morning prayer, pledge, and daily news broadcast.",
   },
   {

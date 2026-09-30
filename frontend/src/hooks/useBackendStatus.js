@@ -15,8 +15,12 @@ export function useBackendStatus() {
   const checkStatus = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true }));
 
-    // Try relative /api/health (routed via Vite proxy) or direct http://localhost:5000/api/health
-    const endpoints = ["/api/health", "http://localhost:5000/api/health"];
+    // Try relative /api/health (routed via Vite proxy) or direct http://localhost:5000 / 5001
+    const endpoints = [
+      "/api/health",
+      "http://localhost:5000/api/health",
+      "http://localhost:5001/api/health",
+    ];
     let data = null;
 
     for (const url of endpoints) {
