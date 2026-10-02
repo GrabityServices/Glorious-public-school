@@ -308,7 +308,7 @@ export default function AdminStaff() {
                   type="text"
                   required
                   maxLength={60}
-                  placeholder="e.g. Sudhanshu Kumar or Dr. R. K. Sharma"
+                  placeholder="e.g. Sudhanshu Kumar"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
