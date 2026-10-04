@@ -7,25 +7,34 @@ import {
   ChevronRight, 
   Images, 
   ChevronUp, 
-  ChevronDown,
-  Download,
-  Calendar,
-  Sparkles
+  ChevronDown, 
+  Download, 
+  Sparkles,
+  Plus,
+  Loader2,
+  CheckCircle
 } from "lucide-react";
 import { AnimatePresence, m } from "framer-motion";
 import styles from "./gallery.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import Image from "@/components/common/Image";
+import ShimmerImage from "@/components/common/ShimmerImage";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { useData } from "@/context/DataContext";
 import { GALLERY_CATEGORIES } from "@/data/galleryData";
 import EmptyState from "@/components/common/EmptyState";
 
+const PAGE_SIZE = 12;
+
 export default function GalleryPage() {
   useDocumentTitle("Photo Gallery | Glorious Public School, Jhajha");
-  const { gallery } = useData();
+  const { gallery, loading } = useData();
   const [activeCategory, setActiveCategory] = useState("All");
   
+  // Pagination / Load More state
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   // Lightbox Modal State
   const [activeModalIndex, setActiveModalIndex] = useState(null);
   const [slideDirection, setSlideDirection] = useState(1);
@@ -41,6 +50,24 @@ export default function GalleryPage() {
     activeCategory === "All"
       ? galleryList
       : galleryList.filter((item) => item.category === activeCategory);
+
+  // Reset pagination when category changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeCategory]);
+
+  // Chunk items for performance
+  const displayedItems = filteredItems.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredItems.length;
+  const remainingCount = filteredItems.length - visibleCount;
+
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + PAGE_SIZE);
+      setIsLoadingMore(false);
+    }, 250);
+  };
 
   // Active list shown inside the modal (either current album or all photos)
   const activeModalList = moreImagesScope === "all" ? galleryList : filteredItems;
@@ -199,42 +226,138 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {/* Grid of Images or Empty State */}
-          {filteredItems.length > 0 ? (
+          {/* Loading Shimmer Skeletons, Grid of Images, or Empty State */}
+          {loading ? (
             <div className={styles.galleryGrid}>
-              {filteredItems.map((item, idx) => (
-                <FadeUp key={item.id || item._id || idx} delay={0.05 * (idx + 1)}>
-                  <div
-                    className={styles.galleryCard}
-                    onClick={() => openModal(item)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && openModal(item)}
-                  >
-                    <div className={styles.imageWrap}>
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        className={styles.img}
-                      />
-                      <div className={styles.overlay}>
-                        <span className={styles.cardCat}>{item.category}</span>
-                        <h3 className={styles.cardTitle}>{item.title}</h3>
-                        <div className={styles.cardActions}>
-                          <span className={styles.viewBadge}>
-                            <Maximize2 size={15} />
-                            <span>View Photo</span>
-                          </span>
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div key={idx} className={styles.skeletonCard}>
+                  <div className={styles.skeletonThumbnail}>
+                    <div className={styles.youtubeShimmerWave} />
+                  </div>
+                  <div className={styles.skeletonBody}>
+                    <div className={styles.skeletonPill}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                    <div className={styles.skeletonTitle}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                    <div className={styles.skeletonLine}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredItems.length > 0 ? (
+            <>
+              <div className={styles.galleryGrid}>
+                {displayedItems.map((item, idx) => (
+                  <FadeUp key={item.id || item._id || idx} delay={0.04 * (idx % 6 + 1)}>
+                    <div
+                      className={styles.galleryCard}
+                      onClick={() => openModal(item)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === "Enter" && openModal(item)}
+                    >
+                      <div className={styles.imageWrap}>
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          className={styles.img}
+                          loading="lazy"
+                        />
+                        <div className={styles.overlay}>
+                          <span className={styles.cardCat}>{item.category}</span>
+                          <h3 className={styles.cardTitle}>{item.title}</h3>
+                          <div className={styles.cardActions}>
+                            <span className={styles.viewBadge}>
+                              <Maximize2 size={15} />
+                              <span>View Photo</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.captionArea}>
+                        <p>{item.caption || "Click to view full photo and album."}</p>
+                      </div>
+                    </div>
+                  </FadeUp>
+                ))}
+
+                {/* Skeleton placeholders while loading more */}
+                {isLoadingMore &&
+                  Array.from({ length: Math.min(3, remainingCount) }).map((_, i) => (
+                    <div key={`loading-more-${i}`} className={styles.skeletonCard}>
+                      <div className={styles.skeletonThumbnail}>
+                        <div className={styles.youtubeShimmerWave} />
+                      </div>
+                      <div className={styles.skeletonBody}>
+                        <div className={styles.skeletonPill}>
+                          <div className={styles.youtubeShimmerWave} />
+                        </div>
+                        <div className={styles.skeletonTitle}>
+                          <div className={styles.youtubeShimmerWave} />
+                        </div>
+                        <div className={styles.skeletonLine}>
+                          <div className={styles.youtubeShimmerWave} />
                         </div>
                       </div>
                     </div>
-                    <div className={styles.captionArea}>
-                      <p>{item.caption || "Click to view full photo and album."}</p>
+                  ))}
+              </div>
+
+              {/* Load More Pagination Section */}
+              {filteredItems.length > PAGE_SIZE && (
+                <div className={styles.loadMoreSection}>
+                  <div className={styles.loadMoreProgressWrap}>
+                    <div className={styles.loadMoreCounter}>
+                      Showing <strong>{displayedItems.length}</strong> of <strong>{filteredItems.length}</strong> photographs
+                    </div>
+                    <div className={styles.progressBar}>
+                      <div
+                        className={styles.progressFill}
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (displayedItems.length / filteredItems.length) * 100
+                          )}%`,
+                        }}
+                      />
                     </div>
                   </div>
-                </FadeUp>
-              ))}
-            </div>
+
+                  {hasMore ? (
+                    <button
+                      type="button"
+                      className={styles.loadMoreBtn}
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <Loader2 size={18} className={styles.spin} />
+                          <span>Loading More Photos...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={18} />
+                          <span>Load More Photos</span>
+                          <span className={styles.remainingPill}>
+                            +{Math.min(PAGE_SIZE, remainingCount)}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className={styles.allLoadedText}>
+                      <CheckCircle size={16} color="#059669" />
+                      <span>All {filteredItems.length} photographs loaded</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <FadeUp>
               <EmptyState
@@ -353,11 +476,14 @@ export default function GalleryPage() {
                       onDragEnd={handleDragEnd}
                       className={styles.imageMotionWrap}
                     >
-                      <Image
+                      <ShimmerImage
                         src={currentItem.image}
                         alt={currentItem.title}
                         className={styles.stageImg}
-                        priority={true}
+                        theme="dark"
+                        showIcon={true}
+                        loading="eager"
+                        fallbackSrc="/images/dance-&-cultural-fest.webp"
                       />
                     </m.div>
                   </AnimatePresence>
@@ -411,7 +537,6 @@ export default function GalleryPage() {
                           className={`${styles.scopeTab} ${moreImagesScope === "album" ? styles.scopeTabActive : ""}`}
                           onClick={() => {
                             setMoreImagesScope("album");
-                            // Recalculate index
                             const currId = currentItem.id || currentItem._id;
                             const newIdx = filteredItems.findIndex((i) => (i.id || i._id) === currId);
                             setActiveModalIndex(newIdx >= 0 ? newIdx : 0);
@@ -470,11 +595,14 @@ export default function GalleryPage() {
                             tabIndex={0}
                             title={`${item.title} (${idx + 1} of ${activeModalList.length})`}
                           >
-                            <img
+                            <ShimmerImage
                               src={item.image}
                               alt={item.title}
                               className={styles.thumbImg}
                               loading="lazy"
+                              theme="dark"
+                              showIcon={false}
+                              fallbackSrc="/images/dance-&-cultural-fest.webp"
                             />
                             <div className={styles.thumbIndexBadge}>
                               {idx + 1}

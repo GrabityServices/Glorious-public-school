@@ -1,21 +1,85 @@
 .pageWrapper {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 }
 
-/* Stat Cards */
+/* =========================================================
+   TOP SECTION TABS: ADMISSIONS vs CONTACT INQUIRIES
+   ========================================================= */
+.topNavTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 12px;
+  width: fit-content;
+  border: 1px solid #e2e8f0;
+}
+
+.topTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topTabBtn:hover {
+  color: #0f172a;
+}
+
+.topTabBtnActive {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.topTabBtnActive .tabBadge {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* =========================================================
+   STATS ROW
+   ========================================================= */
 .statsRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
+}
+
+.statsRow4 {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .statMiniCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -75,40 +139,89 @@
   box-shadow: 0 8px 18px -2px rgba(16, 185, 129, 0.15);
 }
 
+.statCard_purple {
+  border-top: 3.5px solid #8b5cf6;
+}
+.statCard_purple .statVal {
+  color: #6d28d9;
+}
+.statCard_purple:hover {
+  border-color: #c4b5fd;
+  border-top-color: #8b5cf6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -2px rgba(139, 92, 246, 0.15);
+}
+
 .statVal {
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   font-weight: 700;
   font-family: var(--font-serif);
   line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .statLabel {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #64748b;
-  margin-top: 4px;
+  margin-top: 5px;
   font-weight: 600;
 }
 
-.actionHeader {
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background-color: #f59e0b;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulseAmber 1.8s infinite;
+}
+
+@keyframes pulseAmber {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+/* =========================================================
+   FILTER & ACTION BAR
+   ========================================================= */
+.actionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.searchAndControls {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
-}
-
-.controlsRow {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .searchWrap {
   position: relative;
   display: flex;
   align-items: center;
-  width: 280px;
+  min-width: 280px;
+  flex: 1;
+  max-width: 380px;
 }
 
 .searchIcon {
@@ -122,7 +235,7 @@
   width: 100%;
   height: 40px;
   padding: 0 14px 0 38px;
-  background: #ffffff;
+  background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   color: #0f172a;
@@ -132,11 +245,13 @@
 
 .searchInput:focus {
   outline: none;
+  background: #ffffff;
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
-.categorySelect {
+.modalInput {
+  width: 100%;
   height: 40px;
   padding: 0 14px;
   background: #ffffff;
@@ -144,28 +259,335 @@
   border-radius: 8px;
   color: #0f172a;
   font-size: 0.88rem;
-  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.categorySelect:focus {
+.modalInput:focus {
   outline: none;
   border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
-.toastAlert {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #059669;
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-size: 0.9rem;
+.inputError {
+  border-color: #ef4444 !important;
+  background-color: #fffbfb !important;
+}
+
+.inputError:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  color: #dc2626;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.phoneInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.phonePrefix {
+  position: absolute;
+  left: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #64748b;
+  pointer-events: none;
+  user-select: none;
+}
+
+.phoneInputWithPrefix {
+  padding-left: 46px !important;
+  padding-right: 50px !important;
+}
+
+.charCounter {
+  position: absolute;
+  right: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+  font-family: monospace;
+}
+
+.charCounterValid {
+  color: #16a34a;
+}
+
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.addBtn {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  border: none;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  transition: all 0.2s ease;
+}
+
+.addBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
+}
+
+/* =========================================================
+   CUSTOM REACT DROPDOWN (ELIMINATES OS DUAL-BOX MISMATCH)
+   ========================================================= */
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+  min-width: 140px;
+}
+
+.dropdownTrigger {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  font-size: 0.86rem;
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
 }
 
-/* Inquiries Table */
+.dropdownTrigger:hover {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+
+.dropdownTriggerOpen {
+  background: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.dropdownLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownChevron {
+  color: #64748b;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdownChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu rendered via React Portal in document.body */
+.dropdownMenuPortal {
+  position: fixed;
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scrollbars completely */
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.06);
+  z-index: 99999;
+  padding: 5px;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdownMenuPortal::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dropdownMenuPortal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdownMenuPortal::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.dropdownMenuPortal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dropdownMenuUpwards {
+  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.18), 0 -4px 10px rgba(0, 0, 0, 0.06);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdownOption {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.dropdownOption:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.dropdownOptionActive {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.dropdownOptionText {
+  white-space: nowrap;
+  flex: 1;
+}
+
+.dropdownCheck {
+  color: #1d4ed8;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   STATUS PILLS ROW (ZERO DROPDOWN GLITCHES)
+   ========================================================= */
+.statusPillsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.statusPillsLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.statusPill:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.statusPillActive {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.statusPillActive:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.pillDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot_all {
+  background-color: #94a3b8;
+}
+.dot_pending {
+  background-color: #f59e0b;
+}
+.dot_reviewed {
+  background-color: #0ea5e9;
+}
+.dot_admitted,
+.dot_resolved {
+  background-color: #10b981;
+}
+.dot_rejected {
+  background-color: #ef4444;
+}
+
+.pillCount {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.statusPillActive .pillCount {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* =========================================================
+   TABLE CARD
+   ========================================================= */
 .tableCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -179,6 +601,7 @@
   overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
+  border-radius: 14px;
 }
 
 .tableWrapper::-webkit-scrollbar {
@@ -203,24 +626,25 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .table th {
   background: #f8fafc;
-  padding: 14px 18px;
+  padding: 13px 16px;
   color: #475569;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .table td {
-  padding: 16px 18px;
+  padding: 14px 16px;
   border-bottom: 1px solid #f1f5f9;
-  vertical-align: top;
+  vertical-align: middle;
   color: #1e293b;
 }
 
@@ -229,110 +653,334 @@
 }
 
 .table tr:hover td {
-  background: #fff9f9;
+  background: #fffafa;
 }
 
+/* Columns */
+.appCodeCol {
+  white-space: nowrap;
+}
+
+.appIdBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f8fafc;
+  color: #1e293b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.appIdBadge:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.dateSubtext {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Student Particulars (NO EMOJIS - Clean SVG User Icon) */
 .studentCol h4 {
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.gradeBadge {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #eef2ff;
-  color: #4f46e5;
+.studentUserIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fee2e2;
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.studentMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.genderTag {
+  background: #f1f5f9;
+  padding: 1px 6px;
   border-radius: 4px;
-  font-size: 0.74rem;
+  border: 1px solid #e2e8f0;
   font-weight: 600;
 }
 
-.contactCol {
-  font-size: 0.82rem;
-  color: #475569;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.prevSchoolTag {
+  font-size: 0.73rem;
+  color: #64748b;
+  margin-top: 2px;
 }
 
-.contactCol a {
+.classBadge {
+  display: inline-block;
+  padding: 3px 9px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #fde68a;
+  white-space: nowrap;
+}
+
+.topicBadge {
+  display: inline-block;
+  padding: 3px 9px;
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid #ddd6fe;
+  white-space: nowrap;
+}
+
+.facilityTags {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.facilityTagActive {
+  color: #059669;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.parentCol {
+  font-size: 0.82rem;
   color: #334155;
+  line-height: 1.35;
+}
+
+.parentNameText {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.addressText {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: #64748b;
+  font-size: 0.76rem;
+  margin-top: 3px;
+  max-width: 220px;
+  white-space: normal;
+}
+
+/* Contact Message Column (For Contact Tab) */
+.contactMessageCol {
+  max-width: 320px;
+  font-size: 0.83rem;
+  color: #334155;
+  line-height: 1.4;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================================================
+   DIRECT COMMUNICATION ACTIONS (CALL, WHATSAPP, EMAIL)
+   ========================================================= */
+.contactActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionBtnCall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
-.contactCol a:hover {
-  color: #dc2626;
-  text-decoration: underline;
+.actionBtnCall:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
 
-.messageCol {
-  font-size: 0.82rem;
-  color: #64748b;
-  max-width: 320px;
-  line-height: 1.4;
-}
-
-/* Status Selector */
-.statusSelect {
+.actionBtnWhatsApp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
   height: 34px;
-  padding: 0 28px 0 12px;
   border-radius: 8px;
-  font-size: 0.82rem;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.actionBtnWhatsApp:hover {
+  background: #25d366;
+  color: #ffffff;
+  border-color: #25d366;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+}
+
+.actionBtnEmail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.actionBtnEmail:hover:not(.actionBtnDisabled) {
+  background: #475569;
+  color: #ffffff;
+  border-color: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(71, 85, 105, 0.3);
+}
+
+.actionBtnDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.phoneNumSnippet {
+  font-size: 0.77rem;
+  color: #475569;
+  font-family: monospace;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+/* Custom Table Status Badge Dropdown Trigger */
+.tableStatusTrigger {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-width: 155px;
+  border: 1.5px solid transparent;
+  transition: all 0.15s ease;
 }
 
-.statusSelect:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-}
-
-.statusSelect option {
-  background-color: #ffffff;
-  color: #0f172a;
-  font-weight: 600;
-  padding: 10px 12px;
+.tableStatusTrigger:hover {
+  filter: brightness(0.96);
 }
 
 .statusPending {
   background-color: #fffbeb;
-  border: 1.5px solid #f59e0b;
+  border-color: #f59e0b;
   color: #b45309;
 }
 
 .statusReviewed {
   background-color: #f0f9ff;
-  border: 1.5px solid #0ea5e9;
+  border-color: #0ea5e9;
   color: #0369a1;
 }
 
-.statusAdmitted {
+.statusAdmitted,
+.statusResolved {
   background-color: #ecfdf5;
-  border: 1.5px solid #10b981;
+  border-color: #10b981;
   color: #047857;
 }
 
 .statusRejected {
   background-color: #fef2f2;
-  border: 1.5px solid #ef4444;
+  border-color: #ef4444;
   color: #b91c1c;
 }
 
-.actionIconBtn {
+.rowActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.viewDossierBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.viewDossierBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.deleteBtn {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 7px;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
-  color: #475569;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,12 +994,287 @@
   border-color: #fca5a5;
 }
 
-.emptyState {
-  padding: 48px 24px;
-  text-align: center;
-  color: #64748b;
+/* =========================================================
+   MODAL / DOSSIER DIALOG
+   ========================================================= */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
+.modalCard {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 720px;
+  max-height: 88vh;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Clips all children cleanly to the 16px rounded corners */
+  position: relative;
+}
+
+.modalHeader {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+.modalHeaderTitle {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modalCloseBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modalBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  /* Sleek modern scrollbar that stays completely inside container */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 9999px;
+  margin: 6px 0;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid #f8fafc;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Dossier Badge Header */
+.dossierBadgeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  padding: 12px 18px;
+  border-radius: 10px;
+}
+
+.dossierSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.dossierSectionTitle {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dossierGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.dossierItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dossierLabel {
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.dossierValue {
+  font-size: 0.92rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* Quick Contact Toolbar in Modal */
+.modalContactBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+}
+
+.modalContactLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #166534;
+  margin-right: 6px;
+}
+
+.modalActionBtnCall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.modalActionBtnCall:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.modalActionBtnWhatsApp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #25d366;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.modalActionBtnWhatsApp:hover {
+  background: #1eb855;
+  transform: translateY(-1px);
+}
+
+.modalActionBtnEmail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #475569;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.modalActionBtnEmail:hover {
+  background: #334155;
+  transform: translateY(-1px);
+}
+
+/* Modal Footer */
+.modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
+  flex-shrink: 0;
+}
+
+.modalFooterRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.printBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Toast */
 .toastAlert {
   position: fixed;
   top: 24px;
@@ -389,14 +1312,43 @@
   }
 }
 
-@media (max-width: 900px) {
+/* Responsive */
+@media (max-width: 1100px) {
   .statsRow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .statsRow4 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+@media (max-width: 768px) {
+  .statsRow,
+  .statsRow4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .searchAndControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchWrap {
+    max-width: 100%;
+  }
+  .topNavTabs {
+    width: 100%;
+  }
+  .topTabBtn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 480px) {
-  .statsRow {
+  .statsRow,
+  .statsRow4 {
+    grid-template-columns: 1fr;
+  }
+  .dossierGrid {
     grid-template-columns: 1fr;
   }
 }

@@ -16,6 +16,13 @@ import styles from "./contact.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { useData } from "@/context/DataContext";
+import {
+  sanitizePhoneInput,
+  validateIndianPhone,
+  validateEmail,
+  validateName,
+  validateText,
+} from "@/utils/validation";
 
 export default function ContactPage() {
   useDocumentTitle("Contact Us | Glorious Public School, Jhajha");
@@ -27,28 +34,84 @@ export default function ContactPage() {
   const [subject, setSubject] = useState("Admission Inquiry");
   const [message, setMessage] = useState("");
   const [isSent, setIsSent] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const handlePhoneChange = (e) => {
+    const cleaned = sanitizePhoneInput(e.target.value);
+    setPhone(cleaned);
+    if (touched.phone) {
+      const res = validateIndianPhone(cleaned, true);
+      setErrors((prev) => ({ ...prev, phone: res.error }));
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    setTouched((prev) => ({ ...prev, phone: true }));
+    const res = validateIndianPhone(phone, true);
+    setErrors((prev) => ({ ...prev, phone: res.error }));
+  };
+
+  const handleNameBlur = () => {
+    setTouched((prev) => ({ ...prev, name: true }));
+    const res = validateName(name, "Full Name");
+    setErrors((prev) => ({ ...prev, name: res.error }));
+  };
+
+  const handleEmailBlur = () => {
+    if (!email) return;
+    setTouched((prev) => ({ ...prev, email: true }));
+    const res = validateEmail(email, false);
+    setErrors((prev) => ({ ...prev, email: res.error }));
+  };
+
+  const handleMessageBlur = () => {
+    setTouched((prev) => ({ ...prev, message: true }));
+    const res = validateText(message, "Message", 5);
+    setErrors((prev) => ({ ...prev, message: res.error }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (name.trim() && message.trim()) {
-      await addInquiry({
-        name,
-        studentName: name,
-        phone,
-        email: email || "inquiry@gloriouspublicschool.com",
-        gradeApplying: subject,
-        message,
-      });
-      setIsSent(true);
-      setTimeout(() => {
-        setName("");
-        setPhone("");
-        setEmail("");
-        setMessage("");
-        setSubject("Admission Inquiry");
-        setIsSent(false);
-      }, 5000);
+
+    const nameRes = validateName(name, "Full Name");
+    const phoneRes = validateIndianPhone(phone, true);
+    const emailRes = validateEmail(email, false);
+    const msgRes = validateText(message, "Message", 5);
+
+    const newErrors = {};
+    if (!nameRes.isValid) newErrors.name = nameRes.error;
+    if (!phoneRes.isValid) newErrors.phone = phoneRes.error;
+    if (!emailRes.isValid) newErrors.email = emailRes.error;
+    if (!msgRes.isValid) newErrors.message = msgRes.error;
+
+    setErrors(newErrors);
+    setTouched({ name: true, phone: true, email: true, message: true });
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
     }
+
+    await addInquiry({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim() || "inquiry@gloriouspublicschool.com",
+      gradeApplying: subject,
+      message: message.trim(),
+      type: "Contact Inquiry",
+    });
+
+    setIsSent(true);
+    setErrors({});
+    setTouched({});
+    setTimeout(() => {
+      setName("");
+      setPhone("");
+      setEmail("");
+      setMessage("");
+      setSubject("Admission Inquiry");
+      setIsSent(false);
+    }, 5000);
   };
 
   const contactInfos = [
@@ -191,7 +254,7 @@ export default function ContactPage() {
                       </p>
                     </m.div>
                   ) : (
-                    <form onSubmit={handleSubmit} className={styles.form}>
+                    <form onSubmit={handleSubmit} className={styles.form} noValidate>
                       <div className={styles.formGroup}>
                         <label>Your Full Name *</label>
                         <input
@@ -199,22 +262,49 @@ export default function ContactPage() {
                           required
                           placeholder="e.g. Ramesh Kumar"
                           value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className={styles.input}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (touched.name) {
+                              const res = validateName(e.target.value, "Full Name");
+                              setErrors((p) => ({ ...p, name: res.error }));
+                            }
+                          }}
+                          onBlur={handleNameBlur}
+                          className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
                         />
+                        {errors.name && <div className={styles.errorMessage}>{errors.name}</div>}
                       </div>
 
                       <div className={styles.twoCols}>
                         <div className={styles.formGroup}>
                           <label>Phone Number *</label>
-                          <input
-                            type="tel"
-                            required
-                            placeholder="10-digit mobile number"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className={styles.input}
-                          />
+                          <div className={styles.phoneInputWrapper}>
+                            <span className={styles.phonePrefix}>+91</span>
+                            <input
+                              type="tel"
+                              required
+                              inputMode="numeric"
+                              autoComplete="tel"
+                              maxLength={10}
+                              placeholder="9534105012"
+                              value={phone}
+                              onChange={handlePhoneChange}
+                              onBlur={handlePhoneBlur}
+                              className={`${styles.input} ${styles.phoneInputWithPrefix} ${
+                                errors.phone ? styles.inputError : ""
+                              }`}
+                            />
+                            <span
+                              className={`${styles.charCounter} ${
+                                phone.length === 10 ? styles.charCounterValid : ""
+                              }`}
+                            >
+                              {phone.length}/10
+                            </span>
+                          </div>
+                          {errors.phone && (
+                            <div className={styles.errorMessage}>{errors.phone}</div>
+                          )}
                         </div>
 
                         <div className={styles.formGroup}>
@@ -223,9 +313,19 @@ export default function ContactPage() {
                             type="email"
                             placeholder="name@example.com"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className={styles.input}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              if (touched.email && e.target.value) {
+                                const res = validateEmail(e.target.value, false);
+                                setErrors((p) => ({ ...p, email: res.error }));
+                              }
+                            }}
+                            onBlur={handleEmailBlur}
+                            className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
                           />
+                          {errors.email && (
+                            <div className={styles.errorMessage}>{errors.email}</div>
+                          )}
                         </div>
                       </div>
 
@@ -249,12 +349,22 @@ export default function ContactPage() {
                         <label>Your Message / Details *</label>
                         <textarea
                           required
-                          placeholder="Tell us about the student, class applying for, or your query..."
+                          placeholder="Tell us about the student, class applying for, or your query (min 5 characters)..."
                           rows={4}
                           value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          className={styles.textarea}
+                          onChange={(e) => {
+                            setMessage(e.target.value);
+                            if (touched.message) {
+                              const res = validateText(e.target.value, "Message", 5);
+                              setErrors((p) => ({ ...p, message: res.error }));
+                            }
+                          }}
+                          onBlur={handleMessageBlur}
+                          className={`${styles.textarea} ${errors.message ? styles.inputError : ""}`}
                         />
+                        {errors.message && (
+                          <div className={styles.errorMessage}>{errors.message}</div>
+                        )}
                       </div>
 
                       <button type="submit" className="btn btn-gold" style={{ width: "100%" }}>

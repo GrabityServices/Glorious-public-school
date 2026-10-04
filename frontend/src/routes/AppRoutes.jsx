@@ -82,6 +82,7 @@ export default function AppRoutes() {
         <Route path="staff" element={<AdminStaff />} />
         <Route path="gallery" element={<AdminGallery />} />
         <Route path="admissions" element={<AdminAdmissions />} />
+        <Route path="inquiries" element={<AdminAdmissions />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 

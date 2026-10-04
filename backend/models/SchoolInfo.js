@@ -30,6 +30,10 @@ const SchoolInfoSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isAdmissionsOpen: {
+      type: Boolean,
+      default: true,
+    },
     aboutText: { type: String, default: "" },
     vision: { type: String, default: "" },
     mission: { type: String, default: "" },
@@ -45,6 +49,15 @@ const SchoolInfoSchema = new mongoose.Schema(
         day: { type: String },
         time: { type: String },
         status: { type: String },
+      },
+    ],
+    heroSlides: [
+      {
+        id: { type: String },
+        image: { type: String, required: true },
+        tag: { type: String, default: "Campus Life" },
+        title: { type: String, default: "" },
+        caption: { type: String, default: "" },
       },
     ],
   },

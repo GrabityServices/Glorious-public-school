@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -9,24 +9,43 @@ import {
   Image as ImageIcon,
   AlertCircle,
   Loader2,
+  CheckCircle,
 } from "lucide-react";
 import styles from "./AdminGallery.module.css";
 import { useData } from "@/context/DataContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import EmptyState from "@/components/common/EmptyState";
+import ShimmerImage from "@/components/common/ShimmerImage";
+import { GALLERY_CATEGORIES } from "@/data/galleryData";
 
-const CATEGORIES = ["All", "Campus", "Events", "Sports", "Academics"];
+const PAGE_SIZE = 12;
 
 export default function AdminGallery() {
   useDocumentTitle("Photo Gallery Manager | GPS Admin");
-  const { gallery, addGalleryItem, updateGalleryItem, deleteGalleryItem, uploadGalleryImage } = useData();
+  const {
+    gallery,
+    loading,
+    addGalleryItem,
+    updateGalleryItem,
+    deleteGalleryItem,
+    uploadGalleryImage,
+  } = useData();
   const confirm = useConfirm();
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+
+  // Pagination / Load More state
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Reset pagination when category filter or search query changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [selectedCategory, searchTerm]);
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
@@ -132,6 +151,19 @@ export default function AdminGallery() {
     return matchesCategory && matchesSearch;
   });
 
+  // Chunk items for performance
+  const displayedItems = filteredItems.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredItems.length;
+  const remainingCount = filteredItems.length - visibleCount;
+
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + PAGE_SIZE);
+      setIsLoadingMore(false);
+    }, 250);
+  };
+
   const getCategoryClass = (cat) => {
     switch (cat) {
       case "Campus":
@@ -142,6 +174,8 @@ export default function AdminGallery() {
         return styles.catSports;
       case "Academics":
         return styles.catAcademics;
+      case "Other":
+        return styles.catOther;
       default:
         return styles.catCampus;
     }
@@ -166,7 +200,7 @@ export default function AdminGallery() {
       {/* Filter & Search Bar */}
       <div className={styles.filterBar}>
         <div className={styles.categoryPills}>
-          {CATEGORIES.map((cat) => (
+          {GALLERY_CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
@@ -178,11 +212,11 @@ export default function AdminGallery() {
               onClick={() => setSelectedCategory(cat)}
             >
               {cat}
-              {cat !== "All" && (
-                <span style={{ marginLeft: 6, opacity: 0.75, fontSize: "0.74rem" }}>
-                  ({gallery.filter((i) => i.category === cat).length})
-                </span>
-              )}
+              <span className={styles.categoryCountBadge}>
+                {cat === "All"
+                  ? gallery.length
+                  : gallery.filter((i) => i.category === cat).length}
+              </span>
             </button>
           ))}
         </div>
@@ -199,57 +233,166 @@ export default function AdminGallery() {
         </div>
       </div>
 
-      {/* Photo Grid */}
-      {filteredItems.length > 0 ? (
+      {/* Loading Shimmer Skeletons or Photo Grid */}
+      {loading ? (
         <div className={styles.galleryGrid}>
-          {filteredItems.map((item) => {
-            const itemId = item.id || item._id;
-            return (
-              <div key={itemId} className={styles.photoCard}>
-                <div className={styles.imageContainer}>
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className={styles.photoImg}
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.src = "/images/dance-&-cultural-fest.webp";
-                    }}
-                  />
-                  <span className={`${styles.badgeCategory} ${getCategoryClass(item.category)}`}>
-                    {item.category || "Campus"}
-                  </span>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className={styles.skeletonCard}>
+              <div className={styles.skeletonThumbnail}>
+                <div className={styles.youtubeShimmerWave} />
+              </div>
+              <div className={styles.skeletonBody}>
+                <div className={styles.skeletonPill}>
+                  <div className={styles.youtubeShimmerWave} />
                 </div>
-                <div className={styles.cardBody}>
-                  <h4 className={styles.photoTitle}>{item.title}</h4>
-                  <p className={styles.photoCaption}>
-                    {item.caption || "No description provided."}
-                  </p>
-                  <div className={styles.cardActions}>
-                    <button
-                      type="button"
-                      className={styles.editBtn}
-                      onClick={() => handleOpenEdit(item)}
-                      title="Edit Photo Info"
-                    >
-                      <Edit2 size={14} />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.deleteBtn}
-                      onClick={() => handleDelete(item)}
-                      title="Delete Photo"
-                    >
-                      <Trash2 size={14} />
-                      <span>Delete</span>
-                    </button>
+                <div className={styles.skeletonTitle}>
+                  <div className={styles.youtubeShimmerWave} />
+                </div>
+                <div className={styles.skeletonLine}>
+                  <div className={styles.youtubeShimmerWave} />
+                </div>
+                <div className={styles.skeletonActions}>
+                  <div className={styles.skeletonButton}>
+                    <div className={styles.youtubeShimmerWave} />
+                  </div>
+                  <div className={styles.skeletonButton}>
+                    <div className={styles.youtubeShimmerWave} />
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+      ) : filteredItems.length > 0 ? (
+        <>
+          <div className={styles.galleryGrid}>
+            {displayedItems.map((item) => {
+              const itemId = item.id || item._id;
+              return (
+                <div key={itemId} className={styles.photoCard}>
+                  <div className={styles.imageContainer}>
+                    <ShimmerImage
+                      src={item.image}
+                      alt={item.title}
+                      className={styles.photoImg}
+                      loading="lazy"
+                      fallbackSrc="/images/dance-&-cultural-fest.webp"
+                    />
+                    <span className={`${styles.badgeCategory} ${getCategoryClass(item.category)}`}>
+                      {item.category || "Campus"}
+                    </span>
+                  </div>
+                  <div className={styles.cardBody}>
+                    <h4 className={styles.photoTitle}>{item.title}</h4>
+                    <p className={styles.photoCaption}>
+                      {item.caption || "No description provided."}
+                    </p>
+                    <div className={styles.cardActions}>
+                      <button
+                        type="button"
+                        className={styles.editBtn}
+                        onClick={() => handleOpenEdit(item)}
+                        title="Edit Photo Info"
+                      >
+                        <Edit2 size={14} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.deleteBtn}
+                        onClick={() => handleDelete(item)}
+                        title="Delete Photo"
+                      >
+                        <Trash2 size={14} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Skeleton placeholders while loading more */}
+            {isLoadingMore &&
+              Array.from({ length: Math.min(3, remainingCount) }).map((_, i) => (
+                <div key={`loading-more-${i}`} className={styles.skeletonCard}>
+                  <div className={styles.skeletonThumbnail}>
+                    <div className={styles.youtubeShimmerWave} />
+                  </div>
+                  <div className={styles.skeletonBody}>
+                    <div className={styles.skeletonPill}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                    <div className={styles.skeletonTitle}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                    <div className={styles.skeletonLine}>
+                      <div className={styles.youtubeShimmerWave} />
+                    </div>
+                    <div className={styles.skeletonActions}>
+                      <div className={styles.skeletonButton}>
+                        <div className={styles.youtubeShimmerWave} />
+                      </div>
+                      <div className={styles.skeletonButton}>
+                        <div className={styles.youtubeShimmerWave} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {/* Load More Pagination Section */}
+          {filteredItems.length > PAGE_SIZE && (
+            <div className={styles.loadMoreSection}>
+              <div className={styles.loadMoreProgressWrap}>
+                <div className={styles.loadMoreCounter}>
+                  Showing <strong>{displayedItems.length}</strong> of <strong>{filteredItems.length}</strong> photographs
+                </div>
+                <div className={styles.progressBar}>
+                  <div
+                    className={styles.progressFill}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (displayedItems.length / filteredItems.length) * 100
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {hasMore ? (
+                <button
+                  type="button"
+                  className={styles.loadMoreBtn}
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 size={16} className={styles.spin} />
+                      <span>Loading Photos...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={16} />
+                      <span>Load More Photos</span>
+                      <span className={styles.remainingPill}>
+                        +{Math.min(PAGE_SIZE, remainingCount)}
+                      </span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className={styles.allLoadedText}>
+                  <CheckCircle size={15} color="#10b981" />
+                  <span>All {filteredItems.length} photographs loaded</span>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <EmptyState
           icon={ImageIcon}
@@ -321,6 +464,7 @@ export default function AdminGallery() {
                   <option value="Events">School Events & Cultural</option>
                   <option value="Sports">Athletics & Sports Day</option>
                   <option value="Academics">Academic Labs & Classrooms</option>
+                  <option value="Other">Other / Miscellaneous Activities</option>
                 </select>
               </div>
 

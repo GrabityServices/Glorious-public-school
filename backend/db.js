@@ -1,4 +1,9 @@
+// Need to update the below code to this const mongoose = require("mongoose"); and remove the both lines
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 const mongoose = require("mongoose");
+
 
 // Mask password for safe logging
 const getMaskedUri = (uri) => {

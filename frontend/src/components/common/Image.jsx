@@ -1,4 +1,5 @@
 import React from "react";
+import ShimmerImage from "./ShimmerImage";
 
 export default function Image({
   src,
@@ -9,6 +10,8 @@ export default function Image({
   priority = false,
   className = "",
   style = {},
+  fallbackSrc = "/images/dance-&-cultural-fest.webp",
+  theme = "light",
   sizes,
   ...props
 }) {
@@ -25,15 +28,17 @@ export default function Image({
     : style;
 
   return (
-    <img
+    <ShimmerImage
       src={src}
       alt={alt}
       width={!fill ? width : undefined}
       height={!fill ? height : undefined}
       loading={priority ? "eager" : "lazy"}
-      sizes={sizes}
       className={className}
       style={fillStyle}
+      fallbackSrc={fallbackSrc}
+      theme={theme}
+      sizes={sizes}
       {...props}
     />
   );
