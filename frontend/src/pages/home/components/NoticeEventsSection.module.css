@@ -15,6 +15,7 @@
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 40px;
+  align-items: start;
 }
 
 .colHeader {
@@ -57,7 +58,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  flex: 1;
 }
 
 .eventCard {
@@ -69,8 +69,7 @@
   display: flex;
   gap: 20px;
   transition: var(--transition-smooth);
-  height: 100%;
-  min-height: 155px;
+  min-height: 140px;
 }
 
 .eventCard:hover {
@@ -171,7 +170,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .noticeBoardTop {
@@ -192,17 +190,19 @@
 .noticesWrapper {
   position: relative;
   overflow: hidden;
-  height: 295px;
+  max-height: 320px;
 }
 
 .noticesList {
   padding: 16px 24px 16px 20px;
-  height: 100%;
-  max-height: 100%;
+  max-height: 320px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.noticesList.hasOverflowMask {
   mask-image: linear-gradient(
     to bottom,
     transparent 0px,

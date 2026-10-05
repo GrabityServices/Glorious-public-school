@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./ShimmerImage.module.css";
 
 export default function ShimmerImage({
@@ -17,14 +17,40 @@ export default function ShimmerImage({
 }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const imgRef = useRef(null);
 
+  const finalSrc = hasError || !src ? fallbackSrc : src;
+
+  // Check if image is already cached/complete in the browser DOM
   useEffect(() => {
+    if (!src) {
+      setIsLoaded(true);
+      return;
+    }
+    const img = imgRef.current;
+    if (img && img.complete) {
+      if (img.naturalWidth > 0) {
+        setIsLoaded(true);
+        setHasError(false);
+        return;
+      }
+    }
     setIsLoaded(false);
     setHasError(false);
   }, [src]);
 
+  // Callback ref to immediately detect if the image element is already complete upon mount or reuse
+  const handleRef = useCallback((node) => {
+    imgRef.current = node;
+    if (node && node.complete && node.naturalWidth > 0) {
+      setIsLoaded(true);
+      setHasError(false);
+    }
+  }, []);
+
   const handleLoad = (e) => {
     setIsLoaded(true);
+    setHasError(false);
     if (onLoad) onLoad(e);
   };
 
@@ -53,7 +79,9 @@ export default function ShimmerImage({
 
       {/* Actual image with lazy loading and fade-in */}
       <img
-        src={hasError ? fallbackSrc : src}
+        key={finalSrc}
+        ref={handleRef}
+        src={finalSrc}
         alt={alt}
         loading={loading}
         onLoad={handleLoad}

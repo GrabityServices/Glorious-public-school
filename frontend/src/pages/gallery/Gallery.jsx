@@ -9,7 +9,6 @@ import {
   ChevronUp, 
   ChevronDown, 
   Download, 
-  Sparkles,
   Plus,
   Loader2,
   CheckCircle
@@ -400,7 +399,7 @@ export default function GalleryPage() {
               <div className={styles.modalHeader}>
                 <div className={styles.modalHeaderLeft}>
                   <span className={styles.modalCatBadge}>
-                    <Sparkles size={13} />
+                    <span className={styles.catDot} />
                     {currentItem.category}
                   </span>
                   <span className={styles.modalCounter}>
@@ -510,7 +509,7 @@ export default function GalleryPage() {
                   )}
                 </div>
                 <div className={styles.keyboardTip}>
-                  <span>Use <strong>←</strong> and <strong>→</strong> keys or swipe to browse</span>
+                  <span><strong>←</strong> <strong>→</strong> keys to navigate • <strong>Esc</strong> to close</span>
                 </div>
               </div>
 
@@ -526,8 +525,8 @@ export default function GalleryPage() {
                   >
                     <div className={styles.trayHeader}>
                       <div className={styles.trayTitle}>
-                        <Images size={15} />
-                        <span>Browse More Photos</span>
+                        <Images size={14} />
+                        <span>Browse Gallery</span>
                       </div>
 
                       {/* Scope Switcher: Current Category Album vs All Gallery */}

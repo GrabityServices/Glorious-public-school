@@ -36,7 +36,7 @@ export default function AboutSnapshot() {
           <FadeUp className={styles.imageCol}>
             <div className={styles.imageWrapper}>
               <img
-                src="/images/blog2.png"
+                src="/images/school-image.jpg"
                 alt="Students of Glorious Public School"
                 className={styles.mainImage}
               />

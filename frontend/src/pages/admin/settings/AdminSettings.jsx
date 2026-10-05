@@ -47,9 +47,17 @@ export default function AdminSettings() {
   const [stats, setStats] = useState(() => schoolInfo.stats || []);
 
   // Local state for homepage hero slider
+  const ensureSlideIds = (slideList) => {
+    if (!Array.isArray(slideList)) return [];
+    return slideList.map((s, i) => ({
+      ...s,
+      id: s.id || s._id || `slide_${i}_${Date.now()}`,
+    }));
+  };
+
   const [slides, setSlides] = useState(() =>
     Array.isArray(schoolInfo?.heroSlides) && schoolInfo.heroSlides.length > 0
-      ? schoolInfo.heroSlides
+      ? ensureSlideIds(schoolInfo.heroSlides)
       : DEFAULT_HERO_SLIDES
   );
   const [sliderModalOpen, setSliderModalOpen] = useState(false);
@@ -81,7 +89,7 @@ export default function AdminSettings() {
     if (schoolInfo) {
       if (schoolInfo.stats) setStats(schoolInfo.stats);
       if (Array.isArray(schoolInfo.heroSlides) && schoolInfo.heroSlides.length > 0) {
-        setSlides(schoolInfo.heroSlides);
+        setSlides(ensureSlideIds(schoolInfo.heroSlides));
       }
       const isAdmOpen = schoolInfo.isAdmissionsOpen !== false;
       const isNoticeActive = isAdmOpen && schoolInfo.showAdmissionNotice !== false;
@@ -473,17 +481,21 @@ export default function AdminSettings() {
 
         {/* Slides Grid */}
         <div className={styles.sliderList}>
-          {slides.map((slide, idx) => (
-            <div key={slide.id || idx} className={styles.sliderCard}>
-              <div className={styles.sliderCardThumb}>
-                <ShimmerImage
-                  src={slide.image}
-                  alt={slide.title || `Slide #${idx + 1}`}
-                  className={styles.sliderCardImg}
-                  wrapperClassName={styles.sliderCardImgWrapper}
-                  fallbackSrc="/images/glorious-public-school.png"
-                />
-                <span className={styles.sliderOrderBadge}>#{idx + 1}</span>
+          {slides.map((slide, idx) => {
+            const slideKey = slide.id || slide._id || `${slide.image}-${idx}`;
+            return (
+              <div key={slideKey} className={styles.sliderCard}>
+                <div className={styles.sliderCardThumb}>
+                  <ShimmerImage
+                    key={`thumb-${slideKey}-${slide.image}`}
+                    src={slide.image}
+                    alt={slide.title || `Slide #${idx + 1}`}
+                    className={styles.sliderCardImg}
+                    wrapperClassName={styles.sliderCardImgWrapper}
+                    fallbackSrc="/images/glorious-public-school.png"
+                    loading="eager"
+                  />
+                  <span className={styles.sliderOrderBadge}>#{idx + 1}</span>
                 {slide.tag && (
                   <span className={styles.sliderBadgeTag}>
                     <Sparkles size={11} /> {slide.tag}
@@ -548,7 +560,8 @@ export default function AdminSettings() {
                 </div>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </div>
 
