@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   GraduationCap,
   Mail,
+  ShieldCheck,
 } from "lucide-react";
 import styles from "./AdminLayout.module.css";
 import { useAuth } from "@/context/AuthContext";
@@ -113,6 +114,12 @@ export default function AdminLayout() {
       icon: <Settings size={18} />,
       color: "teal",
     },
+    {
+      to: "/admin/security",
+      label: "Admin & Security",
+      icon: <ShieldCheck size={18} />,
+      color: "indigo",
+    },
   ];
 
   // Derive page heading based on current path
@@ -126,6 +133,7 @@ export default function AdminLayout() {
     if (path.startsWith("/admin/admissions")) return "Online Student Admissions";
     if (path.startsWith("/admin/inquiries")) return "Website Contact Inquiries";
     if (path.startsWith("/admin/settings")) return "School Information & Stats";
+    if (path.startsWith("/admin/security")) return "Admin Profile & Security Center";
     return "Admin Portal";
   };
 
@@ -189,23 +197,30 @@ export default function AdminLayout() {
 
         {/* User Card */}
         <div className={styles.userCard}>
-          {adminUser?.avatar ? (
-            <img
-              src={adminUser.avatar}
-              alt={adminUser.name}
-              className={styles.avatar}
-            />
-          ) : (
-            <div className={styles.avatarFallback}>
-              {adminUser?.name ? adminUser.name.charAt(0) : "A"}
+          <Link
+            to="/admin/security"
+            onClick={() => setSidebarOpen(false)}
+            style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", flex: 1, minWidth: 0 }}
+            title="Manage Admin Profile & Security"
+          >
+            {adminUser?.avatar ? (
+              <img
+                src={adminUser.avatar}
+                alt={adminUser.name}
+                className={styles.avatar}
+              />
+            ) : (
+              <div className={styles.avatarFallback}>
+                {adminUser?.name ? adminUser.name.charAt(0) : "A"}
+              </div>
+            )}
+            <div className={styles.userDetails}>
+              <p className={styles.userName}>{adminUser?.name || "Administrator"}</p>
+              <span className={styles.userRole}>
+                <span className={styles.onlineDot} /> {adminUser?.role || "Super Admin"}
+              </span>
             </div>
-          )}
-          <div className={styles.userDetails}>
-            <p className={styles.userName}>{adminUser?.name || "Administrator"}</p>
-            <span className={styles.userRole}>
-              <span className={styles.onlineDot} /> {adminUser?.role || "Super Admin"}
-            </span>
-          </div>
+          </Link>
           <button
             type="button"
             className={styles.logoutBtn}
@@ -244,7 +259,8 @@ export default function AdminLayout() {
                 onClick={backendStatus.refresh}
               >
                 <span className={styles.pulseDotGreen} />
-                <span>🍃 MongoDB Connected</span>
+                <span className={styles.badgeTextFull}>MongoDB Connected</span>
+                <span className={styles.badgeTextShort}>Connected</span>
               </button>
             ) : backendStatus.serverOnline ? (
               <button
@@ -254,7 +270,8 @@ export default function AdminLayout() {
                 onClick={backendStatus.refresh}
               >
                 <span className={styles.pulseDotAmber} />
-                <span>⚠️ MongoDB Disconnected</span>
+                <span className={styles.badgeTextFull}>MongoDB Disconnected</span>
+                <span className={styles.badgeTextShort}>Disconnected</span>
               </button>
             ) : (
               <button
@@ -264,7 +281,8 @@ export default function AdminLayout() {
                 onClick={backendStatus.refresh}
               >
                 <Database size={13} />
-                <span>Local Store Active</span>
+                <span className={styles.badgeTextFull}>Local Store Active</span>
+                <span className={styles.badgeTextShort}>Offline</span>
               </button>
             )}
             <Link
@@ -274,7 +292,7 @@ export default function AdminLayout() {
               className={styles.liveSiteBtn}
               title="Open public website in a new tab"
             >
-              <span>View Live Site</span>
+              <span className={styles.liveSiteText}>Live Site</span>
               <ExternalLink size={14} />
             </Link>
           </div>

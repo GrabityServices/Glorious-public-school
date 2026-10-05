@@ -31,6 +31,7 @@ import AdminStaff from "@/pages/admin/staff/AdminStaff";
 import AdminGallery from "@/pages/admin/gallery/AdminGallery";
 import AdminAdmissions from "@/pages/admin/admissions/AdminAdmissions";
 import AdminSettings from "@/pages/admin/settings/AdminSettings";
+import AdminSecurity from "@/pages/admin/security/AdminSecurity";
 
 export default function AppRoutes() {
   return (
@@ -84,6 +85,8 @@ export default function AppRoutes() {
         <Route path="admissions" element={<AdminAdmissions />} />
         <Route path="inquiries" element={<AdminAdmissions />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="security" element={<AdminSecurity />} />
+        <Route path="admin-security" element={<Navigate to="/admin/security" replace />} />
       </Route>
 
       {/* 404 Fallback */}

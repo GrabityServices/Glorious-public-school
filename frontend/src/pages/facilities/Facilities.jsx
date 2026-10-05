@@ -8,11 +8,11 @@ import {
   Trophy,
   CheckCircle2,
   Phone,
-  ArrowRight,
 } from "lucide-react";
 import styles from "./facilities.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import ShimmerImage from "@/components/common/ShimmerImage";
 import { FACILITIES_DATA } from "@/data/facilitiesData";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
@@ -77,16 +77,31 @@ export default function FacilitiesPage() {
                   </div>
 
                   <div className={styles.facilityCardSide}>
-                    <div className={styles.sideCard}>
-                      <h3>Facility Spotlight</h3>
-                      <div className={styles.spotlightBadge}>Glorious Campus</div>
-                      <p>
-                        Supervised under strict child safety protocols with 24/7 CCTV surveillance, clean drinking water, and backup power generator.
-                      </p>
-                      <Link to="/admissions" className="btn btn-gold btn-sm" style={{ width: "100%", marginTop: "16px" }}>
-                        <span>Apply for Admission</span>
-                        <ArrowRight size={14} />
-                      </Link>
+                    <div className={styles.imageCard}>
+                      <div className={styles.imageWrapper}>
+                        <ShimmerImage
+                          src={facility.image}
+                          alt={facility.imageAlt || facility.title}
+                          className={styles.facilityImg}
+                        />
+                        <div className={styles.imageOverlay} />
+
+                        {/* Top Floating Badge */}
+                        <div className={styles.badgeWrapper}>
+                          <span className={styles.imageBadge}>
+                            <span className={styles.badgePulse} />
+                            {facility.imageTag || "Glorious Campus"}
+                          </span>
+                        </div>
+
+                        {/* Bottom Floating Glass Card */}
+                        {facility.imageCaption && (
+                          <div className={styles.glassCaptionCard}>
+                            <span className={styles.captionAccentLine} />
+                            <p className={styles.captionText}>{facility.imageCaption}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

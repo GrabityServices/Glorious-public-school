@@ -599,6 +599,7 @@
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
   border-radius: 14px;
@@ -624,6 +625,7 @@
 
 .table {
   width: 100%;
+  min-width: 840px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.88rem;
@@ -1340,15 +1342,114 @@
   .topTabBtn {
     flex: 1;
     justify-content: center;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  .controlsRight {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .controlsRight > * {
+    width: 100% !important;
+  }
+  .addBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .modalBackdrop {
+    padding: 10px;
+  }
+  .modalCard {
+    max-height: 95vh;
+    border-radius: 14px;
+  }
+  .modalHeader {
+    padding: 14px 16px;
+  }
+  .modalBody {
+    padding: 16px 14px;
+  }
+  .modalContactBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .modalActionBtnCall,
+  .modalActionBtnWhatsApp,
+  .modalActionBtnEmail {
+    width: 100%;
+    justify-content: center;
+  }
+  .modalFooter {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .modalFooterRight {
+    width: 100%;
+    flex-direction: column;
+  }
+  .printBtn,
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
   .statsRow,
   .statsRow4 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .statMiniCard {
+    padding: 10px 8px;
+  }
+  .statVal {
+    font-size: 1.18rem;
+  }
+  .statLabel {
+    font-size: 0.7rem;
   }
   .dossierGrid {
     grid-template-columns: 1fr;
+  }
+  .statusPillsRow {
+    gap: 6px;
+  }
+  .statusPill {
+    padding: 5px 10px;
+    font-size: 0.76rem;
+  }
+  .dossierBadgeHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .modalHeader {
+    padding: 12px 14px;
+  }
+  .modalHeaderTitle {
+    font-size: 0.98rem;
+  }
+  .modalBody {
+    padding: 14px 10px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .statsRow,
+  .statsRow4 {
+    grid-template-columns: 1fr;
+  }
+  .topTabBtn {
+    font-size: 0.78rem;
+    padding: 6px 8px;
   }
 }

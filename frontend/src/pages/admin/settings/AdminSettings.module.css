@@ -175,9 +175,16 @@
   transition: all 0.2s ease;
 }
 
-.saveBtn:hover {
+.saveBtn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 18px rgba(220, 38, 38, 0.45);
+}
+
+.saveBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Reset / Danger Zone */
@@ -234,11 +241,66 @@
 }
 
 @media (max-width: 640px) {
+  .sectionCard {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+
+  .sectionTitle {
+    font-size: 1.05rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.8rem;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr;
   }
+
   .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .dangerZone {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 14px;
+  }
+
+  .resetBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .securityProfileCard {
+    padding: 18px 14px;
+  }
+
+  .modalContent {
+    padding: 18px 14px;
+    border-radius: 14px;
+    max-height: 94vh;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .cancelBtn,
+  .submitModalBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }
 
@@ -1079,6 +1141,24 @@
 }
 
 @media (max-width: 768px) {
+  .sectionHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .sectionHeaderActions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .primaryAddBtn,
+  .secondaryHeaderBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .sliderCard {
     flex-direction: column;
     align-items: flex-start;
@@ -1093,4 +1173,218 @@
     width: 100%;
     justify-content: space-between;
   }
+
+  .smallToggleBox {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .systemYearBanner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
+
+@media (max-width: 480px) {
+  .sectionCard {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .sectionTitle {
+    font-size: 1.05rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dangerZone {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  .resetBtn,
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .modalContent {
+    padding: 16px 12px;
+  }
+
+  .sliderCardActions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sliderActionBtn,
+  .sliderDeleteBtn {
+    flex: 1;
+    min-width: 80px;
+    justify-content: center;
+  }
+}
+
+/* Security & Password Management */
+.securityGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .securityGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.securityProfileCard {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 12px;
+  padding: 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.securityProfileHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.securityAvatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.securityAdminName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.securityAdminRole {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #38bdf8;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.securityBadgeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.securityBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+.securityBadgeItem strong {
+  color: #ffffff;
+}
+
+.passwordInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrap input {
+  width: 100%;
+  height: 42px;
+  padding: 0 42px 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.passwordInputWrap input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.passwordEyeBtn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passwordEyeBtn:hover {
+  color: #0f172a;
+}
+
+.passStatusAlert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.passStatusSuccess {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.passStatusError {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+

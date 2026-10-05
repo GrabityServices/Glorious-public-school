@@ -13,6 +13,29 @@ const CLEANUP_STORAGE_KEYS = [
   "gps_data_gallery",
 ];
 
+const getAuthHeaders = (extraHeaders = {}) => {
+  try {
+    const token = localStorage.getItem("gps_admin_token");
+    if (token) {
+      return {
+        ...extraHeaders,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  } catch (e) {}
+  return extraHeaders;
+};
+
+const getAuthHeadersOnly = () => {
+  try {
+    const token = localStorage.getItem("gps_admin_token");
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  } catch (e) {}
+  return {};
+};
+
 export function DataProvider({ children }) {
   const [notices, setNotices] = useState([]);
   const [events, setEvents] = useState([]);
@@ -77,7 +100,7 @@ export function DataProvider({ children }) {
         fetch("/api/events"),
         fetch("/api/staff"),
         fetch("/api/gallery"),
-        fetch("/api/inquiries"),
+        fetch("/api/inquiries", { headers: getAuthHeadersOnly() }),
         fetch("/api/school-info"),
       ]);
 
@@ -135,7 +158,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch("/api/notices", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(newNotice),
       });
       if (res.ok) {
@@ -152,7 +175,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/notices/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(updatedFields),
       });
       if (res.ok) {
@@ -169,7 +192,10 @@ export function DataProvider({ children }) {
 
   const deleteNotice = async (id) => {
     try {
-      const res = await fetch(`/api/notices/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/notices/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeadersOnly(),
+      });
       if (res.ok) {
         setNotices((prev) => prev.filter((item) => item.id !== id && item._id !== id));
       }
@@ -190,6 +216,7 @@ export function DataProvider({ children }) {
       formData.append("file", file);
       const res = await fetch("/api/upload/notice-attachment", {
         method: "POST",
+        headers: getAuthHeadersOnly(),
         body: formData,
       });
       if (res.ok) {
@@ -209,7 +236,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch("/api/events", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(newEvent),
       });
       if (res.ok) {
@@ -226,7 +253,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/events/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(updatedFields),
       });
       if (res.ok) {
@@ -243,7 +270,10 @@ export function DataProvider({ children }) {
 
   const deleteEvent = async (id) => {
     try {
-      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/events/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeadersOnly(),
+      });
       if (res.ok) {
         setEvents((prev) => prev.filter((item) => item.id !== id && item._id !== id));
       }
@@ -258,6 +288,7 @@ export function DataProvider({ children }) {
       formData.append("file", file);
       const res = await fetch("/api/upload/event-image", {
         method: "POST",
+        headers: getAuthHeadersOnly(),
         body: formData,
       });
       if (res.ok) {
@@ -276,7 +307,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch("/api/staff", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(newStaff),
       });
       if (res.ok) {
@@ -293,7 +324,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/staff/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(updatedFields),
       });
       if (res.ok) {
@@ -310,7 +341,10 @@ export function DataProvider({ children }) {
 
   const deleteStaff = async (id) => {
     try {
-      const res = await fetch(`/api/staff/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/staff/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeadersOnly(),
+      });
       if (res.ok) {
         setStaff((prev) => prev.filter((item) => item.id !== id && item._id !== id));
       }
@@ -325,6 +359,7 @@ export function DataProvider({ children }) {
       formData.append("file", file);
       const res = await fetch("/api/upload/staff-photo", {
         method: "POST",
+        headers: getAuthHeadersOnly(),
         body: formData,
       });
       if (res.ok) {
@@ -343,7 +378,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch("/api/gallery", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(newItem),
       });
       if (res.ok) {
@@ -360,7 +395,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/gallery/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(updatedFields),
       });
       if (res.ok) {
@@ -377,7 +412,10 @@ export function DataProvider({ children }) {
 
   const deleteGalleryItem = async (id) => {
     try {
-      const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/gallery/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeadersOnly(),
+      });
       if (res.ok) {
         setGallery((prev) => prev.filter((item) => item.id !== id && item._id !== id));
       }
@@ -392,6 +430,7 @@ export function DataProvider({ children }) {
       formData.append("file", file);
       const res = await fetch("/api/upload/gallery-image", {
         method: "POST",
+        headers: getAuthHeadersOnly(),
         body: formData,
       });
       if (res.ok) {
@@ -411,6 +450,7 @@ export function DataProvider({ children }) {
       formData.append("file", file);
       const res = await fetch("/api/upload/slider-image", {
         method: "POST",
+        headers: getAuthHeadersOnly(),
         body: formData,
       });
       if (res.ok) {
@@ -447,7 +487,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/admissions/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(updatedFields),
       });
       if (res.ok) {
@@ -466,7 +506,7 @@ export function DataProvider({ children }) {
     try {
       const res = await fetch(`/api/inquiries/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ status }),
       });
       if (res.ok) {
@@ -483,7 +523,10 @@ export function DataProvider({ children }) {
 
   const deleteInquiry = async (id) => {
     try {
-      const res = await fetch(`/api/inquiries/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/inquiries/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeadersOnly(),
+      });
       if (res.ok) {
         setInquiries((prev) => prev.filter((inq) => inq.id !== id && inq._id !== id));
       }
@@ -519,9 +562,16 @@ export function DataProvider({ children }) {
         isAdmissionsOpen: isAdm,
         showAdmissionNotice: isNotice,
       };
+      // Clean up metadata before persisting to MongoDB Atlas
+      delete nextInfo._id;
+      delete nextInfo.id;
+      delete nextInfo.createdAt;
+      delete nextInfo.updatedAt;
+      delete nextInfo.__v;
+
       const res = await fetch("/api/school-info", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(nextInfo),
       });
       if (res.ok) {
@@ -540,16 +590,20 @@ export function DataProvider({ children }) {
               : DEFAULT_HERO_SLIDES,
         }));
         return saved;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to update database (Status ${res.status})`);
       }
     } catch (err) {
-      console.error("Failed to update school info in MongoDB:", err);
+      console.error("Failed to update school info in MongoDB Atlas:", err);
+      throw err;
     }
   };
 
   const updateStat = async (index, updatedStat) => {
     const newStats = [...schoolInfo.stats];
     newStats[index] = { ...newStats[index], ...updatedStat };
-    await updateSchoolInfo({ stats: newStats });
+    return await updateSchoolInfo({ stats: newStats });
   };
 
   const resetToDefaults = async () => {

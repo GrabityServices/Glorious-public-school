@@ -533,6 +533,14 @@
 }
 
 @media (max-width: 768px) {
+  .welcomeCard {
+    padding: 20px 18px;
+  }
+
+  .welcomeText h2 {
+    font-size: 1.25rem;
+  }
+
   .metricsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -547,6 +555,93 @@
 }
 
 @media (max-width: 480px) {
+  .dashboardWrapper {
+    gap: 18px;
+  }
+
+  .welcomeCard {
+    padding: 16px 14px;
+    gap: 12px;
+  }
+
+  .welcomeText h2 {
+    font-size: 1.15rem;
+  }
+
+  .welcomeText p {
+    font-size: 0.82rem;
+  }
+
+  .systemPill {
+    width: 100%;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .metricCard {
+    padding: 12px 10px;
+    gap: 6px;
+    border-radius: 10px;
+  }
+
+  .metricIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .metricIcon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .metricValue {
+    font-size: 1.35rem;
+  }
+
+  .metricLabel {
+    font-size: 0.74rem;
+  }
+
+  .quickActionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .actionBtn {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    border-radius: 10px;
+  }
+
+  .widgetCard {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .dbCard {
+    padding: 14px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dbStatusPill {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
   .metricsGrid {
     grid-template-columns: 1fr;
   }

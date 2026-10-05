@@ -5,6 +5,9 @@
   color: #0f172a;
   font-family: var(--font-sans);
   position: relative;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* =========================================================
@@ -179,6 +182,11 @@
   color: #0d9488;
 }
 
+.iconBox_indigo {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
 /* Active Nav Links with Individual School-Themed Accent Colors */
 .navLinkActive.navLink_blue {
   background: linear-gradient(90deg, #eff6ff 0%, #e0f2fe 100%);
@@ -215,6 +223,11 @@
   color: #0f766e;
   border-left-color: #0d9488;
 }
+.navLinkActive.navLink_indigo {
+  background: linear-gradient(90deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4338ca;
+  border-left-color: #4f46e5;
+}
 
 .navLabelText {
   flex: 1;
@@ -237,6 +250,7 @@
 .badge_purple { background: #ede9fe; color: #5b21b6; }
 .badge_rose { background: #ffe4e6; color: #9f1239; }
 .badge_teal { background: #ccfbf1; color: #115e59; }
+.badge_indigo { background: #e0e7ff; color: #3730a3; }
 
 .navBadgeActive {
   background: #0f172a;
@@ -334,6 +348,10 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .topbar {
@@ -519,7 +537,17 @@
   padding: 32px 28px;
   max-width: 1400px;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0 auto;
+}
+
+.badgeTextFull {
+  display: inline;
+}
+
+.badgeTextShort {
+  display: none;
 }
 
 /* Mobile Backdrop */
@@ -537,7 +565,9 @@
   }
 
   .closeSidebarBtn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .mainContainer {
@@ -559,6 +589,77 @@
 
   .contentWrapper {
     padding: 24px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .pageHeading h1 {
+    font-size: 1.1rem;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .badgeTextFull {
+    display: none;
+  }
+
+  .badgeTextShort {
+    display: inline;
+  }
+
+  .contentWrapper {
+    padding: 20px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    height: 58px;
+    padding: 0 10px;
+  }
+
+  .topbarLeft {
+    gap: 8px;
+  }
+
+  .topbarRight {
+    gap: 6px;
+  }
+
+  .pageHeading h1 {
+    font-size: 0.96rem;
+    max-width: 135px;
+  }
+
+  .modeBadge {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+
+  .liveSiteBtn {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+
+  .liveSiteText {
+    display: none;
+  }
+
+  .contentWrapper {
+    padding: 14px 8px;
+  }
+
+  .sidebar {
+    width: 280px;
+    max-width: 85vw;
   }
 }
 

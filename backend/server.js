@@ -1,5 +1,5 @@
-require("dotenv").config();
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
@@ -14,6 +14,10 @@ const Staff = require("./models/Staff");
 const Gallery = require("./models/Gallery");
 const Inquiry = require("./models/Inquiry");
 const SchoolInfo = require("./models/SchoolInfo");
+const Admin = require("./models/Admin");
+
+// Authentication & Security Middleware
+const { signToken, requireAuth, loginRateLimiter } = require("./middleware/auth");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -78,6 +82,164 @@ app.get("/api/health", (req, res) => {
 
 app.get("/api/db-status", (req, res) => {
   res.json(getDbState());
+});
+
+// =========================================================
+// 1.5. SECURE AUTHENTICATION & ADMIN CREDENTIALS API
+// =========================================================
+
+// POST /api/auth/login - Admin Login with brute force rate limiting
+app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
+      if (res.recordFailedLogin) res.recordFailedLogin();
+      return res.status(400).json({ error: "Username/email and password are required." });
+    }
+
+    const cleanId = identifier.trim().toLowerCase();
+    const admin = await Admin.findOne({
+      $or: [{ email: cleanId }, { username: cleanId }],
+    });
+
+    if (!admin) {
+      if (res.recordFailedLogin) res.recordFailedLogin();
+      return res.status(401).json({ error: "Invalid username/email or password." });
+    }
+
+    const isMatch = await admin.comparePassword(password);
+    if (!isMatch) {
+      if (res.recordFailedLogin) res.recordFailedLogin();
+      return res.status(401).json({ error: "Invalid username/email or password." });
+    }
+
+    // Success: reset rate limit attempts
+    if (res.recordSuccessfulLogin) res.recordSuccessfulLogin();
+
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    const token = signToken(admin);
+    const expiresIn = 3600; // 1 hour in seconds
+    const expiresAt = Date.now() + expiresIn * 1000;
+
+    res.json({
+      success: true,
+      token,
+      expiresIn,
+      expiresAt,
+      admin: {
+        id: admin._id.toString(),
+        username: admin.username,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        avatar: admin.avatar,
+        lastLogin: admin.lastLogin,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "An internal error occurred during authentication." });
+  }
+});
+
+// GET /api/auth/me - Verify current token and return authenticated profile
+app.get("/api/auth/me", requireAuth, async (req, res) => {
+  res.json({
+    authenticated: true,
+    admin: req.admin,
+  });
+});
+
+// PUT /api/auth/change-password - Change password securely with bcrypt verification
+app.put("/api/auth/change-password", requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters long." });
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one lowercase letter (a-z)." });
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one uppercase letter (A-Z)." });
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one number (0-9)." });
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
+      return res.status(400).json({
+        error: "Password must contain at least one special symbol (!@#$%^&*()_+-=[]{}...).",
+      });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "New password and confirmation do not match." });
+    }
+
+    const admin = await Admin.findById(req.admin._id);
+    if (!admin) {
+      return res.status(404).json({ error: "Administrator account not found." });
+    }
+
+    const isCurrentValid = await admin.comparePassword(currentPassword);
+    if (!isCurrentValid) {
+      return res.status(400).json({ error: "Current password is incorrect." });
+    }
+
+    admin.password = newPassword; // Automatically hashed by Mongoose pre-save hook
+    await admin.save();
+
+    res.json({
+      success: true,
+      message: "Password updated successfully. Please use your new password for subsequent logins.",
+    });
+  } catch (error) {
+    console.error("Password change error:", error);
+    res.status(500).json({ error: "Failed to update password." });
+  }
+});
+
+// PUT /api/auth/profile - Update administrator name, email, avatar
+app.put("/api/auth/profile", requireAuth, async (req, res) => {
+  try {
+    const { name, email, avatar } = req.body;
+    const admin = await Admin.findById(req.admin._id);
+    if (!admin) {
+      return res.status(404).json({ error: "Administrator account not found." });
+    }
+
+    if (name) admin.name = name.trim();
+    if (email) admin.email = email.trim().toLowerCase();
+    if (avatar) admin.avatar = avatar.trim();
+
+    await admin.save();
+
+    res.json({
+      success: true,
+      admin: {
+        id: admin._id.toString(),
+        username: admin.username,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        avatar: admin.avatar,
+      },
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ error: "Failed to update profile." });
+  }
 });
 
 // =========================================================
@@ -148,7 +310,7 @@ app.get("/api/download", (req, res) => {
 });
 
 // Upload Notice Attachment Endpoint
-app.post("/api/upload/notice-attachment", (req, res) => {
+app.post("/api/upload/notice-attachment", requireAuth, (req, res) => {
   noticeUpload.single("file")(req, res, (err) => {
     if (err) {
       console.error("[Attachment Upload Error]:", err.message);
@@ -185,7 +347,7 @@ app.get(["/api/notices", "/api/announcements"], async (req, res) => {
   }
 });
 
-app.post("/api/notices", async (req, res) => {
+app.post("/api/notices", requireAuth, async (req, res) => {
   try {
     const {
       title,
@@ -239,7 +401,7 @@ app.post("/api/notices", async (req, res) => {
   }
 });
 
-app.put("/api/notices/:id", async (req, res) => {
+app.put("/api/notices/:id", requireAuth, async (req, res) => {
   try {
     // If updating/clearing attachment, delete old file from disk
     const existing = await Notice.findById(req.params.id);
@@ -262,7 +424,7 @@ app.put("/api/notices/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/notices/:id", async (req, res) => {
+app.delete("/api/notices/:id", requireAuth, async (req, res) => {
   try {
     const notice = await Notice.findById(req.params.id);
     if (!notice) {
@@ -337,7 +499,7 @@ const deleteEventFile = (relativeUrl) => {
   }
 };
 
-app.post("/api/upload/event-image", (req, res) => {
+app.post("/api/upload/event-image", requireAuth, (req, res) => {
   eventUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -363,7 +525,7 @@ app.get("/api/events", async (req, res) => {
   }
 });
 
-app.post("/api/events", async (req, res) => {
+app.post("/api/events", requireAuth, async (req, res) => {
   try {
     const { title, category, date, year, time, venue, image, shortDesc, fullDesc, highlights } = req.body;
     if (!title || !date) {
@@ -387,7 +549,7 @@ app.post("/api/events", async (req, res) => {
   }
 });
 
-app.put("/api/events/:id", async (req, res) => {
+app.put("/api/events/:id", requireAuth, async (req, res) => {
   try {
     // If updating/changing image, clean up old file if stored in /uploads/events/
     const existing = await Event.findById(req.params.id);
@@ -405,7 +567,7 @@ app.put("/api/events/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/events/:id", async (req, res) => {
+app.delete("/api/events/:id", requireAuth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) {
@@ -472,7 +634,7 @@ const deleteStaffFile = (relativeUrl) => {
   }
 };
 
-app.post("/api/upload/staff-photo", (req, res) => {
+app.post("/api/upload/staff-photo", requireAuth, (req, res) => {
   staffUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -498,7 +660,7 @@ app.get("/api/staff", async (req, res) => {
   }
 });
 
-app.post("/api/staff", async (req, res) => {
+app.post("/api/staff", requireAuth, async (req, res) => {
   try {
     const { name, role, qualification, experience, image, bio, wing, category } = req.body;
     if (!name || !role) {
@@ -520,7 +682,7 @@ app.post("/api/staff", async (req, res) => {
   }
 });
 
-app.put("/api/staff/:id", async (req, res) => {
+app.put("/api/staff/:id", requireAuth, async (req, res) => {
   try {
     // If updating/changing photo, clean up old file if stored in /uploads/staff/
     const existing = await Staff.findById(req.params.id);
@@ -538,7 +700,7 @@ app.put("/api/staff/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/staff/:id", async (req, res) => {
+app.delete("/api/staff/:id", requireAuth, async (req, res) => {
   try {
     const member = await Staff.findById(req.params.id);
     if (!member) {
@@ -605,7 +767,7 @@ const deleteGalleryFile = (relativeUrl) => {
   }
 };
 
-app.post("/api/upload/gallery-image", (req, res) => {
+app.post("/api/upload/gallery-image", requireAuth, (req, res) => {
   galleryUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -631,7 +793,7 @@ app.get("/api/gallery", async (req, res) => {
   }
 });
 
-app.post("/api/gallery", async (req, res) => {
+app.post("/api/gallery", requireAuth, async (req, res) => {
   try {
     const { title, category, image, imageUrl, caption, date } = req.body;
     const img = image || imageUrl;
@@ -651,7 +813,7 @@ app.post("/api/gallery", async (req, res) => {
   }
 });
 
-app.put("/api/gallery/:id", async (req, res) => {
+app.put("/api/gallery/:id", requireAuth, async (req, res) => {
   try {
     // If updating/changing photo, clean up old file if stored in /uploads/gallery/
     const existing = await Gallery.findById(req.params.id);
@@ -669,7 +831,7 @@ app.put("/api/gallery/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/gallery/:id", async (req, res) => {
+app.delete("/api/gallery/:id", requireAuth, async (req, res) => {
   try {
     const item = await Gallery.findById(req.params.id);
     if (!item) {
@@ -690,7 +852,7 @@ app.delete("/api/gallery/:id", async (req, res) => {
 // =========================================================
 // 6. INQUIRIES & ADMISSIONS LEADS API
 // =========================================================
-app.get(["/api/inquiries", "/api/admissions"], async (req, res) => {
+app.get(["/api/inquiries", "/api/admissions"], requireAuth, async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
     res.json(inquiries);
@@ -784,7 +946,7 @@ app.post(["/api/inquiries", "/api/contact", "/api/admissions"], async (req, res)
   }
 });
 
-app.patch(["/api/inquiries/:id/status", "/api/admissions/:id/status"], async (req, res) => {
+app.patch(["/api/inquiries/:id/status", "/api/admissions/:id/status"], requireAuth, async (req, res) => {
   try {
     const { status } = req.body;
     const updated = await Inquiry.findByIdAndUpdate(req.params.id, { status }, { returnDocument: "after" });
@@ -797,7 +959,7 @@ app.patch(["/api/inquiries/:id/status", "/api/admissions/:id/status"], async (re
   }
 });
 
-app.put(["/api/inquiries/:id", "/api/admissions/:id"], async (req, res) => {
+app.put(["/api/inquiries/:id", "/api/admissions/:id"], requireAuth, async (req, res) => {
   try {
     const updated = await Inquiry.findByIdAndUpdate(req.params.id, req.body, { returnDocument: "after" });
     if (!updated) {
@@ -809,7 +971,7 @@ app.put(["/api/inquiries/:id", "/api/admissions/:id"], async (req, res) => {
   }
 });
 
-app.delete(["/api/inquiries/:id", "/api/admissions/:id"], async (req, res) => {
+app.delete(["/api/inquiries/:id", "/api/admissions/:id"], requireAuth, async (req, res) => {
   try {
     const deleted = await Inquiry.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -854,7 +1016,7 @@ const sliderUpload = multer({
   },
 });
 
-app.post("/api/upload/slider-image", (req, res) => {
+app.post("/api/upload/slider-image", requireAuth, (req, res) => {
   sliderUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
@@ -886,15 +1048,23 @@ app.get("/api/school-info", async (req, res) => {
   }
 });
 
-app.put("/api/school-info", async (req, res) => {
+app.put("/api/school-info", requireAuth, async (req, res) => {
   try {
     const updateData = { ...req.body };
+    delete updateData._id;
+    delete updateData.id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+    delete updateData.__v;
+
     if (updateData.isAdmissionsOpen === false) {
       updateData.showAdmissionNotice = false;
     }
     const updated = await SchoolInfo.findOneAndUpdate({}, updateData, { returnDocument: "after", upsert: true });
+    console.log("🏫 [MongoDB Atlas] SchoolInfo updated successfully in cluster.");
     res.json(updated);
   } catch (err) {
+    console.error("❌ Failed to update school info in MongoDB Atlas:", err);
     res.status(500).json({ error: "Failed to update school info in MongoDB", details: err.message });
   }
 });
