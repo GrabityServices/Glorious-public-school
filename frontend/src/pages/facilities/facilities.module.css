@@ -42,16 +42,22 @@
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
-  padding: 44px;
-  box-shadow: var(--shadow-sm);
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr;
+  grid-template-columns: 1.15fr 0.85fr;
   gap: 40px;
   align-items: center;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.facilityBlock:hover {
+  box-shadow: 0 12px 32px rgba(18, 18, 20, 0.08);
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 .reversed {
-  grid-template-columns: 0.8fr 1.4fr;
+  grid-template-columns: 0.85fr 1.15fr;
 }
 
 .reversed .facilityContent {
@@ -128,35 +134,135 @@
   margin-top: 3px;
 }
 
-.sideCard {
-  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--primary-light) 100%);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: 32px;
-  text-align: center;
+.facilityCardSide {
+  width: 100%;
 }
 
-.sideCard h3 {
-  font-size: 1.3rem;
-  color: var(--primary-dark);
-  margin-bottom: 8px;
+.imageCard {
+  position: relative;
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 10px 30px -6px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
-.spotlightBadge {
-  display: inline-block;
-  background-color: var(--primary-dark);
-  color: #fef08a;
-  font-size: 0.75rem;
+.imageCard:hover {
+  transform: translateY(-5px);
+  border-color: rgba(220, 38, 38, 0.22);
+  box-shadow: 0 24px 48px -10px rgba(15, 23, 42, 0.16), 0 8px 16px -4px rgba(220, 38, 38, 0.06);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+.facilityImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+}
+
+.imageCard:hover .facilityImg {
+  transform: scale(1.06);
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.35) 0%,
+    rgba(15, 23, 42, 0.02) 40%,
+    rgba(15, 23, 42, 0.72) 100%
+  );
+  pointer-events: none;
+}
+
+.badgeWrapper {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+}
+
+.imageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 18, 20, 0.75);
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 0.74rem;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: var(--border-radius-xl);
-  margin-bottom: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
-.sideCard p {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.6;
+.badgePulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  flex-shrink: 0;
+}
+
+.glassCaptionCard {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+  background: rgba(18, 18, 20, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: background 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+}
+
+.imageCard:hover .glassCaptionCard {
+  background: rgba(18, 18, 20, 0.82);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+.captionAccentLine {
+  width: 3px;
+  height: 20px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #dc2626 0%, #f59e0b 100%);
+  flex-shrink: 0;
+}
+
+.captionText {
+  color: #f8fafc;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .ctaSection {
@@ -197,6 +303,7 @@
   .facilityBlock,
   .reversed {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
   .reversed .facilityContent {
     order: 1;
@@ -204,10 +311,33 @@
   .reversed .facilityCardSide {
     order: 2;
   }
+  .imageWrapper {
+    aspect-ratio: 16 / 10;
+  }
 }
 
 @media (max-width: 640px) {
   .facilityBlock {
     padding: 24px;
+    gap: 24px;
+  }
+  .imageCard {
+    padding: 6px;
+    border-radius: 18px;
+  }
+  .imageWrapper {
+    border-radius: 12px;
+  }
+  .glassCaptionCard {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    padding: 9px 12px;
+    gap: 8px;
+  }
+  .captionText {
+    font-size: 0.78rem;
+    white-space: normal;
   }
 }
+

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Bell,
@@ -11,7 +11,7 @@ import {
   Mail,
   Download,
   Paperclip,
-  ExternalLink,
+  Eye,
   Image as ImageIcon,
 } from "lucide-react";
 import styles from "./news.module.css";
@@ -24,9 +24,17 @@ export default function NewsPage() {
   useDocumentTitle("News & Notice Board | Glorious Public School");
   const { notices } = useData();
   const [selectedNoticeId, setSelectedNoticeId] = useState(null);
+  const readerRef = useRef(null);
 
   const activeNotice =
     notices.find((n) => n.id === selectedNoticeId) || notices[0] || null;
+
+  const handleNoticeSelect = (id) => {
+    setSelectedNoticeId(id);
+    if (typeof window !== "undefined" && window.innerWidth <= 992 && readerRef.current) {
+      readerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const getAttachmentUrl = (notice) => {
     return notice?.attachmentUrl || notice?.pdfUrl || "";
@@ -68,7 +76,7 @@ export default function NewsPage() {
                     return (
                       <div
                         key={notice.id}
-                        onClick={() => setSelectedNoticeId(notice.id)}
+                        onClick={() => handleNoticeSelect(notice.id)}
                         className={`${styles.noticeCard} ${
                           isSelected ? styles.selectedCard : ""
                         }`}
@@ -97,7 +105,7 @@ export default function NewsPage() {
               {/* Selected Notice Reader */}
               <div className={styles.detailCol}>
                 {activeNotice ? (
-                  <div className={styles.readerBox}>
+                  <div className={styles.readerBox} ref={readerRef}>
                     <div className={styles.readerHeader}>
                       <div className={styles.metaBadgeRow}>
                         <span className={styles.catTag}>{activeNotice.category}</span>
@@ -147,7 +155,9 @@ export default function NewsPage() {
                           </div>
                         ) : (
                           <div className={styles.pdfDocBanner}>
-                            <FileText size={36} color="#dc2626" />
+                            <div className={styles.pdfDocIconBox}>
+                              <FileText size={28} color="#dc2626" />
+                            </div>
                             <div className={styles.pdfDocInfo}>
                               <h4>
                                 {activeNotice.attachmentName || `${activeNotice.title}.pdf`}
@@ -173,7 +183,7 @@ export default function NewsPage() {
                           >
                             <Download size={16} />
                             <span>
-                              Download {isAttachmentPdf(activeNotice) ? "PDF Circular" : "Notice Photo"}
+                              {isAttachmentPdf(activeNotice) ? "Download PDF" : "Download Photo"}
                             </span>
                           </a>
 
@@ -183,8 +193,10 @@ export default function NewsPage() {
                             rel="noopener noreferrer"
                             className={styles.viewOnlineBtn}
                           >
-                            <ExternalLink size={14} />
-                            <span>View Full Screen</span>
+                            <Eye size={16} />
+                            <span>
+                              {isAttachmentPdf(activeNotice) ? "Preview PDF" : "View Full Screen"}
+                            </span>
                           </a>
                         </div>
                       </div>

@@ -12,7 +12,7 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
-  ExternalLink,
+  Eye,
 } from "lucide-react";
 import styles from "./AdminNotices.module.css";
 import { useData } from "@/context/DataContext";
@@ -55,6 +55,8 @@ export default function AdminNotices() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
+
+
 
   const categories = ["All", "Admission", "Academic", "Notice", "Event"];
 
@@ -249,26 +251,30 @@ export default function AdminNotices() {
                       <h4>
                         <span>{notice.title}</span>
                         {(notice.attachmentUrl || notice.pdfUrl) && (
-                          <a
-                            href={notice.attachmentUrl || notice.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.attachmentPill}
-                            title="View / Download attached file"
-                          >
-                            {notice.attachmentType === "pdf" ||
-                            (notice.attachmentUrl || notice.pdfUrl).toLowerCase().endsWith(".pdf") ? (
-                              <>
-                                <FileText size={12} color="#dc2626" />
-                                <span>PDF</span>
-                              </>
-                            ) : (
-                              <>
-                                <ImageIcon size={12} color="#0284c7" />
-                                <span>Image</span>
-                              </>
-                            )}
-                          </a>
+                          notice.attachmentType === "pdf" ||
+                          (notice.attachmentUrl || notice.pdfUrl).toLowerCase().endsWith(".pdf") ? (
+                            <a
+                              href={notice.attachmentUrl || notice.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.attachmentPill}
+                              title="Open attached PDF in new tab"
+                            >
+                              <FileText size={12} color="#dc2626" />
+                              <span>PDF Document</span>
+                            </a>
+                          ) : (
+                            <a
+                              href={notice.attachmentUrl || notice.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.attachmentPill}
+                              title="View / Download attached file"
+                            >
+                              <ImageIcon size={12} color="#0284c7" />
+                              <span>Image</span>
+                            </a>
+                          )
                         )}
                       </h4>
                       <p className={styles.noticeSummary}>{notice.summary}</p>
@@ -482,40 +488,57 @@ export default function AdminNotices() {
                 {uploadError && <div className={styles.uploadError}>{uploadError}</div>}
 
                 {formData.attachmentUrl ? (
-                  <div className={styles.filePreviewCard}>
-                    <div className={styles.filePreviewLeft}>
-                      {formData.attachmentType === "image" ? (
-                        <img
-                          src={formData.attachmentUrl}
-                          alt="Notice Attachment Preview"
-                          className={styles.fileThumbImg}
-                        />
-                      ) : (
-                        <div className={styles.filePdfBadge}>
-                          <FileText size={18} />
-                          <span>PDF</span>
+                  <div className={styles.filePreviewWrapper}>
+                    <div className={styles.filePreviewCard}>
+                      <div className={styles.filePreviewLeft}>
+                        {formData.attachmentType === "image" ? (
+                          <img
+                            src={formData.attachmentUrl}
+                            alt="Notice Attachment Preview"
+                            className={styles.fileThumbImg}
+                          />
+                        ) : (
+                          <div className={styles.filePdfBadge}>
+                            <FileText size={18} />
+                            <span>PDF</span>
+                          </div>
+                        )}
+                        <div className={styles.fileInfo}>
+                          <span className={styles.fileName}>
+                            {formData.attachmentName || "Attached Notice File"}
+                          </span>
+                          <span className={styles.fileMeta}>
+                            {formData.attachmentType === "pdf" ? "PDF Document" : "Official Image"}
+                            {formData.attachmentSize > 0 &&
+                              ` • ${(formData.attachmentSize / 1024).toFixed(1)} KB`}
+                          </span>
                         </div>
-                      )}
-                      <div className={styles.fileInfo}>
-                        <span className={styles.fileName}>
-                          {formData.attachmentName || "Attached Notice File"}
-                        </span>
-                        <span className={styles.fileMeta}>
-                          {formData.attachmentType === "pdf" ? "PDF Document" : "Official Image"}
-                          {formData.attachmentSize > 0 &&
-                            ` • ${(formData.attachmentSize / 1024).toFixed(1)} KB`}
-                        </span>
+                      </div>
+
+                      <div className={styles.filePreviewActions}>
+                        {formData.attachmentType === "image" && (
+                          <a
+                            href={formData.attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.previewFileBtn}
+                            title="Open image in new tab"
+                          >
+                            <Eye size={13} />
+                            <span>View</span>
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleRemoveAttachment}
+                          className={styles.removeFileBtn}
+                          title="Remove attachment"
+                        >
+                          <Trash2 size={13} />
+                          <span>Remove</span>
+                        </button>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveAttachment}
-                      className={styles.removeFileBtn}
-                      title="Remove attachment"
-                    >
-                      <Trash2 size={13} />
-                      <span>Remove</span>
-                    </button>
                   </div>
                 ) : (
                   <div
@@ -575,6 +598,7 @@ export default function AdminNotices() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

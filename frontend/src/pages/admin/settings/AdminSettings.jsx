@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Settings,
   Award,
@@ -40,11 +41,21 @@ export default function AdminSettings() {
   useDocumentTitle("School Information & Stats | Glorious Admin");
   const { schoolInfo, updateSchoolInfo, updateStat, resetToDefaults, uploadSliderImage } = useData();
   const confirm = useConfirm();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [toast, setToast] = useState("");
 
+  // Redirect legacy #security hash to dedicated Admin & Security page
+  useEffect(() => {
+    if (location.hash === "#security") {
+      navigate("/admin/security", { replace: true });
+    }
+  }, [location.hash, navigate]);
+
   // Local state for school stats
   const [stats, setStats] = useState(() => schoolInfo.stats || []);
+  const [isSavingStats, setIsSavingStats] = useState(false);
 
   // Local state for homepage hero slider
   const ensureSlideIds = (slideList) => {
@@ -275,12 +286,21 @@ export default function AdminSettings() {
     setStats(newStats);
   };
 
-  const handleSaveStats = (e) => {
+  const handleSaveStats = async (e) => {
     e.preventDefault();
-    stats.forEach((stat, idx) => {
-      updateStat(idx, stat);
-    });
-    showToast("School stats updated. Changes are now live on the homepage!");
+    setIsSavingStats(true);
+    try {
+      const res = await updateSchoolInfo({ stats });
+      if (res) {
+        showToast("School stats updated successfully in MongoDB Atlas cluster!");
+      } else {
+        showToast("Stats saved. Changes are now live on the homepage!");
+      }
+    } catch (err) {
+      showToast(err.message || "Failed to update school stats. Please try again.");
+    } finally {
+      setIsSavingStats(false);
+    }
   };
 
   const handleSaveContact = (e) => {
@@ -369,9 +389,13 @@ export default function AdminSettings() {
             ))}
           </div>
 
-          <button type="submit" className={styles.saveBtn}>
-            <Save size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-            <span>Save Milestone Stats</span>
+          <button type="submit" className={styles.saveBtn} disabled={isSavingStats}>
+            {isSavingStats ? (
+              <Loader2 size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle", animation: "spin 1s linear infinite" }} />
+            ) : (
+              <Save size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+            )}
+            <span>{isSavingStats ? "Saving to Database..." : "Save Milestone Stats"}</span>
           </button>
         </form>
       </div>

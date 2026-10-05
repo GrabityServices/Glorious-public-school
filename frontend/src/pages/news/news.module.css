@@ -275,11 +275,30 @@
 .pdfDocBanner {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.pdfDocIconBox {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pdfDocInfo {
+  min-width: 0;
+  flex: 1;
 }
 
 .pdfDocInfo h4 {
@@ -287,7 +306,8 @@
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px 0;
-  word-break: break-all;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .pdfDocInfo p {
@@ -306,8 +326,9 @@
 .downloadDocBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 18px;
+  padding: 11px 20px;
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: #ffffff !important;
   border-radius: 8px;
@@ -316,6 +337,7 @@
   text-decoration: none;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  cursor: pointer;
 }
 
 .downloadDocBtn:hover {
@@ -327,16 +349,18 @@
 .viewOnlineBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #334155 !important;
   border-radius: 8px;
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .viewOnlineBtn:hover {
@@ -362,11 +386,100 @@
 }
 
 @media (max-width: 992px) {
+  .section {
+    padding: 30px 0 60px 0;
+  }
   .grid {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
   .readerBox {
     position: static;
     padding: 24px;
+    border-radius: 14px;
+  }
+  .readerHeader h2 {
+    font-size: 1.55rem;
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+  .heroHeader {
+    padding: 40px 0 28px 0;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .subtitle {
+    font-size: 0.98rem;
+  }
+  .colHeading {
+    font-size: 1.35rem;
+    margin-bottom: 14px;
+  }
+  .noticeCard {
+    padding: 16px;
+  }
+  .cardTitle {
+    font-size: 1.05rem;
+  }
+  .readerBox {
+    padding: 20px 16px;
+  }
+  .readerHeader h2 {
+    font-size: 1.35rem;
+  }
+  .summaryHighlight {
+    font-size: 0.95rem;
+    padding: 12px 14px;
+  }
+  .fullContent {
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+  .noticeAttachmentCard {
+    padding: 14px;
+    gap: 12px;
+  }
+  .attachmentCardActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+  .downloadDocBtn,
+  .viewOnlineBtn {
+    width: 100%;
+    padding: 11px 12px;
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .attachmentCardActions {
+    grid-template-columns: 1fr;
+  }
+  .pdfDocBanner {
+    padding: 12px;
+    gap: 10px;
+  }
+  .pdfDocIconBox {
+    width: 40px;
+    height: 40px;
+  }
+  .pdfDocInfo h4 {
+    font-size: 0.88rem;
+  }
+  .metaBadgeRow {
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+  .contactFooter {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+

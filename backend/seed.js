@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const mongoose = require("mongoose");
 const { connectDB } = require("./db");
 const Notice = require("./models/Notice");
@@ -7,6 +8,7 @@ const Staff = require("./models/Staff");
 const Gallery = require("./models/Gallery");
 const Inquiry = require("./models/Inquiry");
 const SchoolInfo = require("./models/SchoolInfo");
+const Admin = require("./models/Admin");
 
 const INITIAL_NOTICES = [
   {
@@ -369,6 +371,20 @@ const seedDatabase = async () => {
     // 6. School Info
     if ((await SchoolInfo.countDocuments()) === 0) {
       await SchoolInfo.create(INITIAL_SCHOOL_INFO);
+      seeded = true;
+    }
+
+    // 7. Initial Administrator Account
+    if ((await Admin.countDocuments()) === 0) {
+      await Admin.create({
+        username: "admin",
+        email: "admin@glorious.edu",
+        password: process.env.ADMIN_INIT_PASSWORD || "admin123", // Hashes automatically via bcrypt pre-save
+        name: "Mrs. Binod Kumar",
+        role: "Super Administrator",
+        avatar: "/images/binod-kumar.jpg",
+      });
+      console.log("🛡️ Initial Super Administrator seeded with hashed password in MongoDB.");
       seeded = true;
     }
 

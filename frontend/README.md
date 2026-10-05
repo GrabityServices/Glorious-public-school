@@ -19,7 +19,7 @@ An engaging, academic web portal for **Glorious Public School** (Nursery to Clas
 
 - 🎓 **Online Student Admission System (`/admissions`)** — Simple digital application with instant registration code generator, age eligibility matrix, and required documents checklist.
 - 📚 **Comprehensive Academics Directory (`/academics`)** — Interactive wing tabs covering Pre-Primary (Nursery, LKG, UKG), Primary (1st–5th), Middle (6th–8th), and Secondary (9th–10th) with subject breakdowns, evaluation rules, and bell schedule.
-- 🚌 **Campus Infrastructure & Facilities (`/facilities`)** — Safe school bus/van transport covering Jhajha and Jamui routes, residential boarding hostel, digital library (3,500+ books), science & computer technology labs, and expansive sports grounds.
+- 🚌 **Campus Infrastructure & Facilities (`/facilities`)** — Safe school bus/van transport covering Jhajha and Jamui routes, residential boarding hostel, digital library (1,500+ books), science & computer technology labs, and expansive sports grounds.
 - 🏆 **Events & Celebrations (`/events`)** — Showcasing cultural events including the Inter-School Dance & Cultural Fest at Jhajha Town Hall, Independence Day painting competition, Annual Sports Meet, and Science Exhibition.
 - 📢 **Official Notice Board (`/news`)** — Circulars, examination schedules, winter timing notices, and holiday announcements with categorized search and reader view.
 - 🖼️ **Photo Gallery (`/gallery`)** — High-resolution categorized photo albums with interactive lightbox viewer.

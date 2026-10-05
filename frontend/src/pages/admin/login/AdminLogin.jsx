@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Lock, Mail, ArrowRight, Eye, EyeOff, AlertCircle, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import styles from "./AdminLogin.module.css";
-import { useAuth, DEFAULT_ADMIN } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 
 export default function AdminLogin() {
@@ -24,13 +24,13 @@ export default function AdminLogin() {
     navigate("/admin", { replace: true });
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setAuthError("");
 
-    setTimeout(() => {
-      const res = login(identifier, password);
+    try {
+      const res = await login(identifier, password);
       setLoading(false);
       if (res.success) {
         setPopup({
@@ -41,7 +41,7 @@ export default function AdminLogin() {
         });
         setTimeout(() => {
           navigate(from, { replace: true });
-        }, 1400);
+        }, 1200);
       } else {
         setPopup({
           show: true,
@@ -50,15 +50,14 @@ export default function AdminLogin() {
           message: res.error || "The email/username or password you entered is incorrect. Please verify and try again."
         });
       }
-    }, 450);
-  };
-
-  const handleFillDemo = () => {
-    setIdentifier(DEFAULT_ADMIN.email);
-    setPassword(DEFAULT_ADMIN.password);
-    setAuthError("");
-    if (popup.show) {
-      setPopup({ show: false, type: "success", title: "", message: "" });
+    } catch (err) {
+      setLoading(false);
+      setPopup({
+        show: true,
+        type: "error",
+        title: "Connection Error",
+        message: "Unable to reach the server. Please check your network and try again."
+      });
     }
   };
 
@@ -77,22 +76,6 @@ export default function AdminLogin() {
           <p className={styles.subtitle}>Glorious Public School Management Panel</p>
         </div>
 
-        {/* Quick Demo Credentials Helper */}
-        <div className={styles.demoBanner}>
-          <div className={styles.demoInfo}>
-            <div>Default ID: <strong>{DEFAULT_ADMIN.email}</strong></div>
-            <div>Password: <strong>{DEFAULT_ADMIN.password}</strong></div>
-          </div>
-          <button
-            type="button"
-            className={styles.demoBtn}
-            onClick={handleFillDemo}
-            title="Click to fill credentials"
-          >
-            Auto Fill
-          </button>
-        </div>
-
         {authError && (
           <div className={styles.errorBanner}>
             <AlertCircle size={16} />
@@ -108,7 +91,7 @@ export default function AdminLogin() {
               <input
                 type="text"
                 required
-                placeholder="admin@glorious.edu or admin"
+                placeholder="Enter email or username"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className={styles.input}
@@ -123,7 +106,7 @@ export default function AdminLogin() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                placeholder="••••••••"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={styles.input}
@@ -195,13 +178,6 @@ export default function AdminLogin() {
                   onClick={() => setPopup({ ...popup, show: false })}
                 >
                   Try Again
-                </button>
-                <button
-                  type="button"
-                  className={styles.secondaryActionBtn}
-                  onClick={handleFillDemo}
-                >
-                  Auto Fill Demo Credentials
                 </button>
               </div>
             )}
