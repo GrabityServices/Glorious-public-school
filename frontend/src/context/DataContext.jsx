@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { DEFAULT_HERO_SLIDES } from "@/data/sliderData";
 
 const DataContext = createContext();
 
@@ -35,6 +36,8 @@ export function DataProvider({ children }) {
     landmark: "Near Koltex, Petrol Pump",
     admissionNotice: "ADMISSION OPEN FOR NURSERY TO CLASS 10TH (ACADEMIC SESSION 2026-2027) — APPLY TODAY!",
     showAdmissionNotice: true,
+    isAdmissionsOpen: true,
+    heroSlides: DEFAULT_HERO_SLIDES,
     stats: [
       { label: "Dedicated Teachers", value: "25+", suffix: "" },
       { label: "Enrolled Students", value: "800+", suffix: "" },
@@ -101,13 +104,18 @@ export function DataProvider({ children }) {
       if (infoRes.status === "fulfilled" && infoRes.value.ok) {
         const data = await infoRes.value.json();
         if (data && data.name) {
+          const isAdm = data.isAdmissionsOpen !== false;
           setSchoolInfo((prev) => ({
             ...prev,
             ...data,
-            showAdmissionNotice:
-              typeof data.showAdmissionNotice === "boolean"
-                ? data.showAdmissionNotice
-                : prev.showAdmissionNotice ?? true,
+            isAdmissionsOpen: isAdm,
+            showAdmissionNotice: isAdm ? (data.showAdmissionNotice !== false) : false,
+            heroSlides:
+              Array.isArray(data.heroSlides) && data.heroSlides.length > 0
+                ? data.heroSlides
+                : prev.heroSlides && prev.heroSlides.length > 0
+                ? prev.heroSlides
+                : DEFAULT_HERO_SLIDES,
           }));
         }
       }
@@ -397,10 +405,29 @@ export function DataProvider({ children }) {
     }
   };
 
+  const uploadSliderImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/slider-image", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Upload failed (Status ${res.status})`);
+    } catch (err) {
+      console.error("Slider image upload error:", err);
+      throw err;
+    }
+  };
+
   // --- CRUD: Inquiries / Admissions (MongoDB Atlas) ---
   const addInquiry = async (inquiry) => {
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/admissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inquiry),
@@ -409,10 +436,29 @@ export function DataProvider({ children }) {
         const json = await res.json();
         const saved = json.data || json;
         setInquiries((prev) => [saved, ...prev]);
-        return saved;
+        return json;
       }
     } catch (err) {
       console.error("Failed to add inquiry to MongoDB:", err);
+    }
+  };
+
+  const updateInquiry = async (id, updatedFields) => {
+    try {
+      const res = await fetch(`/api/admissions/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setInquiries((prev) =>
+          prev.map((inq) => (inq.id === id || inq._id === id ? saved : inq))
+        );
+        return saved;
+      }
+    } catch (err) {
+      console.error("Failed to update inquiry in MongoDB:", err);
     }
   };
 
@@ -449,13 +495,30 @@ export function DataProvider({ children }) {
   // --- CRUD: School Info & Stats (MongoDB Atlas) ---
   const updateSchoolInfo = async (updatedFields) => {
     // 1. Optimistically update local React state immediately so UI changes without refresh
+    const isAdm = updatedFields.isAdmissionsOpen !== undefined
+      ? (updatedFields.isAdmissionsOpen !== false)
+      : (schoolInfo.isAdmissionsOpen !== false);
+
+    const isNotice = isAdm && (
+      updatedFields.showAdmissionNotice !== undefined
+        ? (updatedFields.showAdmissionNotice !== false)
+        : (schoolInfo.showAdmissionNotice !== false)
+    );
+
     setSchoolInfo((prev) => ({
       ...prev,
       ...updatedFields,
+      isAdmissionsOpen: isAdm,
+      showAdmissionNotice: isNotice,
     }));
 
     try {
-      const nextInfo = { ...schoolInfo, ...updatedFields };
+      const nextInfo = {
+        ...schoolInfo,
+        ...updatedFields,
+        isAdmissionsOpen: isAdm,
+        showAdmissionNotice: isNotice,
+      };
       const res = await fetch("/api/school-info", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -463,13 +526,18 @@ export function DataProvider({ children }) {
       });
       if (res.ok) {
         const saved = await res.json();
+        const savedAdm = saved.isAdmissionsOpen !== false;
         setSchoolInfo((prev) => ({
           ...prev,
           ...saved,
-          showAdmissionNotice:
-            typeof saved.showAdmissionNotice === "boolean"
-              ? saved.showAdmissionNotice
-              : prev.showAdmissionNotice ?? true,
+          isAdmissionsOpen: savedAdm,
+          showAdmissionNotice: savedAdm ? (saved.showAdmissionNotice !== false) : false,
+          heroSlides:
+            Array.isArray(saved.heroSlides) && saved.heroSlides.length > 0
+              ? saved.heroSlides
+              : prev.heroSlides && prev.heroSlides.length > 0
+              ? prev.heroSlides
+              : DEFAULT_HERO_SLIDES,
         }));
         return saved;
       }
@@ -514,9 +582,11 @@ export function DataProvider({ children }) {
         schoolInfo,
         updateSchoolInfo,
         updateStat,
+        uploadSliderImage,
 
         inquiries,
         addInquiry,
+        updateInquiry,
         updateInquiryStatus,
         deleteInquiry,
 

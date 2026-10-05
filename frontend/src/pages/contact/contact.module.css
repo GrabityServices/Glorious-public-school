@@ -225,6 +225,61 @@
   box-shadow: 0 0 0 3px rgba(19, 62, 107, 0.1);
 }
 
+.inputError {
+  border-color: #ef4444 !important;
+  background-color: #fffbfb !important;
+}
+
+.inputError:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #dc2626;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.phoneInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.phonePrefix {
+  position: absolute;
+  left: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #64748b;
+  pointer-events: none;
+  user-select: none;
+}
+
+.phoneInputWithPrefix {
+  padding-left: 46px !important;
+  padding-right: 50px !important;
+}
+
+.charCounter {
+  position: absolute;
+  right: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+  font-family: monospace;
+}
+
+.charCounterValid {
+  color: #16a34a;
+}
+
 .successBlock {
   text-align: center;
   padding: 30px 10px;

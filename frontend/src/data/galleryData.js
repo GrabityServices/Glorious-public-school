@@ -1,4 +1,4 @@
-export const GALLERY_CATEGORIES = ["All", "Campus", "Events", "Sports", "Academics"];
+export const GALLERY_CATEGORIES = ["All", "Campus", "Events", "Sports", "Academics", "Other"];
 
 export const GALLERY_ITEMS = [
   {

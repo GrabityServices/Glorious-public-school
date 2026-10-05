@@ -18,7 +18,7 @@ export default function NoticeEventsSection() {
 
   const [thumbHeight, setThumbHeight] = useState(52);
   const [thumbTop, setThumbTop] = useState(0);
-  const [hasOverflow, setHasOverflow] = useState(true);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
   const dragStartScrollTop = useRef(0);
@@ -178,7 +178,7 @@ export default function NoticeEventsSection() {
             {displayEvents.length > 0 ? (
               <div className={styles.eventsList}>
                 {displayEvents.slice(0, 2).map((ev, i) => (
-                  <FadeUp key={ev.id} delay={0.1 * (i + 1)} fullHeight>
+                  <FadeUp key={ev.id} delay={0.1 * (i + 1)}>
                     <div className={styles.eventCard}>
                       <div className={styles.dateBadge}>
                         <span className={styles.dateDays}>{ev.date.split(" ")[0]}</span>
@@ -239,7 +239,7 @@ export default function NoticeEventsSection() {
                   <>
                     <div
                       ref={listRef}
-                      className={styles.noticesList}
+                      className={`${styles.noticesList} ${hasOverflow ? styles.hasOverflowMask : ""}`}
                       data-lenis-prevent="true"
                       onScroll={updateThumb}
                     >

@@ -13,6 +13,8 @@ import {
   ExternalLink,
   Database,
   Image as ImageIcon,
+  GraduationCap,
+  Mail,
 } from "lucide-react";
 import styles from "./AdminLayout.module.css";
 import { useAuth } from "@/context/AuthContext";
@@ -43,6 +45,17 @@ export default function AdminLayout() {
       navigate("/admin/login", { replace: true });
     }
   };
+
+  // Distinguish admissions vs contact inquiries for accurate badge counts
+  const pendingAdmissionsCount = inquiries.filter((inq) => {
+    const isAdm = inq.type === "Online Admission" || Boolean(inq.appId || inq.dob || inq.fatherName || inq.applyingClass);
+    return isAdm && inq.status === "Pending";
+  }).length;
+
+  const pendingContactCount = inquiries.filter((inq) => {
+    const isContact = inq.type === "Contact Inquiry" || inq.type === "General Inquiry" || (!inq.appId && !inq.dob && !inq.fatherName && !inq.applyingClass);
+    return isContact && inq.status === "Pending";
+  }).length;
 
   const navItems = [
     {
@@ -82,10 +95,17 @@ export default function AdminLayout() {
     },
     {
       to: "/admin/admissions",
-      label: "Inquiries & Leads",
-      icon: <FileText size={18} />,
+      label: "Student Admissions",
+      icon: <GraduationCap size={18} />,
       color: "rose",
-      badge: inquiries.filter((i) => i.status === "Pending").length,
+      badge: pendingAdmissionsCount,
+    },
+    {
+      to: "/admin/inquiries",
+      label: "Contact Inquiries",
+      icon: <Mail size={18} />,
+      color: "blue",
+      badge: pendingContactCount,
     },
     {
       to: "/admin/settings",
@@ -103,7 +123,8 @@ export default function AdminLayout() {
     if (path.startsWith("/admin/events")) return "School Events & Competitions";
     if (path.startsWith("/admin/staff")) return "Faculty & Staff Directory";
     if (path.startsWith("/admin/gallery")) return "Photo Gallery & Media Manager";
-    if (path.startsWith("/admin/admissions")) return "Admissions & Inquiries";
+    if (path.startsWith("/admin/admissions")) return "Online Student Admissions";
+    if (path.startsWith("/admin/inquiries")) return "Website Contact Inquiries";
     if (path.startsWith("/admin/settings")) return "School Information & Stats";
     return "Admin Portal";
   };

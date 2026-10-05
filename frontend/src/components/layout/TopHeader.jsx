@@ -24,8 +24,8 @@ export default function TopHeader() {
           </a>
         </div>
 
-        {/* Marquee Ticker */}
-        {schoolInfo?.showAdmissionNotice !== false && schoolInfo?.admissionNotice && (
+        {/* Marquee Ticker - Controlled by single Admissions Open toggle */}
+        {schoolInfo?.isAdmissionsOpen !== false && schoolInfo?.admissionNotice && (
           <Link
             to="/admissions"
             className={styles.tickerWrapper}

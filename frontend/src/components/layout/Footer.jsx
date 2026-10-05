@@ -13,35 +13,62 @@ import {
 } from "lucide-react";
 import styles from "./Footer.module.css";
 import { useData } from "@/context/DataContext";
+import { getAcademicSession } from "@/utils/academicYear";
 
 export default function Footer() {
   const { schoolInfo } = useData();
   const phone = schoolInfo?.phone || "9534105012";
   const address = schoolInfo?.address || "Koltex, Petrol Pump, Jhajha, Jamui, Bihar 811308";
   const email = schoolInfo?.email || "gpsjhajha@gmail.com";
+  const isAdmissionsOpen = schoolInfo?.isAdmissionsOpen !== false;
+
   return (
     <footer className={styles.footer}>
-      {/* Top Banner inside Footer */}
+      {/* Top Banner inside Footer - Always visible, dynamically switches between Admissions Open and Campus Inquiries */}
       <div className={styles.admissionBanner}>
         <div className={styles.container}>
           <div className={styles.bannerFlex}>
-            <div>
-              <span className={styles.bannerTag}>Session 2026 - 2027</span>
-              <h3 className={styles.bannerTitle}>Admissions Open for the New Academic Session</h3>
-              <p className={styles.bannerDesc}>
-                Empower your child with strong academic roots, leadership skills, and character building.
-              </p>
-            </div>
-            <div className={styles.bannerBtnGroup}>
-              <Link to="/admissions" className="btn btn-gold">
-                <span>Apply Online Now</span>
-                <ArrowRight size={16} />
-              </Link>
-              <a href={`tel:${phone}`} className="btn btn-secondary">
-                <Phone size={16} />
-                <span>Call {phone}</span>
-              </a>
-            </div>
+            {isAdmissionsOpen ? (
+              <>
+                <div>
+                  <span className={styles.bannerTag}>Session {getAcademicSession()}</span>
+                  <h3 className={styles.bannerTitle}>Admissions Open for the New Academic Session</h3>
+                  <p className={styles.bannerDesc}>
+                    Empower your child with strong academic roots, leadership skills, and character building.
+                  </p>
+                </div>
+                <div className={styles.bannerBtnGroup}>
+                  <Link to="/admissions" className="btn btn-gold">
+                    <span>Apply Online Now</span>
+                    <ArrowRight size={16} />
+                  </Link>
+                  <a href={`tel:${phone}`} className="btn btn-secondary">
+                    <Phone size={16} />
+                    <span>Call {phone}</span>
+                  </a>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className={styles.bannerTag}>Session {getAcademicSession()} • Glorious Campus</span>
+                  <h3 className={styles.bannerTitle}>Have Inquiries or Want to Visit Our Campus?</h3>
+                  <p className={styles.bannerDesc}>
+                    Connect with our administration desk for curriculum information, campus tours, fee structure, and student guidance.
+                  </p>
+                </div>
+                <div className={styles.bannerBtnGroup}>
+                  <Link to="/contact" className="btn btn-gold">
+                    <span>Send Inquiry / Message</span>
+                    <ArrowRight size={16} />
+                  </Link>
+                  <a href={`tel:${phone}`} className="btn btn-secondary">
+                    <Phone size={16} />
+                    <span>Call {phone}</span>
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

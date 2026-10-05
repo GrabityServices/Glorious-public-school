@@ -3,61 +3,41 @@ import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { AnimatePresence, m } from "framer-motion";
 import styles from "./HeroSlider.module.css";
 import { easeCalm } from "@/lib/motion/easing";
-
-const SLIDES = [
-  {
-    id: "campus",
-    image: "/images/hero_meditation.png",
-    tag: "Campus & Assembly",
-    title: "Vibrant Campus Grounds & Morning Assemblies",
-    caption: "Instilling discipline, community spirit, and moral focus every morning.",
-  },
-  {
-    id: "classrooms",
-    image: "/images/expert_guidance.png",
-    tag: "Smart Classrooms",
-    title: "Interactive Classrooms & Dedicated Mentorship",
-    caption: "Nurturing creative curiosity, individual attention, and lifelong love for learning.",
-  },
-  {
-    id: "labs",
-    image: "/images/how_we_work.png",
-    tag: "Science & IT Labs",
-    title: "Modern Practical Labs & Digital Education",
-    caption: "Hands-on science experiments and foundational computer literacy.",
-  },
-  {
-    id: "sports",
-    image: "/images/blog3.png",
-    tag: "Athletics & Fitness",
-    title: "Sports Tournaments & Physical Excellence",
-    caption: "Encouraging sportsmanship, athletic agility, and healthy teamwork.",
-  },
-  {
-    id: "culture",
-    image: "/images/blog1.png",
-    tag: "Arts & Culture",
-    title: "Annual Celebrations & Stage Confidence",
-    caption: "Fostering cultural heritage, music, drama, and expressive leadership.",
-  },
-];
+import { useData } from "@/context/DataContext";
+import { DEFAULT_HERO_SLIDES } from "@/data/sliderData";
 
 export default function HeroSlider() {
+  const { schoolInfo } = useData();
+  const slides =
+    Array.isArray(schoolInfo?.heroSlides) && schoolInfo.heroSlides.length > 0
+      ? schoolInfo.heroSlides
+      : DEFAULT_HERO_SLIDES;
+
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  const paginate = useCallback((newDirection) => {
-    setDirection(newDirection);
-    setCurrent((prev) => {
-      let nextIndex = prev + newDirection;
-      if (nextIndex < 0) return SLIDES.length - 1;
-      if (nextIndex >= SLIDES.length) return 0;
-      return nextIndex;
-    });
-  }, []);
+  // Clamp current index if slides length changes
+  useEffect(() => {
+    if (current >= slides.length) {
+      setCurrent(0);
+    }
+  }, [slides.length, current]);
+
+  const paginate = useCallback(
+    (newDirection) => {
+      setDirection(newDirection);
+      setCurrent((prev) => {
+        let nextIndex = prev + newDirection;
+        if (nextIndex < 0) return slides.length - 1;
+        if (nextIndex >= slides.length) return 0;
+        return nextIndex;
+      });
+    },
+    [slides.length]
+  );
 
   // Auto-play timer (5s)
   useEffect(() => {
@@ -111,7 +91,7 @@ export default function HeroSlider() {
     }),
   };
 
-  const activeSlide = SLIDES[current];
+  const activeSlide = slides[current] || slides[0];
 
   return (
     <div
@@ -126,32 +106,39 @@ export default function HeroSlider() {
       {/* Slider Viewport */}
       <div className={styles.viewport}>
         <AnimatePresence initial={false} custom={direction}>
-          <m.div
-            key={activeSlide.id}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className={styles.slide}
-          >
-            <img
-              src={activeSlide.image}
-              alt={activeSlide.title}
-              className={styles.slideImage}
-            />
-            <div className={styles.gradientScrim} />
+          {activeSlide && (
+            <m.div
+              key={activeSlide.id || activeSlide.image || current}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className={styles.slide}
+            >
+              <img
+                src={activeSlide.image || "/images/glorious-public-school.png"}
+                alt={activeSlide.title || "School Campus"}
+                className={styles.slideImage}
+                onError={(e) => {
+                  e.target.src = "/images/glorious-public-school.png";
+                }}
+              />
+              <div className={styles.gradientScrim} />
 
-            {/* Minimal floating caption card */}
-            <div className={styles.captionCard}>
-              <div className={styles.tagBadge}>
-                <Sparkles size={13} />
-                <span>{activeSlide.tag}</span>
+              {/* Minimal floating caption card */}
+              <div className={styles.captionCard}>
+                {activeSlide.tag && (
+                  <div className={styles.tagBadge}>
+                    <Sparkles size={13} />
+                    <span>{activeSlide.tag}</span>
+                  </div>
+                )}
+                {activeSlide.title && <h3 className={styles.slideTitle}>{activeSlide.title}</h3>}
+                {activeSlide.caption && <p className={styles.slideCaption}>{activeSlide.caption}</p>}
               </div>
-              <h3 className={styles.slideTitle}>{activeSlide.title}</h3>
-              <p className={styles.slideCaption}>{activeSlide.caption}</p>
-            </div>
-          </m.div>
+            </m.div>
+          )}
         </AnimatePresence>
       </div>
 
@@ -176,16 +163,16 @@ export default function HeroSlider() {
 
       {/* Indicator Dots */}
       <div className={styles.dotsWrapper}>
-        {SLIDES.map((slide, idx) => (
+        {slides.map((slide, idx) => (
           <button
-            key={slide.id}
+            key={slide.id || idx}
             type="button"
             onClick={() => {
               setDirection(idx > current ? 1 : -1);
               setCurrent(idx);
             }}
             className={`${styles.dot} ${idx === current ? styles.activeDot : ""}`}
-            aria-label={`Go to slide ${idx + 1}: ${slide.tag}`}
+            aria-label={`Go to slide ${idx + 1}: ${slide.tag || "Slide"}`}
           />
         ))}
       </div>

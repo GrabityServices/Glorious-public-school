@@ -44,6 +44,10 @@ const galleryUploadDir = path.join(__dirname, "uploads", "gallery");
 if (!fs.existsSync(galleryUploadDir)) {
   fs.mkdirSync(galleryUploadDir, { recursive: true });
 }
+const sliderUploadDir = path.join(__dirname, "uploads", "slider");
+if (!fs.existsSync(sliderUploadDir)) {
+  fs.mkdirSync(sliderUploadDir, { recursive: true });
+}
 
 // Middleware
 app.use(cors());
@@ -686,7 +690,7 @@ app.delete("/api/gallery/:id", async (req, res) => {
 // =========================================================
 // 6. INQUIRIES & ADMISSIONS LEADS API
 // =========================================================
-app.get("/api/inquiries", async (req, res) => {
+app.get(["/api/inquiries", "/api/admissions"], async (req, res) => {
   try {
     const inquiries = await Inquiry.find().sort({ createdAt: -1 });
     res.json(inquiries);
@@ -695,43 +699,92 @@ app.get("/api/inquiries", async (req, res) => {
   }
 });
 
-app.post(["/api/inquiries", "/api/contact"], async (req, res) => {
+app.post(["/api/inquiries", "/api/contact", "/api/admissions"], async (req, res) => {
   try {
-    const { name, studentName, parentName, email, phone, grade, gradeApplying, message } = req.body;
+    const {
+      appId,
+      type,
+      name,
+      studentName,
+      dob,
+      gender,
+      applyingClass,
+      grade,
+      gradeApplying,
+      fatherName,
+      motherName,
+      parentName,
+      email,
+      phone,
+      address,
+      needTransport,
+      needHostel,
+      previousSchool,
+      message,
+      notes,
+    } = req.body;
 
-    if (!email || !message) {
+    if (!phone && !email) {
       return res.status(400).json({
         success: false,
-        message: "Email and message are required fields.",
+        message: "A phone number or email is required.",
       });
     }
 
+    const isAdmission =
+      type === "Online Admission" ||
+      Boolean(applyingClass || dob || fatherName || (req.body.studentName && req.body.studentName !== req.body.name));
+
+    const resolvedType = type || (isAdmission ? "Online Admission" : "Contact Inquiry");
+
+    // Only generate an Application ID code for Online Admissions!
+    const generatedAppId = isAdmission
+      ? appId || `GPS-${Math.floor(100000 + Math.random() * 900000)}`
+      : "";
+
+    const resolvedStudent = studentName || name || parentName || "Student";
+    const resolvedFather = fatherName || parentName || name || "";
+    const resolvedClass = isAdmission ? (applyingClass || gradeApplying || grade || "Nursery") : "";
+
     const newInquiry = await Inquiry.create({
-      studentName: studentName || name || parentName || "Student",
-      parentName: parentName || name || "Parent",
-      name: name || studentName || parentName || "Enquirer",
-      email,
+      appId: generatedAppId,
+      type: resolvedType,
+      studentName: isAdmission ? resolvedStudent : "",
+      name: resolvedStudent,
+      dob: dob || "",
+      gender: gender || "Male",
+      applyingClass: resolvedClass,
+      gradeApplying: gradeApplying || resolvedClass || "",
+      grade: resolvedClass || grade || "",
+      fatherName: resolvedFather,
+      motherName: motherName || "",
+      parentName: resolvedFather || motherName || "Parent",
+      email: email || "",
       phone: phone || "Not provided",
-      gradeApplying: gradeApplying || grade || "General Enquiry",
-      grade: grade || gradeApplying || "General Enquiry",
-      message,
+      address: address || "",
+      needTransport: needTransport || "No",
+      needHostel: needHostel || "No",
+      previousSchool: previousSchool || "",
+      message: message || `Online Student Admission Application for ${resolvedClass} (Session 2026-2027)`,
+      notes: notes || "",
       date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
       status: "Pending",
     });
 
-    console.log("📨 New inquiry stored in MongoDB Atlas:", newInquiry.id);
+    console.log("📨 New admission / inquiry stored in MongoDB Atlas:", newInquiry.id, newInquiry.appId);
 
     return res.status(201).json({
       success: true,
-      message: "Thank you for contacting Glorious Public School! We will get back to you soon.",
+      message: "Thank you for applying to Glorious Public School! We will contact you soon.",
       data: newInquiry,
+      appId: generatedAppId,
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to save inquiry to MongoDB", details: err.message });
   }
 });
 
-app.patch("/api/inquiries/:id/status", async (req, res) => {
+app.patch(["/api/inquiries/:id/status", "/api/admissions/:id/status"], async (req, res) => {
   try {
     const { status } = req.body;
     const updated = await Inquiry.findByIdAndUpdate(req.params.id, { status }, { returnDocument: "after" });
@@ -744,7 +797,7 @@ app.patch("/api/inquiries/:id/status", async (req, res) => {
   }
 });
 
-app.put("/api/inquiries/:id", async (req, res) => {
+app.put(["/api/inquiries/:id", "/api/admissions/:id"], async (req, res) => {
   try {
     const updated = await Inquiry.findByIdAndUpdate(req.params.id, req.body, { returnDocument: "after" });
     if (!updated) {
@@ -756,7 +809,7 @@ app.put("/api/inquiries/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/inquiries/:id", async (req, res) => {
+app.delete(["/api/inquiries/:id", "/api/admissions/:id"], async (req, res) => {
   try {
     const deleted = await Inquiry.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -766,6 +819,56 @@ app.delete("/api/inquiries/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to delete inquiry from MongoDB", details: err.message });
   }
+});
+
+// =========================================================
+// 6B. HOMEPAGE HERO SLIDER UPLOAD API
+// =========================================================
+const sliderStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, sliderUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const sanitizedBase = path
+      .basename(file.originalname, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 40);
+    const base = sanitizedBase || "slide";
+    const uniqueName = `slide_${Date.now()}_${base}${ext}`;
+    cb(null, uniqueName);
+  },
+});
+
+const sliderUpload = multer({
+  storage: sliderStorage,
+  limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
+  fileFilter: (req, file, cb) => {
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg"];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .svg) are allowed for slider."));
+    }
+  },
+});
+
+app.post("/api/upload/slider-image", (req, res) => {
+  sliderUpload.single("file")(req, res, (err) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ error: "Image exceeds 15MB limit." });
+      }
+      return res.status(400).json({ error: err.message || "Failed to upload slider image." });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file uploaded." });
+    }
+    const fileUrl = `/uploads/slider/${req.file.filename}`;
+    console.log(`[Slider Image Upload] Saved: ${fileUrl}`);
+    res.json({ success: true, fileUrl });
+  });
 });
 
 // =========================================================
@@ -785,7 +888,11 @@ app.get("/api/school-info", async (req, res) => {
 
 app.put("/api/school-info", async (req, res) => {
   try {
-    const updated = await SchoolInfo.findOneAndUpdate({}, req.body, { returnDocument: "after", upsert: true });
+    const updateData = { ...req.body };
+    if (updateData.isAdmissionsOpen === false) {
+      updateData.showAdmissionNotice = false;
+    }
+    const updated = await SchoolInfo.findOneAndUpdate({}, updateData, { returnDocument: "after", upsert: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: "Failed to update school info in MongoDB", details: err.message });
