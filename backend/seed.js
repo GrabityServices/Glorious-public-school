@@ -379,7 +379,7 @@ const seedDatabase = async () => {
       await Admin.create({
         username: "admin",
         email: "admin@glorious.edu",
-        password: process.env.ADMIN_INIT_PASSWORD || "admin123", // Hashes automatically via bcrypt pre-save
+        password: process.env.ADMIN_INIT_PASSWORD || "Admin@2026#", // Hashes automatically via bcrypt pre-save
         name: "Mrs. Binod Kumar",
         role: "Super Administrator",
         avatar: "/images/binod-kumar.jpg",

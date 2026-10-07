@@ -1098,8 +1098,7 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-// Start the server with graceful auto-fallback if port is in use
-const MAX_PORT_ATTEMPTS = 10;
+// Start the server strictly on port 5000
 const initialPort = parseInt(PORT, 10) || 5000;
 
 function startServer(portToTry) {
@@ -1108,24 +1107,13 @@ function startServer(portToTry) {
     currentListeningPort = activePort;
     writeActivePort(activePort);
     console.log(`\n🚀 Backend running at: http://localhost:${activePort}`);
-    if (activePort !== initialPort) {
-      console.log(`ℹ️  Note: Port ${initialPort} was in use, so backend switched to port ${activePort} automatically.\n`);
-    }
   });
 
   srv.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
-      if (portToTry - initialPort < MAX_PORT_ATTEMPTS) {
-        const nextPort = portToTry + 1;
-        console.warn(`[PORT NOTICE] Port ${portToTry} is in use, trying port ${nextPort}...`);
-        startServer(nextPort);
-      } else {
-        console.error(`\n[PORT CONFLICT ERROR] Could not find an open port starting from ${initialPort}.`);
-        console.error(` How to resolve:`);
-        console.error(`  1. Run from project root: npm run free-port`);
-        console.error(`  2. Or in PowerShell run: Stop-Process -Id (Get-NetTCPConnection -LocalPort ${initialPort}).OwningProcess -Force\n`);
-        process.exit(1);
-      }
+      console.error(`\n[PORT CONFLICT ERROR] Port ${portToTry} is already in use.`);
+      console.error(`👉 Run 'npm run free-port' to free port ${portToTry}.\n`);
+      process.exit(1);
     } else {
       console.error(" Backend Server Error:", error);
     }
