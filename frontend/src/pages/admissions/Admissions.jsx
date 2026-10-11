@@ -42,7 +42,27 @@ export default function AdmissionsPage() {
   const sessionYear = getAcademicSession();
   const phone = schoolInfo?.phone || SCHOOL_INFO.phone;
 
-  useDocumentTitle(`Online Admission ${sessionYear} | Glorious Public School`);
+  useDocumentTitle(`Online Admission ${sessionYear} (Nursery to Class 10th) | Glorious Public School, Jhajha`, {
+    path: "/admissions",
+    description:
+      `Apply online for Session ${sessionYear} admissions (Nursery to Class 10th) at Glorious Public School, Jhajha. View the 4-step admission process, age eligibility criteria, and required documents checklist.`,
+    keywords:
+      `school admission ${sessionYear} Jhajha, online admission Glorious Public School, Nursery to Class 10 admission Jamui, school admission documents Bihar, Glorious Public School fee inquiry`,
+    aeoSummary:
+      `Online and offline admissions for Session ${sessionYear} are open for Nursery to Class 10th at Glorious Public School, Jhajha. Required documents include Birth Certificate, Aadhaar Card, Transfer Certificate (Class 2+), Report Card, and 4 passport photographs.`,
+    faqs: [
+      {
+        question: "How can I apply for admission at Glorious Public School, Jhajha?",
+        answer:
+          "Parents can submit the Online Student Admission Form on our website (/admissions) or visit the School Admission Desk on Jamui Road, Jhajha between 8:00 AM and 4:00 PM (Mon–Sat).",
+      },
+      {
+        question: "What documents are required for admission at Glorious Public School?",
+        answer:
+          "Required documents include the student's Birth Certificate, Aadhaar Card of student and parents, 4 passport-size photographs, previous class Report Card, and Transfer Certificate (TC) for Class 2 and above.",
+      },
+    ],
+  });
 
   // Form State
   const [formData, setFormData] = useState({

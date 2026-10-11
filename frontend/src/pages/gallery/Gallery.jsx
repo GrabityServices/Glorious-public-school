@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   Image as ImageIcon, 
+  Video,
+  Play,
   X, 
   Maximize2, 
   ChevronLeft, 
@@ -25,8 +27,30 @@ import EmptyState from "@/components/common/EmptyState";
 
 const PAGE_SIZE = 12;
 
+const getEmbedUrl = (item) => {
+  if (!item) return "";
+  if (item.youtubeId) return `https://www.youtube.com/embed/${item.youtubeId}`;
+  const str = String(item.videoUrl || "").trim();
+  if (!str) return "";
+  const iframeMatch = str.match(/src=["']([^"']+)["']/i);
+  const target = iframeMatch ? iframeMatch[1] : str;
+  const regExp = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
+  const match = target.match(regExp);
+  if (match && match[1]) return `https://www.youtube.com/embed/${match[1]}`;
+  return target;
+};
+
 export default function GalleryPage() {
-  useDocumentTitle("Photo Gallery | Glorious Public School, Jhajha");
+  useDocumentTitle("Photo & Video Gallery | Campus, Events & Labs | Glorious Public School, Jhajha", {
+    path: "/gallery",
+    schemaType: "ImageGallery",
+    description:
+      "Browse high-resolution campus photographs and official YouTube video highlights of Glorious Public School, Jhajha — covering Smart Classrooms, Science Labs, Cultural Programs, Sports, and Hostel life.",
+    keywords:
+      "Glorious Public School gallery, school photos Jhajha, school video gallery Jamui, Glorious Public School campus images, school annual function videos",
+    aeoSummary:
+      "The Glorious Public School Photo & Video Gallery showcases verified photographs and embedded YouTube videos of campus infrastructure, smart classrooms, science & computer labs, cultural fests, and sports events.",
+  });
   const { gallery, loading } = useData();
   const [activeCategory, setActiveCategory] = useState("All");
   
@@ -43,12 +67,23 @@ export default function GalleryPage() {
   const thumbnailReelRef = useRef(null);
   const activeThumbnailRef = useRef(null);
 
-  const galleryList = gallery || [];
+  const allMedia = gallery || [];
+  const galleryList = allMedia.filter(
+    (item) => item.mediaType !== "video" && !item.videoUrl && !item.youtubeId
+  );
+  const videoList = allMedia.filter(
+    (item) => item.mediaType === "video" || Boolean(item.videoUrl || item.youtubeId)
+  );
 
   const filteredItems =
     activeCategory === "All"
       ? galleryList
       : galleryList.filter((item) => item.category === activeCategory);
+
+  const filteredVideos =
+    activeCategory === "All"
+      ? videoList
+      : videoList.filter((item) => item.category === activeCategory);
 
   // Reset pagination when category changes
   useEffect(() => {
@@ -194,7 +229,7 @@ export default function GalleryPage() {
         <div className={styles.container}>
           <FadeUp>
             <span className="section-subtitle">Moments & Memories</span>
-            <h1 className={styles.title}>School Photo Gallery</h1>
+            <h1 className={styles.title}>School Photo & Video Gallery</h1>
             <p className={styles.subtitle}>
               Glimpses of daily campus life, celebrations, Jhajha Town Hall dance competitions, athletics, and laboratory discoveries.
             </p>
@@ -210,6 +245,7 @@ export default function GalleryPage() {
             {GALLERY_CATEGORIES.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setActiveCategory(cat)}
                 className={`${styles.tabBtn} ${
                   activeCategory === cat ? styles.tabBtnActive : ""
@@ -223,10 +259,73 @@ export default function GalleryPage() {
                 </span>
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setActiveCategory("Videos")}
+              className={`${styles.videoJumpBtn} ${
+                activeCategory === "Videos" ? styles.videoJumpBtnActive : ""
+              }`}
+            >
+              <Video size={16} />
+              <span>Video Gallery ({videoList.length})</span>
+            </button>
           </div>
 
-          {/* Loading Shimmer Skeletons, Grid of Images, or Empty State */}
-          {loading ? (
+          {activeCategory === "Videos" ? (
+            /* Dedicated School Video Gallery View (Shown ONLY when Video Gallery tab is clicked) */
+            <div id="video-gallery" className={styles.videoGallerySection}>
+              <FadeUp>
+                <div className={styles.videoSectionHeader}>
+                  <span className="section-subtitle">Campus Videos & Performances</span>
+                  <h2 className={styles.videoSectionTitle}>
+                    <Video size={26} color="var(--accent-red)" />
+                    <span>School Video Gallery</span>
+                  </h2>
+                  <p className={styles.videoSectionSub}>
+                    Watch cultural performances, annual function highlights, sports day events, and campus tours from Glorious Public School.
+                  </p>
+                </div>
+              </FadeUp>
+
+              {videoList.length > 0 ? (
+                <div className={styles.videoGrid}>
+                  {videoList.map((vid, vIdx) => {
+                    const embedSrc = getEmbedUrl(vid);
+                    return (
+                      <FadeUp key={vid.id || vid._id || vIdx} delay={0.05 * (vIdx % 4 + 1)}>
+                        <div className={styles.videoCard}>
+                          <div className={styles.videoFrameWrap}>
+                            <iframe
+                              src={embedSrc}
+                              title={vid.title || "Glorious Public School Video"}
+                              className={styles.videoIframe}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className={styles.videoCardBody}>
+                            <span className={styles.videoCatBadge}>{vid.category || "Events"}</span>
+                            <h3 className={styles.videoCardTitle}>{vid.title}</h3>
+                            {vid.caption && <p className={styles.videoCardDesc}>{vid.caption}</p>}
+                          </div>
+                        </div>
+                      </FadeUp>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.emptyVideoBox}>
+                  <Video size={32} color="#dc2626" />
+                  <h3>No Videos Added in Video Gallery Yet</h3>
+                  <p>
+                    School event videos and YouTube performances added by the administrator will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : loading ? (
+            /* Loading Shimmer Skeletons, Grid of Images, or Empty State */
             <div className={styles.galleryGrid}>
               {Array.from({ length: 8 }).map((_, idx) => (
                 <div key={idx} className={styles.skeletonCard}>

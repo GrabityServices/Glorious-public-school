@@ -7,7 +7,12 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function LoginPage() {
-  useDocumentTitle("Student & Parent Portal Login | Glorious Public School");
+  useDocumentTitle("Student & Parent Portal Login | Glorious Public School, Jhajha", {
+    path: "/login",
+    noindex: true,
+    description:
+      "Sign in to the Glorious Public School Student, Parent, and Faculty ERP Portal using your registration ID and password.",
+  });
   const [role, setRole] = useState("student");
   const [regNo, setRegNo] = useState("");
   const [password, setPassword] = useState("");

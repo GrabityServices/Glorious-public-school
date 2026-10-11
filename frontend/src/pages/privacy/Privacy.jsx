@@ -9,7 +9,13 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function PrivacyPage() {
-  useDocumentTitle("Privacy & Student Records Policy | Glorious Public School");
+  useDocumentTitle("Privacy & Student Records Policy | Glorious Public School, Jhajha", {
+    path: "/privacy",
+    description:
+      "Read the official Privacy & Student Records Policy of Glorious Public School, Jhajha detailing how student academic data, admission records, and parent contact information are safeguarded.",
+    keywords:
+      "Glorious Public School privacy policy, student data protection Jhajha, school records privacy",
+  });
 
   return (
     <div className={styles.pageWrapper}>

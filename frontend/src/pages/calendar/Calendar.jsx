@@ -17,6 +17,7 @@ import { AnimatePresence, m } from "framer-motion";
 import styles from "./calendar.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
+import { useData } from "@/context/DataContext";
 import {
   ACADEMIC_MONTHS,
   CALENDAR_CATEGORIES,
@@ -24,13 +25,73 @@ import {
 } from "@/data/calendarData";
 
 export default function CalendarPage() {
-  useDocumentTitle("School Calendar (2026-2027) | Glorious Public School");
+  useDocumentTitle("School Academic Calendar (2026-2027) | Holidays, Exams & PTMs | Glorious Public School", {
+    path: "/calendar",
+    description:
+      "Official Academic Calendar of Glorious Public School, Jhajha. View month-by-month dates for Holidays & Vacations, Exams & Assessments, Celebrations & Sports, and Parent-Teacher Meetings (PTMs).",
+    keywords:
+      "Glorious Public School academic calendar, school holiday calendar Jhajha, exam schedule Glorious Public School, PTM dates school Jhajha, school events calendar Bihar",
+    aeoSummary:
+      "The Glorious Public School Academic Calendar organizes the April-to-March session into four official categories: Holidays & Vacations, Exams & Assessments, Celebrations & Sports, and Parent-Teacher Meetings (PTMs).",
+    faqs: [
+      {
+        question: "What categories are included in the Glorious Public School Academic Calendar?",
+        answer:
+          "Our Academic Calendar covers four admin-managed categories: (i) Holidays & Vacations, (ii) Exams & Assessments, (iii) Celebrations & Sports, and (iv) Parent-Teacher Meetings (PTMs).",
+      },
+    ],
+  });
+  const { schoolInfo } = useData();
 
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(0); // 0 = April 2026
+  // Open current month by default according to system clock
+  const defaultMonthIdx = useMemo(() => {
+    const nowMonth = new Date().getMonth();
+    const idx = ACADEMIC_MONTHS.findIndex((m) => m.index === nowMonth);
+    return idx !== -1 ? idx : 0;
+  }, []);
+
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(defaultMonthIdx);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const activeMonthObj = ACADEMIC_MONTHS[currentMonthIndex];
+  // Admin-managed calendar events across the 4 dynamic categories
+  const calendarEvents = useMemo(() => {
+    const rawEvents =
+      Array.isArray(schoolInfo?.calendarEvents) && schoolInfo.calendarEvents.length > 0
+        ? schoolInfo.calendarEvents
+        : SCHOOL_CALENDAR_EVENTS;
+
+    return rawEvents.map((ev) => {
+      const dateStr = String(ev.date || "");
+      // Find the earliest mentioned academic month in the date string
+      let bestMatch = null;
+      let bestPos = Infinity;
+      for (const mObj of ACADEMIC_MONTHS) {
+        const regex = new RegExp(`\\b${mObj.name}\\b`, "i");
+        const match = regex.exec(dateStr);
+        if (match && match.index < bestPos) {
+          bestPos = match.index;
+          bestMatch = mObj;
+        }
+      }
+
+      if (bestMatch && (Number(ev.month) !== bestMatch.index || Number(ev.year) !== bestMatch.year)) {
+        const dayMatch = dateStr.match(/(\d{1,2})\s+[A-Za-z]+(?:\s*[-–]\s*(\d{1,2})\s+[A-Za-z]+)?/);
+        const parsedDay = dayMatch ? Number(dayMatch[1]) : Number(ev.day) || 1;
+        const parsedEndDay = dayMatch && dayMatch[2] ? Number(dayMatch[2]) : ev.endDay ? Number(ev.endDay) : undefined;
+        return {
+          ...ev,
+          month: bestMatch.index,
+          year: bestMatch.year,
+          day: parsedDay,
+          ...(parsedEndDay ? { endDay: parsedEndDay } : {}),
+        };
+      }
+      return ev;
+    });
+  }, [schoolInfo?.calendarEvents]);
+
+  const activeMonthObj = ACADEMIC_MONTHS[currentMonthIndex] || ACADEMIC_MONTHS[0];
 
   const handlePrevMonth = () => {
     setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : ACADEMIC_MONTHS.length - 1));
@@ -40,16 +101,16 @@ export default function CalendarPage() {
     setCurrentMonthIndex((prev) => (prev < ACADEMIC_MONTHS.length - 1 ? prev + 1 : 0));
   };
 
-  // Filter events by selected category and active month
+  // Filter events by selected category and active month only
   const monthEvents = useMemo(() => {
-    return SCHOOL_CALENDAR_EVENTS.filter((ev) => {
+    return calendarEvents.filter((ev) => {
       const matchesMonth =
-        ev.month === activeMonthObj.index && ev.year === activeMonthObj.year;
+        Number(ev.month) === activeMonthObj.index && Number(ev.year) === activeMonthObj.year;
       const matchesCategory =
         selectedCategory === "all" || ev.category === selectedCategory;
       return matchesMonth && matchesCategory;
     });
-  }, [activeMonthObj, selectedCategory]);
+  }, [calendarEvents, activeMonthObj, selectedCategory]);
 
   // Generate day cells for the calendar matrix
   const calendarCells = useMemo(() => {
@@ -74,12 +135,13 @@ export default function CalendarPage() {
       const isSunday = cellDate.getDay() === 0;
 
       // Find events on this day
-      const dayEvents = SCHOOL_CALENDAR_EVENTS.filter((ev) => {
+      const dayEvents = calendarEvents.filter((ev) => {
+        const evDay = Number(ev.day);
+        const evEndDay = ev.endDay ? Number(ev.endDay) : null;
         const matchesDate =
-          ev.month === month &&
-          ev.year === year &&
-          (ev.day === day ||
-            (ev.endDay && day >= ev.day && day <= ev.endDay));
+          Number(ev.month) === month &&
+          Number(ev.year) === year &&
+          (evDay === day || (evEndDay && day >= evDay && day <= evEndDay));
         const matchesCategory =
           selectedCategory === "all" || ev.category === selectedCategory;
         return matchesDate && matchesCategory;
@@ -95,7 +157,7 @@ export default function CalendarPage() {
     }
 
     return cells;
-  }, [activeMonthObj, selectedCategory]);
+  }, [calendarEvents, activeMonthObj, selectedCategory]);
 
   const categoryColorMap = {
     holiday: { bg: "#fee2e2", text: "#991b1b", border: "#fca5a5" },
@@ -145,11 +207,11 @@ export default function CalendarPage() {
               <div className={styles.heroActions}>
                 <button
                   type="button"
-                  onClick={() => setCurrentMonthIndex(0)}
+                  onClick={() => setCurrentMonthIndex(defaultMonthIdx)}
                   className="btn btn-gold btn-sm"
                 >
                   <CalendarIcon size={15} />
-                  <span>Session Opening (April 2026)</span>
+                  <span>Current Month ({ACADEMIC_MONTHS[defaultMonthIdx]?.fullName})</span>
                 </button>
                 <button
                   type="button"

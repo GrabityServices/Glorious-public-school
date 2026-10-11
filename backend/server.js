@@ -793,17 +793,45 @@ app.get("/api/gallery", async (req, res) => {
   }
 });
 
+const extractYouTubeId = (input = "") => {
+  const str = String(input).trim();
+  if (!str) return "";
+  // Match iframe src if user pasted full <iframe ... src="...">
+  const iframeMatch = str.match(/src=["']([^"']+)["']/i);
+  const target = iframeMatch ? iframeMatch[1] : str;
+  const regExp = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
+  const match = target.match(regExp);
+  if (match && match[1]) return match[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(target)) return target;
+  return "";
+};
+
 app.post("/api/gallery", requireAuth, async (req, res) => {
   try {
-    const { title, category, image, imageUrl, caption, date } = req.body;
-    const img = image || imageUrl;
-    if (!title || !img) {
-      return res.status(400).json({ error: "Title and image are required" });
+    const { title, category, image, imageUrl, mediaType, videoUrl, youtubeId, caption, date } = req.body;
+    const isVideo = mediaType === "video" || Boolean(videoUrl || youtubeId);
+    const extractedYtId = isVideo ? (extractYouTubeId(youtubeId) || extractYouTubeId(videoUrl)) : "";
+    const img = image || imageUrl || (extractedYtId ? `https://img.youtube.com/vi/${extractedYtId}/hqdefault.jpg` : "");
+
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
     }
+    if (isVideo && !extractedYtId && !videoUrl) {
+      return res.status(400).json({ error: "Valid YouTube video link or embed URL is required" });
+    }
+    if (!isVideo && !img) {
+      return res.status(400).json({ error: "Image is required for photo gallery items" });
+    }
+
+    const embedUrl = extractedYtId ? `https://www.youtube.com/embed/${extractedYtId}` : (videoUrl || "");
+
     const newItem = await Gallery.create({
       title,
-      category: category || "Campus",
+      category: category || "Events",
+      mediaType: isVideo ? "video" : "image",
       image: img,
+      videoUrl: isVideo ? embedUrl : "",
+      youtubeId: extractedYtId,
       caption: caption || "",
       date: date || new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
     });
@@ -815,16 +843,27 @@ app.post("/api/gallery", requireAuth, async (req, res) => {
 
 app.put("/api/gallery/:id", requireAuth, async (req, res) => {
   try {
-    // If updating/changing photo, clean up old file if stored in /uploads/gallery/
     const existing = await Gallery.findById(req.params.id);
-    if (existing && existing.image && req.body.image && req.body.image !== existing.image) {
+    if (!existing) {
+      return res.status(404).json({ error: "Gallery item not found" });
+    }
+    if (existing.image && req.body.image && req.body.image !== existing.image) {
       deleteGalleryFile(existing.image);
     }
 
-    const updated = await Gallery.findByIdAndUpdate(req.params.id, req.body, { returnDocument: "after" });
-    if (!updated) {
-      return res.status(404).json({ error: "Gallery item not found" });
+    const updatePayload = { ...req.body };
+    if (updatePayload.mediaType === "video" || updatePayload.videoUrl || updatePayload.youtubeId) {
+      const ytId = extractYouTubeId(updatePayload.youtubeId) || extractYouTubeId(updatePayload.videoUrl);
+      if (ytId) {
+        updatePayload.youtubeId = ytId;
+        updatePayload.videoUrl = `https://www.youtube.com/embed/${ytId}`;
+        if (!updatePayload.image || updatePayload.image.includes("img.youtube.com")) {
+          updatePayload.image = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        }
+      }
     }
+
+    const updated = await Gallery.findByIdAndUpdate(req.params.id, updatePayload, { returnDocument: "after" });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: "Failed to update gallery item in MongoDB", details: err.message });

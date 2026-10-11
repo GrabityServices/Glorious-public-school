@@ -6,7 +6,28 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function AboutPage() {
-  useDocumentTitle("About Us | Glorious Public School, Jhajha");
+  useDocumentTitle("About Us | Heritage, Vision & Leadership | Glorious Public School, Jhajha", {
+    path: "/about",
+    schemaType: "AboutPage",
+    description:
+      "Learn about Glorious Public School, Jhajha (Est. 2004) — our educational philosophy, mission, core values, and leadership messages from Principal Mr. R.K. Sharma and Director Mr. S.K. Verma.",
+    keywords:
+      "About Glorious Public School, Glorious Public School Jhajha history, Principal R.K. Sharma, Director S.K. Verma, best school in Jhajha Jamui, school vision and mission",
+    aeoSummary:
+      "Established in 2004 on Jamui Road, Jhajha, Glorious Public School is led by Director Mr. S.K. Verma and Principal Mr. R.K. Sharma, serving 1,200+ students with 45+ qualified faculty members and a 100% board exam pass record.",
+    faqs: [
+      {
+        question: "When was Glorious Public School established?",
+        answer:
+          "Glorious Public School was established in 2004 in Jhajha, District Jamui, Bihar with the motto 'Creating the Leaders of Tomorrow'.",
+      },
+      {
+        question: "Who are the Principal and Director of Glorious Public School, Jhajha?",
+        answer:
+          "The Principal of Glorious Public School is Mr. R.K. Sharma (M.Sc., B.Ed.) and the Director is Mr. S.K. Verma (M.A., Education Management).",
+      },
+    ],
+  });
 
   return (
     <div className={styles.pageWrapper}>

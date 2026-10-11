@@ -7,7 +7,7 @@ import { useData } from "@/context/DataContext";
 import { DEFAULT_HERO_SLIDES } from "@/data/sliderData";
 
 export default function HeroSlider() {
-  const { schoolInfo } = useData();
+  const { schoolInfo, loading } = useData();
   const slides =
     Array.isArray(schoolInfo?.heroSlides) && schoolInfo.heroSlides.length > 0
       ? schoolInfo.heroSlides
@@ -16,8 +16,10 @@ export default function HeroSlider() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
+  const [loadedMap, setLoadedMap] = useState({});
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const imgRef = useRef(null);
 
   // Clamp current index if slides length changes
   useEffect(() => {
@@ -39,14 +41,44 @@ export default function HeroSlider() {
     [slides.length]
   );
 
-  // Auto-play timer (5s)
+  // Auto-play timer (5s) — only advance once initial data is loaded
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || loading) return;
     const interval = setInterval(() => {
       paginate(1);
     }, 5000);
     return () => clearInterval(interval);
-  }, [isPaused, paginate]);
+  }, [isPaused, loading, paginate]);
+
+  const activeSlide = !loading ? (slides[current] || slides[0]) : null;
+  const activeSrc = activeSlide?.image || "/images/glorious-public-school.png";
+  const isImageReady = !loading && Boolean(loadedMap[activeSrc]);
+
+  // Check if browser already cached the image synchronously
+  useEffect(() => {
+    if (!loading && imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setLoadedMap((prev) => (prev[activeSrc] ? prev : { ...prev, [activeSrc]: true }));
+    }
+  }, [loading, activeSrc]);
+
+  // Preload next slide image in background once initial load finishes
+  useEffect(() => {
+    if (loading || slides.length <= 1) return;
+    const nextIdx = (current + 1) % slides.length;
+    const nextUrl = slides[nextIdx]?.image;
+    if (nextUrl && !loadedMap[nextUrl]) {
+      const preloadImg = new Image();
+      preloadImg.src = nextUrl;
+      preloadImg.onload = () => {
+        setLoadedMap((prev) => (prev[nextUrl] ? prev : { ...prev, [nextUrl]: true }));
+      };
+    }
+  }, [loading, current, slides, loadedMap]);
+
+  const markLoaded = (src) => {
+    if (!src) return;
+    setLoadedMap((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
+  };
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
@@ -91,8 +123,6 @@ export default function HeroSlider() {
     }),
   };
 
-  const activeSlide = slides[current] || slides[0];
-
   return (
     <div
       className={styles.sliderContainer}
@@ -105,8 +135,21 @@ export default function HeroSlider() {
     >
       {/* Slider Viewport */}
       <div className={styles.viewport}>
-        <AnimatePresence initial={false} custom={direction}>
-          {activeSlide && (
+        {/* Premium Shimmer Skeleton shown while initial schoolInfo is fetching OR while active image is loading */}
+        <div
+          className={`${styles.shimmerOverlay} ${isImageReady ? styles.shimmerHidden : ""}`}
+          aria-hidden="true"
+        >
+          <div className={styles.shimmerWave} />
+          <div className={styles.shimmerCardSkeleton}>
+            <div className={styles.shimmerTagBar} />
+            <div className={styles.shimmerTitleBar} />
+            <div className={styles.shimmerCaptionBar} />
+          </div>
+        </div>
+
+        {!loading && activeSlide && (
+          <AnimatePresence initial={false} custom={direction}>
             <m.div
               key={activeSlide.id || activeSlide.image || current}
               custom={direction}
@@ -117,11 +160,19 @@ export default function HeroSlider() {
               className={styles.slide}
             >
               <img
-                src={activeSlide.image || "/images/glorious-public-school.png"}
-                alt={activeSlide.title || "School Campus"}
-                className={styles.slideImage}
+                ref={imgRef}
+                src={activeSrc}
+                alt={activeSlide.title || "Glorious Public School Campus"}
+                className={`${styles.slideImage} ${
+                  isImageReady ? styles.slideImageLoaded : styles.slideImageLoading
+                }`}
+                onLoad={() => markLoaded(activeSrc)}
                 onError={(e) => {
-                  e.target.src = "/images/glorious-public-school.png";
+                  const fallback = "/images/glorious-public-school.png";
+                  if (e.currentTarget.src && !e.currentTarget.src.endsWith(fallback)) {
+                    e.currentTarget.src = fallback;
+                  }
+                  markLoaded(activeSrc);
                 }}
               />
               <div className={styles.gradientScrim} />
@@ -138,8 +189,8 @@ export default function HeroSlider() {
                 {activeSlide.caption && <p className={styles.slideCaption}>{activeSlide.caption}</p>}
               </div>
             </m.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Manual Arrow Controls */}
@@ -148,6 +199,7 @@ export default function HeroSlider() {
         onClick={() => paginate(-1)}
         className={`${styles.navBtn} ${styles.prevBtn}`}
         aria-label="Previous slide"
+        disabled={loading}
       >
         <ChevronLeft size={22} />
       </button>
@@ -157,25 +209,28 @@ export default function HeroSlider() {
         onClick={() => paginate(1)}
         className={`${styles.navBtn} ${styles.nextBtn}`}
         aria-label="Next slide"
+        disabled={loading}
       >
         <ChevronRight size={22} />
       </button>
 
       {/* Indicator Dots */}
-      <div className={styles.dotsWrapper}>
-        {slides.map((slide, idx) => (
-          <button
-            key={slide.id || idx}
-            type="button"
-            onClick={() => {
-              setDirection(idx > current ? 1 : -1);
-              setCurrent(idx);
-            }}
-            className={`${styles.dot} ${idx === current ? styles.activeDot : ""}`}
-            aria-label={`Go to slide ${idx + 1}: ${slide.tag || "Slide"}`}
-          />
-        ))}
-      </div>
+      {!loading && (
+        <div className={styles.dotsWrapper}>
+          {slides.map((slide, idx) => (
+            <button
+              key={slide.id || idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`${styles.dot} ${idx === current ? styles.activeDot : ""}`}
+              aria-label={`Go to slide ${idx + 1}: ${slide.tag || "Slide"}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

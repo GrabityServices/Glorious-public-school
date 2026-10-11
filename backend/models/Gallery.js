@@ -4,7 +4,10 @@ const GallerySchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     category: { type: String, default: "Campus" },
-    image: { type: String, required: true },
+    mediaType: { type: String, enum: ["image", "video"], default: "image" },
+    image: { type: String, default: "" },
+    videoUrl: { type: String, default: "" },
+    youtubeId: { type: String, default: "" },
     caption: { type: String, default: "" },
     date: { type: String, default: "" },
   },

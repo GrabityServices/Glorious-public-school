@@ -232,6 +232,49 @@ export default function AdminEvents() {
         </div>
       )}
 
+      {/* Quick Banner to Manage School Academic Calendar (4 Categories) */}
+      <div
+        style={{
+          background: "#f0fdf4",
+          border: "1px solid #bbf7d0",
+          borderRadius: "12px",
+          padding: "14px 18px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "14px",
+          flexWrap: "wrap",
+          marginBottom: "18px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Calendar size={20} color="#059669" />
+          <div>
+            <strong style={{ color: "#14532d", fontSize: "0.92rem", display: "block" }}>
+              School Academic Calendar (Holidays, Exams, Celebrations & PTMs)
+            </strong>
+            <span style={{ color: "#166534", fontSize: "0.8rem" }}>
+              Manage monthly calendar dates across (i) Holidays & Vacations, (ii) Exams & Assessments, (iii) Celebrations & Sports, and (iv) Parent-Teacher Meetings.
+            </span>
+          </div>
+        </div>
+        <a
+          href="/admin/settings#academic-calendar"
+          style={{
+            background: "#059669",
+            color: "#ffffff",
+            padding: "8px 14px",
+            borderRadius: "8px",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Manage Academic Calendar →
+        </a>
+      </div>
+
       {/* Action Header */}
       <div className={styles.actionHeader}>
         <div className={styles.controlsRow}>

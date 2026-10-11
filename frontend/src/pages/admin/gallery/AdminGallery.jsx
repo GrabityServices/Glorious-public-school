@@ -7,6 +7,8 @@ import {
   X,
   Upload,
   Image as ImageIcon,
+  Video,
+  Play,
   AlertCircle,
   Loader2,
   CheckCircle,
@@ -21,8 +23,20 @@ import { GALLERY_CATEGORIES } from "@/data/galleryData";
 
 const PAGE_SIZE = 12;
 
+const extractYouTubeId = (input = "") => {
+  const str = String(input).trim();
+  if (!str) return "";
+  const iframeMatch = str.match(/src=["']([^"']+)["']/i);
+  const target = iframeMatch ? iframeMatch[1] : str;
+  const regExp = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
+  const match = target.match(regExp);
+  if (match && match[1]) return match[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(target)) return target;
+  return "";
+};
+
 export default function AdminGallery() {
-  useDocumentTitle("Photo Gallery Manager | GPS Admin");
+  useDocumentTitle("Photo & Video Gallery Manager | GPS Admin");
   const {
     gallery,
     loading,
@@ -48,29 +62,36 @@ export default function AdminGallery() {
   }, [selectedCategory, searchTerm]);
 
   // Form State
+  const [formMediaType, setFormMediaType] = useState("image"); // "image" | "video"
   const [formTitle, setFormTitle] = useState("");
   const [formCategory, setFormCategory] = useState("Campus");
   const [formImage, setFormImage] = useState("");
+  const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formCaption, setFormCaption] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (defaultType = "image") => {
     setEditingItem(null);
+    setFormMediaType(defaultType === "video" ? "video" : "image");
     setFormTitle("");
-    setFormCategory("Campus");
+    setFormCategory(defaultType === "video" ? "Events" : "Campus");
     setFormImage("");
+    setFormVideoUrl("");
     setFormCaption("");
     setUploadError("");
     setModalOpen(true);
   };
 
   const handleOpenEdit = (item) => {
+    const isVid = item.mediaType === "video" || Boolean(item.videoUrl || item.youtubeId);
     setEditingItem(item);
+    setFormMediaType(isVid ? "video" : "image");
     setFormTitle(item.title || "");
     setFormCategory(item.category || "Campus");
     setFormImage(item.image || "");
+    setFormVideoUrl(item.videoUrl || (item.youtubeId ? `https://www.youtube.com/embed/${item.youtubeId}` : ""));
     setFormCaption(item.caption || "");
     setUploadError("");
     setModalOpen(true);
@@ -104,6 +125,35 @@ export default function AdminGallery() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formTitle.trim()) return;
+
+    if (formMediaType === "video") {
+      const ytId = extractYouTubeId(formVideoUrl);
+      if (!ytId) {
+        setUploadError("Please enter a valid YouTube video URL or embed link (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...).");
+        return;
+      }
+      const embedUrl = `https://www.youtube.com/embed/${ytId}`;
+      const thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      const payload = {
+        title: formTitle.trim(),
+        category: formCategory,
+        mediaType: "video",
+        videoUrl: embedUrl,
+        youtubeId: ytId,
+        image: thumbUrl,
+        caption: formCaption.trim(),
+      };
+      if (editingItem) {
+        const editId = editingItem.id || editingItem._id;
+        await updateGalleryItem(editId, payload);
+      } else {
+        await addGalleryItem(payload);
+      }
+      setSelectedCategory("Videos");
+      setModalOpen(false);
+      return;
+    }
+
     if (!formImage) {
       setUploadError("Please select and upload a photograph from your device.");
       return;
@@ -112,6 +162,9 @@ export default function AdminGallery() {
     const payload = {
       title: formTitle.trim(),
       category: formCategory,
+      mediaType: "image",
+      videoUrl: "",
+      youtubeId: "",
       image: formImage,
       caption: formCaption.trim(),
     };
@@ -123,15 +176,20 @@ export default function AdminGallery() {
       await addGalleryItem(payload);
     }
 
+    if (selectedCategory === "Videos") {
+      setSelectedCategory("All");
+    }
     setModalOpen(false);
   };
 
   const handleDelete = async (item) => {
     const itemId = item.id || item._id;
+    const isVid = item.mediaType === "video" || Boolean(item.videoUrl || item.youtubeId);
     const confirmed = await confirm({
-      title: "Delete Photograph?",
-      message:
-        "Are you sure you want to permanently remove this photo from the school photo gallery? Any uploaded file will also be deleted from disk. This action cannot be undone.",
+      title: isVid ? "Delete Video?" : "Delete Photograph?",
+      message: isVid
+        ? "Are you sure you want to remove this YouTube video from the school gallery?"
+        : "Are you sure you want to permanently remove this photo from the school photo gallery? Any uploaded file will also be deleted from disk. This action cannot be undone.",
       itemName: item.title,
       confirmText: "Yes, Delete",
       cancelText: "Cancel",
@@ -142,9 +200,18 @@ export default function AdminGallery() {
     }
   };
 
+  const isVideoItem = (item) =>
+    item.mediaType === "video" || Boolean(item.videoUrl || item.youtubeId);
+
+  const photoItems = gallery.filter((item) => !isVideoItem(item));
+  const videoItems = gallery.filter((item) => isVideoItem(item));
+
   const filteredItems = gallery.filter((item) => {
+    const isVid = isVideoItem(item);
     const matchesCategory =
-      selectedCategory === "All" || item.category === selectedCategory;
+      selectedCategory === "Videos"
+        ? isVid
+        : !isVid && (selectedCategory === "All" || item.category === selectedCategory);
     const matchesSearch =
       (item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (item.caption && item.caption.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -181,42 +248,65 @@ export default function AdminGallery() {
     }
   };
 
+  const previewYtId = formMediaType === "video" ? extractYouTubeId(formVideoUrl) : "";
+
   return (
     <div className={styles.galleryWrapper}>
       {/* Header */}
       <div className={styles.headerSection}>
         <div className={styles.headerTitle}>
-          <h2>School Photo Gallery & Media Manager</h2>
+          <h2>School Photo & Video Gallery Manager</h2>
           <p>
-            Upload, organize, and showcase campus infrastructure, sports day, and academic events live on the public website.
+            Upload campus photographs or add YouTube embedded videos to showcase live on the public Gallery page.
           </p>
         </div>
-        <button type="button" className={styles.addBtn} onClick={handleOpenAdd}>
-          <Plus size={18} />
-          <span>Add New Photo</span>
-        </button>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className={styles.addBtn}
+            style={{ background: "#dc2626" }}
+            onClick={() => handleOpenAdd("video")}
+          >
+            <Video size={18} />
+            <span>Add YouTube Video</span>
+          </button>
+          <button
+            type="button"
+            className={styles.addBtn}
+            onClick={() => handleOpenAdd("image")}
+          >
+            <Plus size={18} />
+            <span>Add New Photo</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
       <div className={styles.filterBar}>
         <div className={styles.categoryPills}>
-          {GALLERY_CATEGORIES.map((cat) => (
+          {[
+            ...GALLERY_CATEGORIES.map((cat) => ({
+              id: cat,
+              label: cat,
+              count:
+                cat === "All"
+                  ? photoItems.length
+                  : photoItems.filter((i) => i.category === cat).length,
+            })),
+            { id: "Videos", label: "Video Gallery", count: videoItems.length },
+          ].map((tab) => (
             <button
-              key={cat}
+              key={tab.id}
               type="button"
               className={`${styles.categoryBtn} ${
-                selectedCategory === cat
-                  ? `${styles.categoryBtnActive} ${styles[`catBtnActive_${cat.toLowerCase()}`] || ""}`
+                selectedCategory === tab.id
+                  ? `${styles.categoryBtnActive} ${styles[`catBtnActive_${tab.id.toLowerCase()}`] || ""}`
                   : ""
               }`}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => setSelectedCategory(tab.id)}
             >
-              {cat}
-              <span className={styles.categoryCountBadge}>
-                {cat === "All"
-                  ? gallery.length
-                  : gallery.filter((i) => i.category === cat).length}
-              </span>
+              {tab.label}
+              <span className={styles.categoryCountBadge}>{tab.count}</span>
             </button>
           ))}
         </div>
@@ -225,7 +315,7 @@ export default function AdminGallery() {
           <Search size={16} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Search photos..."
+            placeholder="Search photos & videos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={styles.searchInput}
@@ -268,11 +358,12 @@ export default function AdminGallery() {
           <div className={styles.galleryGrid}>
             {displayedItems.map((item) => {
               const itemId = item.id || item._id;
+              const isVid = item.mediaType === "video" || Boolean(item.videoUrl || item.youtubeId);
               return (
                 <div key={itemId} className={styles.photoCard}>
                   <div className={styles.imageContainer}>
                     <ShimmerImage
-                      src={item.image}
+                      src={item.image || (item.youtubeId ? `https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg` : "/images/dance-&-cultural-fest.webp")}
                       alt={item.title}
                       className={styles.photoImg}
                       loading="lazy"
@@ -281,18 +372,39 @@ export default function AdminGallery() {
                     <span className={`${styles.badgeCategory} ${getCategoryClass(item.category)}`}>
                       {item.category || "Campus"}
                     </span>
+                    {isVid && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          background: "#dc2626",
+                          color: "#ffffff",
+                          padding: "4px 10px",
+                          borderRadius: "999px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        <Play size={11} fill="#ffffff" /> VIDEO
+                      </span>
+                    )}
                   </div>
                   <div className={styles.cardBody}>
                     <h4 className={styles.photoTitle}>{item.title}</h4>
                     <p className={styles.photoCaption}>
-                      {item.caption || "No description provided."}
+                      {item.caption || (isVid ? "YouTube Embedded Video" : "No description provided.")}
                     </p>
                     <div className={styles.cardActions}>
                       <button
                         type="button"
                         className={styles.editBtn}
                         onClick={() => handleOpenEdit(item)}
-                        title="Edit Photo Info"
+                        title={isVid ? "Edit Video Info" : "Edit Photo Info"}
                       >
                         <Edit2 size={14} />
                         <span>Edit</span>
@@ -301,7 +413,7 @@ export default function AdminGallery() {
                         type="button"
                         className={styles.deleteBtn}
                         onClick={() => handleDelete(item)}
-                        title="Delete Photo"
+                        title={isVid ? "Delete Video" : "Delete Photo"}
                       >
                         <Trash2 size={14} />
                         <span>Delete</span>
@@ -347,7 +459,7 @@ export default function AdminGallery() {
             <div className={styles.loadMoreSection}>
               <div className={styles.loadMoreProgressWrap}>
                 <div className={styles.loadMoreCounter}>
-                  Showing <strong>{displayedItems.length}</strong> of <strong>{filteredItems.length}</strong> photographs
+                  Showing <strong>{displayedItems.length}</strong> of <strong>{filteredItems.length}</strong> media items
                 </div>
                 <div className={styles.progressBar}>
                   <div
@@ -372,12 +484,12 @@ export default function AdminGallery() {
                   {isLoadingMore ? (
                     <>
                       <Loader2 size={16} className={styles.spin} />
-                      <span>Loading Photos...</span>
+                      <span>Loading Media...</span>
                     </>
                   ) : (
                     <>
                       <Plus size={16} />
-                      <span>Load More Photos</span>
+                      <span>Load More Media</span>
                       <span className={styles.remainingPill}>
                         +{Math.min(PAGE_SIZE, remainingCount)}
                       </span>
@@ -387,7 +499,7 @@ export default function AdminGallery() {
               ) : (
                 <div className={styles.allLoadedText}>
                   <CheckCircle size={15} color="#10b981" />
-                  <span>All {filteredItems.length} photographs loaded</span>
+                  <span>All {filteredItems.length} gallery items loaded</span>
                 </div>
               )}
             </div>
@@ -395,15 +507,19 @@ export default function AdminGallery() {
         </>
       ) : (
         <EmptyState
-          icon={ImageIcon}
-          title="No Photographs Found"
+          icon={selectedCategory === "Videos" ? Video : ImageIcon}
+          title={selectedCategory === "Videos" ? "No YouTube Videos Added Yet" : "No Gallery Items Found"}
           description={
-            searchTerm || selectedCategory !== "All"
-              ? "No photos match your current filter. Clear search or pick another category."
-              : "No gallery photographs uploaded yet. Click above to add your first photo."
+            searchTerm
+              ? "No items match your search query. Try clearing the search box."
+              : selectedCategory === "Videos"
+              ? "Add a YouTube embedded video link to display in the public Video Gallery section."
+              : selectedCategory !== "All"
+              ? `No items found in "${selectedCategory}". Pick another category or add new media.`
+              : "No gallery photographs or videos uploaded yet. Click above to add your first photo or video."
           }
-          actionText="Add New Photo"
-          onAction={handleOpenAdd}
+          actionText={selectedCategory === "Videos" ? "Add YouTube Video" : "Add New Photo"}
+          onAction={() => handleOpenAdd(selectedCategory === "Videos" ? "video" : "image")}
         />
       )}
 
@@ -419,9 +535,19 @@ export default function AdminGallery() {
           <div className={styles.modalContent} data-lenis-prevent="true">
             <div className={styles.modalHeader}>
               <div>
-                <h3>{editingItem ? "Edit Photograph" : "Upload New Photograph"}</h3>
+                <h3>
+                  {editingItem
+                    ? formMediaType === "video"
+                      ? "Edit YouTube Video"
+                      : "Edit Photograph"
+                    : formMediaType === "video"
+                    ? "Add YouTube Embedded Video"
+                    : "Upload New Photograph"}
+                </h3>
                 <p style={{ fontSize: "0.82rem", color: "#64748b", margin: 0 }}>
-                  Upload high-resolution event, campus, or laboratory pictures.
+                  {formMediaType === "video"
+                    ? "Paste any YouTube video link or embed URL to showcase in the Gallery Video Section."
+                    : "Upload high-resolution event, campus, or laboratory pictures."}
                 </p>
               </div>
               <button
@@ -435,17 +561,75 @@ export default function AdminGallery() {
             </div>
 
             <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Photo Title */}
+              {/* Media Type Toggle: Photo vs YouTube Video */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormMediaType("image");
+                    setUploadError("");
+                  }}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: formMediaType === "image" ? "2px solid #2563eb" : "1px solid #cbd5e1",
+                    background: formMediaType === "image" ? "#eff6ff" : "#f8fafc",
+                    color: formMediaType === "image" ? "#1d4ed8" : "#475569",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <ImageIcon size={16} />
+                  <span>Photograph Upload</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormMediaType("video");
+                    setUploadError("");
+                  }}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: formMediaType === "video" ? "2px solid #dc2626" : "1px solid #cbd5e1",
+                    background: formMediaType === "video" ? "#fef2f2" : "#f8fafc",
+                    color: formMediaType === "video" ? "#dc2626" : "#475569",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Video size={16} />
+                  <span>YouTube Video Embed</span>
+                </button>
+              </div>
+
+              {/* Title */}
               <div className={styles.formGroup}>
                 <div className={styles.labelHeader}>
-                  <label className={styles.label}>Photo Title *</label>
+                  <label className={styles.label}>
+                    {formMediaType === "video" ? "Video Title *" : "Photo Title *"}
+                  </label>
                   <span className={styles.charCount}>{formTitle.length}/90 chars</span>
                 </div>
                 <input
                   type="text"
                   required
                   maxLength={90}
-                  placeholder="e.g., Annual Science Exhibition 2026 or Modern Computer Lab"
+                  placeholder={
+                    formMediaType === "video"
+                      ? "e.g., Annual Cultural Fest Dance Performance 2026"
+                      : "e.g., Annual Science Exhibition 2026 or Modern Computer Lab"
+                  }
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   className={styles.input}
@@ -468,111 +652,162 @@ export default function AdminGallery() {
                 </select>
               </div>
 
-              {/* Single Feature: Upload Photograph from Device */}
-              <div className={styles.photoUploadSection}>
-                <div className={styles.labelHeader}>
-                  <span className={styles.photoHeading}>
-                    <ImageIcon size={15} /> Photograph File *
-                  </span>
-                  {formImage && (
-                    <span className={styles.photoUploadedTag}>
-                      {formImage.startsWith("/uploads/") ? "Uploaded from Device" : "Selected Photo"}
+              {formMediaType === "video" ? (
+                <div className={styles.photoUploadSection}>
+                  <div className={styles.labelHeader}>
+                    <span className={styles.photoHeading}>
+                      <Video size={15} /> YouTube Video Embedded Link / URL *
                     </span>
-                  )}
-                </div>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=... or https://www.youtube.com/embed/...)"
+                    value={formVideoUrl}
+                    onChange={(e) => {
+                      setFormVideoUrl(e.target.value);
+                      setUploadError("");
+                    }}
+                    className={styles.input}
+                  />
+                  <span style={{ fontSize: "0.76rem", color: "#64748b" }}>
+                    Supports standard YouTube URLs, youtu.be share links, YouTube Shorts, or full &lt;iframe&gt; embed codes.
+                  </span>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
-                  style={{ display: "none" }}
-                  onChange={handlePhotoUpload}
-                />
-
-                {formImage ? (
-                  <div className={styles.selectedPhotoCard}>
-                    <div className={styles.photoPreviewWrap}>
-                      <img
-                        src={formImage}
-                        alt="Gallery preview"
-                        className={styles.photoPreviewImg}
-                        onError={(e) => {
-                          e.target.src = "/images/dance-&-cultural-fest.webp";
-                        }}
+                  {previewYtId && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        border: "1px solid #cbd5e1",
+                        background: "#0f172a",
+                        aspectRatio: "16 / 9",
+                      }}
+                    >
+                      <iframe
+                        src={`https://www.youtube.com/embed/${previewYtId}`}
+                        title="YouTube video preview"
+                        style={{ width: "100%", height: "100%", border: 0 }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
                       />
                     </div>
+                  )}
 
-                    <div className={styles.photoMeta}>
-                      <div className={styles.photoMetaTitle}>
-                        {formImage.split("/").pop()}
-                      </div>
-                      <p className={styles.photoMetaSub}>
-                        {formImage.startsWith("/uploads/")
-                          ? "Stored in dedicated gallery storage"
-                          : "School media asset"}
-                      </p>
-
-                      <div className={styles.photoBtnRow}>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isUploading}
-                          className={styles.changePhotoBtn}
-                        >
-                          {isUploading ? (
-                            <>
-                              <Loader2 size={13} className={styles.spinIcon} />
-                              <span>Uploading...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Upload size={13} />
-                              <span>Change Photo from Device</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormImage("")}
-                          className={styles.removePhotoBtn}
-                        >
-                          Remove
-                        </button>
-                      </div>
+                  {uploadError && (
+                    <div className={styles.errorAlert}>
+                      <AlertCircle size={15} />
+                      <span>{uploadError}</span>
                     </div>
-                  </div>
-                ) : (
-                  <div
-                    className={styles.uploadDropzone}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <div className={styles.dropzoneIconWrap}>
-                      {isUploading ? (
-                        <Loader2 size={24} className={styles.spinIcon} />
-                      ) : (
-                        <Upload size={24} />
-                      )}
-                    </div>
-                    <div className={styles.dropzoneText}>
-                      <span className={styles.dropzoneTitle}>
-                        {isUploading
-                          ? "Uploading photo from storage..."
-                          : "Click to Select Photograph from Device"}
+                  )}
+                </div>
+              ) : (
+                <div className={styles.photoUploadSection}>
+                  <div className={styles.labelHeader}>
+                    <span className={styles.photoHeading}>
+                      <ImageIcon size={15} /> Photograph File *
+                    </span>
+                    {formImage && (
+                      <span className={styles.photoUploadedTag}>
+                        {formImage.startsWith("/uploads/") ? "Uploaded from Device" : "Selected Photo"}
                       </span>
-                      <span className={styles.dropzoneSub}>
-                        Supports JPG, PNG, WEBP, or JFIF (Max 15MB)
-                      </span>
-                    </div>
+                    )}
                   </div>
-                )}
 
-                {uploadError && (
-                  <div className={styles.errorAlert}>
-                    <AlertCircle size={15} />
-                    <span>{uploadError}</span>
-                  </div>
-                )}
-              </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
+                    style={{ display: "none" }}
+                    onChange={handlePhotoUpload}
+                  />
+
+                  {formImage ? (
+                    <div className={styles.selectedPhotoCard}>
+                      <div className={styles.photoPreviewWrap}>
+                        <img
+                          src={formImage}
+                          alt="Gallery preview"
+                          className={styles.photoPreviewImg}
+                          onError={(e) => {
+                            e.target.src = "/images/dance-&-cultural-fest.webp";
+                          }}
+                        />
+                      </div>
+
+                      <div className={styles.photoMeta}>
+                        <div className={styles.photoMetaTitle}>
+                          {formImage.split("/").pop()}
+                        </div>
+                        <p className={styles.photoMetaSub}>
+                          {formImage.startsWith("/uploads/")
+                            ? "Stored in dedicated gallery storage"
+                            : "School media asset"}
+                        </p>
+
+                        <div className={styles.photoBtnRow}>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className={styles.changePhotoBtn}
+                          >
+                            {isUploading ? (
+                              <>
+                                <Loader2 size={13} className={styles.spinIcon} />
+                                <span>Uploading...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={13} />
+                                <span>Change Photo from Device</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setFormImage("")}
+                            className={styles.removePhotoBtn}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={styles.uploadDropzone}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className={styles.dropzoneIconWrap}>
+                        {isUploading ? (
+                          <Loader2 size={24} className={styles.spinIcon} />
+                        ) : (
+                          <Upload size={24} />
+                        )}
+                      </div>
+                      <div className={styles.dropzoneText}>
+                        <span className={styles.dropzoneTitle}>
+                          {isUploading
+                            ? "Uploading photo from storage..."
+                            : "Click to Select Photograph from Device"}
+                        </span>
+                        <span className={styles.dropzoneSub}>
+                          Supports JPG, PNG, WEBP, or JFIF (Max 15MB)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className={styles.errorAlert}>
+                      <AlertCircle size={15} />
+                      <span>{uploadError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Caption / Description */}
               <div className={styles.formGroup}>
@@ -600,7 +835,13 @@ export default function AdminGallery() {
                   Cancel
                 </button>
                 <button type="submit" className={styles.saveBtn}>
-                  {editingItem ? "Update Photo" : "Add to Gallery"}
+                  {editingItem
+                    ? formMediaType === "video"
+                      ? "Update Video"
+                      : "Update Photo"
+                    : formMediaType === "video"
+                    ? "Add Video to Gallery"
+                    : "Add Photo to Gallery"}
                 </button>
               </div>
             </form>
