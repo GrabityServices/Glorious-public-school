@@ -734,7 +734,7 @@ export default function AdminAdmissions() {
 
           {/* Online Admissions Table */}
           <div className={styles.tableCard}>
-            <div className={styles.tableWrapper} data-lenis-prevent="true">
+            <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -1032,7 +1032,7 @@ export default function AdminAdmissions() {
 
           {/* Contact Inquiries Table (NO UNIQUE CODE) */}
           <div className={styles.tableCard}>
-            <div className={styles.tableWrapper} data-lenis-prevent="true">
+            <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
                   <tr>

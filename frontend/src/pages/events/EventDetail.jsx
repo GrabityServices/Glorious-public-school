@@ -10,7 +10,43 @@ export default function EventDetailPage() {
   const { events } = useData();
   const event = events.find((e) => e.id === id || e._id === id) || events[0] || {};
 
-  useDocumentTitle(`${event.title || "Event Details"} | Glorious Public School`);
+  useDocumentTitle(`${event.title || "Event Details"} | Glorious Public School, Jhajha`, {
+    path: `/events/${id || ""}`,
+    description:
+      event.description ||
+      `${event.title || "School Event"} at Glorious Public School, Jhajha — Date: ${event.date || "TBA"}, Venue: ${event.venue || "School Campus"}.`,
+    keywords: `${event.title || "School Event"}, Glorious Public School events, ${event.category || "Cultural"} event Jhajha`,
+    breadcrumbs: [
+      { name: "Home", path: "/" },
+      { name: "Events", path: "/events" },
+      { name: event.title || "Event Details", path: `/events/${id || ""}` },
+    ],
+    extraSchema: event.title
+      ? {
+          "@type": "Event",
+          name: event.title,
+          description: event.description || event.title,
+          startDate: event.date || "2026-04-01",
+          eventStatus: "https://schema.org/EventScheduled",
+          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+          location: {
+            "@type": "Place",
+            name: event.venue || "Glorious Public School Campus, Jhajha",
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: "Jamui Road, Jhajha",
+              addressLocality: "Jhajha",
+              addressRegion: "Bihar",
+              postalCode: "811308",
+              addressCountry: "IN",
+            },
+          },
+          organizer: {
+            "@id": "https://gloriouspublicschool.com/#school",
+          },
+        }
+      : null,
+  });
 
   return (
     <div className={styles.pageWrapper}>

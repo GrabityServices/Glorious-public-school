@@ -21,7 +21,16 @@ import { useData } from "@/context/DataContext";
 import EmptyState from "@/components/common/EmptyState";
 
 export default function NewsPage() {
-  useDocumentTitle("News & Notice Board | Glorious Public School");
+  useDocumentTitle("Official News, Circulars & Notice Board | Glorious Public School, Jhajha", {
+    path: "/news",
+    schemaType: "CollectionPage",
+    description:
+      "Stay updated with the latest official notices, exam circulars, PTM announcements, holiday alerts, and downloadable PDF notifications from Glorious Public School, Jhajha.",
+    keywords:
+      "Glorious Public School notice board, school circulars Jhajha, exam date sheet Glorious Public School, school announcements Jamui",
+    aeoSummary:
+      "The Official Notice Board of Glorious Public School publishes real-time circulars, examination schedules, admission updates, and downloadable notices for parents and students.",
+  });
   const { notices } = useData();
   const [selectedNoticeId, setSelectedNoticeId] = useState(null);
   const readerRef = useRef(null);

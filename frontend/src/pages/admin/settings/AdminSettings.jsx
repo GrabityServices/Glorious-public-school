@@ -23,9 +23,12 @@ import {
   Sparkles,
   RotateCcw,
   Loader2,
+  Clock,
+  Share2,
+  Globe,
 } from "lucide-react";
 import styles from "./AdminSettings.module.css";
-import { useData } from "@/context/DataContext";
+import { useData, DEFAULT_SOCIAL_LINKS } from "@/context/DataContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { getAcademicSession } from "@/utils/academicYear";
@@ -35,6 +38,12 @@ import {
   validateEmail,
 } from "@/utils/validation";
 import { DEFAULT_HERO_SLIDES } from "@/data/sliderData";
+import { SCHOOL_ROUTINE } from "@/data/academicsData";
+import {
+  ACADEMIC_MONTHS,
+  CALENDAR_CATEGORIES,
+  SCHOOL_CALENDAR_EVENTS,
+} from "@/data/calendarData";
 import ShimmerImage from "@/components/common/ShimmerImage";
 
 export default function AdminSettings() {
@@ -56,6 +65,45 @@ export default function AdminSettings() {
   // Local state for school stats
   const [stats, setStats] = useState(() => schoolInfo.stats || []);
   const [isSavingStats, setIsSavingStats] = useState(false);
+
+  // Local state for School Timetable & Bell Schedule
+  const [bellSchedule, setBellSchedule] = useState(() =>
+    Array.isArray(schoolInfo?.bellSchedule) && schoolInfo.bellSchedule.length > 0
+      ? schoolInfo.bellSchedule
+      : SCHOOL_ROUTINE
+  );
+  const [isSavingBell, setIsSavingBell] = useState(false);
+
+  // Local state for Social Media Links
+  const [socialLinks, setSocialLinks] = useState(() => ({
+    ...DEFAULT_SOCIAL_LINKS,
+    ...(schoolInfo?.socialLinks || {}),
+  }));
+  const [isSavingSocial, setIsSavingSocial] = useState(false);
+
+  // Local state for Academic Calendar Events (4 Admin-Managed Categories)
+  const [calendarEvents, setCalendarEvents] = useState(() =>
+    Array.isArray(schoolInfo?.calendarEvents) && schoolInfo.calendarEvents.length > 0
+      ? schoolInfo.calendarEvents
+      : SCHOOL_CALENDAR_EVENTS
+  );
+  const [calFilterCat, setCalFilterCat] = useState("all");
+  const [calModalOpen, setCalModalOpen] = useState(false);
+  const [editingCalIdx, setEditingCalIdx] = useState(null);
+  const [calForm, setCalForm] = useState({
+    id: "",
+    title: "",
+    category: "holiday",
+    categoryLabel: "Holidays & Vacations",
+    monthIdxInList: 0,
+    day: 1,
+    endDay: "",
+    date: "",
+    time: "8:00 AM - 2:30 PM",
+    grades: "All Classes (Nursery - 10th)",
+    venue: "School Campus, Jhajha",
+    description: "",
+  });
 
   // Local state for homepage hero slider
   const ensureSlideIds = (slideList) => {
@@ -101,6 +149,18 @@ export default function AdminSettings() {
       if (schoolInfo.stats) setStats(schoolInfo.stats);
       if (Array.isArray(schoolInfo.heroSlides) && schoolInfo.heroSlides.length > 0) {
         setSlides(ensureSlideIds(schoolInfo.heroSlides));
+      }
+      if (Array.isArray(schoolInfo.bellSchedule) && schoolInfo.bellSchedule.length > 0) {
+        setBellSchedule(schoolInfo.bellSchedule);
+      }
+      if (schoolInfo.socialLinks) {
+        setSocialLinks({
+          ...DEFAULT_SOCIAL_LINKS,
+          ...schoolInfo.socialLinks,
+        });
+      }
+      if (Array.isArray(schoolInfo.calendarEvents) && schoolInfo.calendarEvents.length > 0) {
+        setCalendarEvents(schoolInfo.calendarEvents);
       }
       const isAdmOpen = schoolInfo.isAdmissionsOpen !== false;
       const isNoticeActive = isAdmOpen && schoolInfo.showAdmissionNotice !== false;
@@ -300,6 +360,275 @@ export default function AdminSettings() {
       showToast(err.message || "Failed to update school stats. Please try again.");
     } finally {
       setIsSavingStats(false);
+    }
+  };
+
+  // --- School Timetable & Bell Schedule Handlers ---
+  const handleBellSlotChange = (idx, field, val) => {
+    setBellSchedule((prev) =>
+      prev.map((slot, i) => (i === idx ? { ...slot, [field]: val } : slot))
+    );
+  };
+
+  const handleAddBellSlot = () => {
+    setBellSchedule((prev) => [
+      ...prev,
+      { time: "02:30 PM - 03:00 PM", activity: "Extra Remedial / Club Activity" },
+    ]);
+  };
+
+  const handleMoveBellSlot = (idx, direction) => {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= bellSchedule.length) return;
+    const updated = [...bellSchedule];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    setBellSchedule(updated);
+  };
+
+  const handleDeleteBellSlot = (idx) => {
+    if (bellSchedule.length <= 1) {
+      showToast("At least one period/slot must remain in the timetable.");
+      return;
+    }
+    setBellSchedule((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSaveBellSchedule = async (e) => {
+    e.preventDefault();
+    const cleaned = bellSchedule
+      .map((s) => ({
+        time: String(s.time || "").trim(),
+        activity: String(s.activity || "").trim(),
+      }))
+      .filter((s) => s.time && s.activity);
+
+    if (cleaned.length === 0) {
+      showToast("Please enter at least one valid time and activity slot.");
+      return;
+    }
+
+    setIsSavingBell(true);
+    try {
+      setBellSchedule(cleaned);
+      await updateSchoolInfo({ bellSchedule: cleaned });
+      showToast("School Timetable & Bell Schedule updated and live on Academics page!");
+    } catch (err) {
+      showToast(err.message || "Failed to save bell schedule.");
+    } finally {
+      setIsSavingBell(false);
+    }
+  };
+
+  const handleResetBellSchedule = async () => {
+    const confirmed = await confirm({
+      title: "Reset School Timetable & Bell Schedule",
+      message:
+        "Are you sure you want to reset the School Timetable & Bell Schedule back to the default school routine (07:50 AM to 02:30 PM)?",
+      confirmText: "Yes, Reset Schedule",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
+      setBellSchedule(SCHOOL_ROUTINE);
+      await updateSchoolInfo({ bellSchedule: SCHOOL_ROUTINE });
+      showToast("School Timetable & Bell Schedule reset to default routine!");
+    }
+  };
+
+  // --- Social Media Links Handlers ---
+  const handleSaveSocialLinks = async (e) => {
+    e.preventDefault();
+    setIsSavingSocial(true);
+    try {
+      const cleanedLinks = {
+        instagram: String(socialLinks.instagram || "").trim() || DEFAULT_SOCIAL_LINKS.instagram,
+        facebook: String(socialLinks.facebook || "").trim() || DEFAULT_SOCIAL_LINKS.facebook,
+        youtube: String(socialLinks.youtube || "").trim() || DEFAULT_SOCIAL_LINKS.youtube,
+        x: String(socialLinks.x || "").trim() || DEFAULT_SOCIAL_LINKS.x,
+      };
+      setSocialLinks(cleanedLinks);
+      await updateSchoolInfo({ socialLinks: cleanedLinks });
+      showToast("Social Media Links (Instagram, Facebook, YouTube, X) updated across the website!");
+    } catch (err) {
+      showToast(err.message || "Failed to update social media links.");
+    } finally {
+      setIsSavingSocial(false);
+    }
+  };
+
+  const handleResetSocialLinks = async () => {
+    const confirmed = await confirm({
+      title: "Reset Social Media Links",
+      message: "Restore Instagram, Facebook, YouTube, and X links back to default?",
+      confirmText: "Yes, Reset Links",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
+      setSocialLinks(DEFAULT_SOCIAL_LINKS);
+      await updateSchoolInfo({ socialLinks: DEFAULT_SOCIAL_LINKS });
+      showToast("Social Media Links restored to default!");
+    }
+  };
+
+  // --- Academic Calendar Events (4 Categories) Handlers ---
+  const defaultCategoryLabels = {
+    holiday: "Holidays & Vacations",
+    exam: "Exams & Assessments",
+    celebration: "Celebrations & Sports",
+    ptm: "Parent-Teacher Meetings",
+  };
+
+  const handleOpenAddCalEvent = () => {
+    const nowMonth = new Date().getMonth();
+    const defaultMIdx = Math.max(0, ACADEMIC_MONTHS.findIndex((m) => m.index === nowMonth));
+    const mObj = ACADEMIC_MONTHS[defaultMIdx] || ACADEMIC_MONTHS[0];
+    setEditingCalIdx(null);
+    setCalForm({
+      id: `cal_${Date.now()}`,
+      title: "",
+      category: calFilterCat !== "all" ? calFilterCat : "holiday",
+      categoryLabel: defaultCategoryLabels[calFilterCat !== "all" ? calFilterCat : "holiday"],
+      monthIdxInList: defaultMIdx,
+      day: 15,
+      endDay: "",
+      date: `15 ${mObj.name} ${mObj.year}`,
+      time: "8:00 AM - 2:30 PM",
+      grades: "All Classes (Nursery - 10th)",
+      venue: "School Campus, Jhajha",
+      description: "",
+    });
+    setCalModalOpen(true);
+  };
+
+  const handleOpenEditCalEvent = (ev, indexInFullArray) => {
+    const mIdx = Math.max(
+      0,
+      ACADEMIC_MONTHS.findIndex((m) => m.index === Number(ev.month) && m.year === Number(ev.year))
+    );
+    setEditingCalIdx(indexInFullArray);
+    setCalForm({
+      id: ev.id || `cal_${Date.now()}`,
+      title: ev.title || "",
+      category: ev.category || "holiday",
+      categoryLabel: ev.categoryLabel || defaultCategoryLabels[ev.category] || "School Event",
+      monthIdxInList: mIdx,
+      day: ev.day || 1,
+      endDay: ev.endDay || "",
+      date: ev.date || "",
+      time: ev.time || "8:00 AM - 2:30 PM",
+      grades: ev.grades || "All Classes",
+      venue: ev.venue || "School Campus, Jhajha",
+      description: ev.description || "",
+    });
+    setCalModalOpen(true);
+  };
+
+  const handleSaveCalEventModal = async (e) => {
+    e.preventDefault();
+    if (!calForm.title.trim()) {
+      showToast("Please enter an event or holiday title.");
+      return;
+    }
+    let mObj = ACADEMIC_MONTHS[Number(calForm.monthIdxInList)] || ACADEMIC_MONTHS[0];
+    let dayNum = Math.max(1, Math.min(31, Number(calForm.day) || 1));
+    let endDayNum = calForm.endDay ? Math.max(dayNum, Math.min(31, Number(calForm.endDay))) : null;
+
+    // If the admin typed a month name in Display Date Text (e.g., "12 October - 13 October 2026"), sync month/year/day
+    const customDateStr = calForm.date.trim();
+    if (customDateStr) {
+      let bestMatch = null;
+      let bestPos = Infinity;
+      for (const candidate of ACADEMIC_MONTHS) {
+        const regex = new RegExp(`\\b${candidate.name}\\b`, "i");
+        const match = regex.exec(customDateStr);
+        if (match && match.index < bestPos) {
+          bestPos = match.index;
+          bestMatch = candidate;
+        }
+      }
+      if (bestMatch) {
+        mObj = bestMatch;
+      }
+      const dayMatch = customDateStr.match(/(\d{1,2})\s+[A-Za-z]+(?:\s*[-–]\s*(\d{1,2})\s+[A-Za-z]+)?/);
+      if (dayMatch) {
+        dayNum = Math.max(1, Math.min(31, Number(dayMatch[1]) || dayNum));
+        if (dayMatch[2]) {
+          endDayNum = Math.max(dayNum, Math.min(31, Number(dayMatch[2])));
+        }
+      }
+    }
+
+    const autoDateStr = endDayNum
+      ? `${String(dayNum).padStart(2, "0")} ${mObj.name} - ${String(endDayNum).padStart(2, "0")} ${mObj.name} ${mObj.year}`
+      : `${String(dayNum).padStart(2, "0")} ${mObj.name} ${mObj.year}`;
+
+    const newEv = {
+      id: calForm.id || `cal_${Date.now()}`,
+      title: calForm.title.trim(),
+      category: calForm.category,
+      categoryLabel: calForm.categoryLabel.trim() || defaultCategoryLabels[calForm.category] || "School Event",
+      date: customDateStr || autoDateStr,
+      year: mObj.year,
+      month: mObj.index,
+      day: dayNum,
+      ...(endDayNum ? { endDay: endDayNum } : {}),
+      time: calForm.time.trim() || "All Day",
+      grades: calForm.grades.trim() || "All Classes",
+      venue: calForm.venue.trim() || "School Campus",
+      description: calForm.description.trim(),
+    };
+
+    const updatedList = [...calendarEvents];
+    if (editingCalIdx !== null) {
+      updatedList[editingCalIdx] = newEv;
+    } else {
+      updatedList.push(newEv);
+    }
+
+    setCalendarEvents(updatedList);
+    await updateSchoolInfo({ calendarEvents: updatedList });
+    setCalModalOpen(false);
+    showToast(
+      editingCalIdx !== null
+        ? "Academic Calendar event updated!"
+        : "New event added to School Academic Calendar!"
+    );
+  };
+
+  const handleDeleteCalEvent = async (indexInFullArray) => {
+    const target = calendarEvents[indexInFullArray];
+    if (!target) return;
+    const confirmed = await confirm({
+      title: "Delete Academic Calendar Event",
+      message: `Are you sure you want to remove "${target.title}" (${target.date}) from the School Academic Calendar?`,
+      confirmText: "Yes, Delete Event",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
+      const updatedList = calendarEvents.filter((_, i) => i !== indexInFullArray);
+      setCalendarEvents(updatedList);
+      await updateSchoolInfo({ calendarEvents: updatedList });
+      showToast("Event removed from School Academic Calendar.");
+    }
+  };
+
+  const handleResetCalendarEvents = async () => {
+    const confirmed = await confirm({
+      title: "Reset School Academic Calendar",
+      message:
+        "Are you sure you want to reset all 4 categories (Holidays & Vacations, Exams & Assessments, Celebrations & Sports, and Parent-Teacher Meetings) back to the default session schedule?",
+      confirmText: "Yes, Reset Calendar",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
+      setCalendarEvents(SCHOOL_CALENDAR_EVENTS);
+      await updateSchoolInfo({ calendarEvents: SCHOOL_CALENDAR_EVENTS });
+      showToast("School Academic Calendar restored to default schedule!");
     }
   };
 
@@ -589,6 +918,210 @@ export default function AdminSettings() {
         </div>
       </div>
 
+      {/* 3B. School Timetable & Bell Schedule Management */}
+      <div className={styles.sectionCard} id="timetable">
+        <div className={styles.sectionHeaderRow}>
+          <div className={styles.sectionHeader} style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>
+            <h3 className={styles.sectionTitle}>
+              <Clock size={20} color="#dc2626" />
+              <span>School Timetable & Bell Schedule</span>
+            </h3>
+            <p className={styles.sectionSubtitle}>
+              Modify the daily periods, assembly timings, recess breaks, and dispersal schedule shown on the Academics page.
+            </p>
+          </div>
+          <div className={styles.sectionHeaderActions}>
+            <button
+              type="button"
+              onClick={handleResetBellSchedule}
+              className={styles.secondaryHeaderBtn}
+              title="Reset Bell Schedule to default school routine"
+            >
+              <RotateCcw size={15} />
+              <span>Reset Schedule</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAddBellSlot}
+              className={styles.primaryAddBtn}
+            >
+              <Plus size={16} />
+              <span>Add Period / Slot</span>
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveBellSchedule} style={{ marginTop: "18px" }}>
+          <div className={styles.bellScheduleList}>
+            {bellSchedule.map((slot, idx) => (
+              <div key={idx} className={styles.bellSlotRow}>
+                <span className={styles.bellSlotIndex}>#{idx + 1}</span>
+                <div className={styles.bellSlotInputs}>
+                  <div className={styles.bellInputTimeWrap}>
+                    <label>Time Duration</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 08:20 AM - 09:00 AM"
+                      value={slot.time || ""}
+                      onChange={(e) => handleBellSlotChange(idx, "time", e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.bellInputActivityWrap}>
+                    <label>Activity / Period Description</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Period 1 (Core Subject)"
+                      value={slot.activity || ""}
+                      onChange={(e) => handleBellSlotChange(idx, "activity", e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className={styles.bellSlotActions}>
+                  <button
+                    type="button"
+                    disabled={idx === 0}
+                    onClick={() => handleMoveBellSlot(idx, -1)}
+                    className={styles.iconBtn}
+                    title="Move up"
+                  >
+                    <ArrowUp size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={idx === bellSchedule.length - 1}
+                    onClick={() => handleMoveBellSlot(idx, 1)}
+                    className={styles.iconBtn}
+                    title="Move down"
+                  >
+                    <ArrowDown size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteBellSlot(idx)}
+                    className={styles.deleteBtn}
+                    title="Remove slot"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.bellFooterActions}>
+            <button type="submit" className={styles.saveBtn} disabled={isSavingBell}>
+              {isSavingBell ? (
+                <Loader2 size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle", animation: "spin 1s linear infinite" }} />
+              ) : (
+                <Save size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+              )}
+              <span>{isSavingBell ? "Saving Timetable..." : "Save Timetable & Bell Schedule"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleResetBellSchedule}
+              className={styles.resetBtn}
+            >
+              <RotateCcw size={15} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+              <span>Reset to Default Schedule</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* 3C. School Academic Calendar Events Manager (4 Categories) */}
+      <div className={styles.sectionCard} id="academic-calendar">
+        <div className={styles.sectionHeaderRow}>
+          <div className={styles.sectionHeader} style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>
+            <h3 className={styles.sectionTitle}>
+              <Calendar size={20} color="#059669" />
+              <span>School Academic Calendar Manager (4 Categories)</span>
+            </h3>
+            <p className={styles.sectionSubtitle}>
+              Manage all non-fixed school dates across (i) Holidays & Vacations, (ii) Exams & Assessments, (iii) Celebrations & Sports, and (iv) Parent-Teacher Meetings.
+            </p>
+          </div>
+          <div className={styles.sectionHeaderActions}>
+            <button
+              type="button"
+              onClick={handleResetCalendarEvents}
+              className={styles.secondaryHeaderBtn}
+              title="Reset Academic Calendar to default schedule"
+            >
+              <RotateCcw size={15} />
+              <span>Reset Default Calendar</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenAddCalEvent}
+              className={styles.primaryAddBtn}
+            >
+              <Plus size={16} />
+              <span>Add Calendar Event</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Category Filter Pills */}
+        <div className={styles.calCategoryTabs}>
+          {CALENDAR_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCalFilterCat(cat.id)}
+              className={`${styles.calCatBtn} ${calFilterCat === cat.id ? styles.calCatBtnActive : ""}`}
+            >
+              <span>{cat.label}</span>
+              <span className={styles.calCatCount}>
+                {cat.id === "all"
+                  ? calendarEvents.length
+                  : calendarEvents.filter((e) => e.category === cat.id).length}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.calEventsAdminList} data-lenis-prevent="true">
+          {calendarEvents
+            .map((ev, fullIdx) => ({ ev, fullIdx }))
+            .filter(({ ev }) => calFilterCat === "all" || ev.category === calFilterCat)
+            .map(({ ev, fullIdx }) => (
+              <div key={ev.id || fullIdx} className={styles.calEventAdminRow}>
+                <div className={styles.calEventAdminInfo}>
+                  <div className={styles.calEventAdminBadges}>
+                    <span className={`${styles.calCatTag} ${styles[`calCat_${ev.category}`] || ""}`}>
+                      {ev.categoryLabel || defaultCategoryLabels[ev.category] || ev.category}
+                    </span>
+                    <span className={styles.calEventDatePill}>{ev.date}</span>
+                  </div>
+                  <h4 className={styles.calEventAdminTitle}>{ev.title}</h4>
+                  <p className={styles.calEventAdminMeta}>
+                    {ev.time} • {ev.grades} • {ev.venue}
+                  </p>
+                </div>
+                <div className={styles.editDeleteBtns}>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditCalEvent(ev, fullIdx)}
+                    className={styles.editBtn}
+                  >
+                    <Edit2 size={14} />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCalEvent(fullIdx)}
+                    className={styles.deleteBtn}
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+
       {/* 4. School Contact Information & Announcement */}
       <div className={styles.sectionCard}>
         <div className={styles.sectionHeader}>
@@ -671,6 +1204,84 @@ export default function AdminSettings() {
         </form>
       </div>
 
+      {/* 4B. Social Media Links (Instagram, Facebook, YouTube, X) */}
+      <div className={styles.sectionCard} id="social-links">
+        <div className={styles.sectionHeaderRow}>
+          <div className={styles.sectionHeader} style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>
+            <h3 className={styles.sectionTitle}>
+              <Share2 size={20} color="#2563eb" />
+              <span>Official Social Media Links (Instagram, Facebook, YouTube & X)</span>
+            </h3>
+            <p className={styles.sectionSubtitle}>
+              Configure official social media profile URLs displayed in the Header, Footer, and Contact page.
+            </p>
+          </div>
+          <div className={styles.sectionHeaderActions}>
+            <button
+              type="button"
+              onClick={handleResetSocialLinks}
+              className={styles.secondaryHeaderBtn}
+            >
+              <RotateCcw size={15} />
+              <span>Reset Links</span>
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveSocialLinks} style={{ marginTop: "18px" }}>
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label>Instagram Profile URL</label>
+              <input
+                type="url"
+                placeholder="https://www.instagram.com/your_school"
+                value={socialLinks.instagram || ""}
+                onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Facebook Page URL</label>
+              <input
+                type="url"
+                placeholder="https://www.facebook.com/your_school"
+                value={socialLinks.facebook || ""}
+                onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>YouTube Channel URL</label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/@your_school"
+                value={socialLinks.youtube || ""}
+                onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>X (Twitter) Profile URL</label>
+              <input
+                type="url"
+                placeholder="https://x.com/your_school"
+                value={socialLinks.x || ""}
+                onChange={(e) => setSocialLinks({ ...socialLinks, x: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <button type="submit" className={styles.saveBtn} disabled={isSavingSocial}>
+            {isSavingSocial ? (
+              <Loader2 size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle", animation: "spin 1s linear infinite" }} />
+            ) : (
+              <Save size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+            )}
+            <span>{isSavingSocial ? "Saving Social Links..." : "Save Social Media Links"}</span>
+          </button>
+        </form>
+      </div>
+
       {/* 5. Factory Reset / Danger Zone */}
       <div className={styles.dangerZone}>
         <div className={styles.dangerInfo}>
@@ -687,6 +1298,214 @@ export default function AdminSettings() {
           <span>Reset to Factory Data</span>
         </button>
       </div>
+
+      {/* Academic Calendar Event Add/Edit Modal */}
+      {calModalOpen && (
+        <div
+          className={styles.modalOverlay}
+          data-lenis-prevent="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCalModalOpen(false);
+          }}
+        >
+          <div className={styles.modalContent} data-lenis-prevent="true" role="dialog" aria-modal="true">
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitleBox}>
+                <Calendar size={20} color="#059669" />
+                <h3>{editingCalIdx !== null ? "Edit Academic Calendar Event" : "Add Academic Calendar Event"}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCalModalOpen(false)}
+                className={styles.closeBtn}
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCalEventModal} className={styles.modalForm} data-lenis-prevent="true">
+              <div className={styles.modalBody} data-lenis-prevent="true">
+                <div className={styles.formGrid} style={{ marginBottom: 0 }}>
+                  <div className={styles.modalFormGroup}>
+                    <label>Event Category *</label>
+                    <select
+                      value={calForm.category}
+                      onChange={(e) => {
+                        const cat = e.target.value;
+                        setCalForm({
+                          ...calForm,
+                          category: cat,
+                          categoryLabel: defaultCategoryLabels[cat] || "School Event",
+                        });
+                      }}
+                      className={styles.modalSelect}
+                    >
+                      <option value="holiday">(i) Holidays & Vacations</option>
+                      <option value="exam">(ii) Exams & Assessments</option>
+                      <option value="celebration">(iii) Celebrations & Sports</option>
+                      <option value="ptm">(iv) Parent-Teacher Meetings</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Badge / Sub-Category Label</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. National Holiday, Examination, PTM"
+                      value={calForm.categoryLabel}
+                      onChange={(e) => setCalForm({ ...calForm, categoryLabel: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Academic Month *</label>
+                    <select
+                      value={calForm.monthIdxInList}
+                      onChange={(e) => {
+                        const mIdx = Number(e.target.value);
+                        const mObj = ACADEMIC_MONTHS[mIdx] || ACADEMIC_MONTHS[0];
+                        const d = calForm.day || 1;
+                        setCalForm({
+                          ...calForm,
+                          monthIdxInList: mIdx,
+                          date: `${String(d).padStart(2, "0")} ${mObj.name} ${mObj.year}`,
+                        });
+                      }}
+                      className={styles.modalSelect}
+                    >
+                      {ACADEMIC_MONTHS.map((mObj, i) => (
+                        <option key={mObj.fullName} value={i}>
+                          {mObj.fullName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Start Day (1-31) & Optional End Day</label>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="Start Day"
+                        value={calForm.day}
+                        onChange={(e) => {
+                          const d = e.target.value;
+                          const mObj = ACADEMIC_MONTHS[calForm.monthIdxInList] || ACADEMIC_MONTHS[0];
+                          setCalForm({
+                            ...calForm,
+                            day: d,
+                            date: calForm.endDay
+                              ? `${String(d).padStart(2, "0")} ${mObj.name} - ${String(calForm.endDay).padStart(2, "0")} ${mObj.name} ${mObj.year}`
+                              : `${String(d).padStart(2, "0")} ${mObj.name} ${mObj.year}`,
+                          });
+                        }}
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="End Day (optional)"
+                        value={calForm.endDay}
+                        onChange={(e) => {
+                          const ed = e.target.value;
+                          const mObj = ACADEMIC_MONTHS[calForm.monthIdxInList] || ACADEMIC_MONTHS[0];
+                          setCalForm({
+                            ...calForm,
+                            endDay: ed,
+                            date: ed
+                              ? `${String(calForm.day).padStart(2, "0")} ${mObj.name} - ${String(ed).padStart(2, "0")} ${mObj.name} ${mObj.year}`
+                              : `${String(calForm.day).padStart(2, "0")} ${mObj.name} ${mObj.year}`,
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.modalFormGroup}>
+                  <label>Event / Holiday Title *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Periodic Assessment / Unit Test 1"
+                    value={calForm.title}
+                    onChange={(e) => setCalForm({ ...calForm, title: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className={styles.formGrid} style={{ marginBottom: 0 }}>
+                  <div className={styles.modalFormGroup}>
+                    <label>Display Date Text</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 15 August 2026"
+                      value={calForm.date}
+                      onChange={(e) => setCalForm({ ...calForm, date: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Timing</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. All Day or 9:00 AM - 1:00 PM"
+                      value={calForm.time}
+                      onChange={(e) => setCalForm({ ...calForm, time: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Target Classes / Grades</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Nursery to Class 10th"
+                      value={calForm.grades}
+                      onChange={(e) => setCalForm({ ...calForm, grades: e.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label>Venue / Status</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. School Campus or School Closed"
+                      value={calForm.venue}
+                      onChange={(e) => setCalForm({ ...calForm, venue: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.modalFormGroup}>
+                  <label>Event Description & Guidance</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Enter details for students and parents..."
+                    value={calForm.description}
+                    onChange={(e) => setCalForm({ ...calForm, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  onClick={() => setCalModalOpen(false)}
+                  className={styles.cancelBtn}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className={styles.submitModalBtn}>
+                  <Save size={16} />
+                  <span>{editingCalIdx !== null ? "Update Calendar Event" : "Add Calendar Event"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Slide Add/Edit Modal */}
       {sliderModalOpen && (

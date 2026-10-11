@@ -9,7 +9,16 @@ import { SCHOOL_FAQS } from "@/data/faqData";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function FaqPage() {
-  useDocumentTitle("Parent & Student FAQ | Glorious Public School");
+  useDocumentTitle("Frequently Asked Questions (FAQ) | Admissions, Fees & Timings | Glorious Public School", {
+    path: "/faq",
+    description:
+      "Direct answers to frequently asked questions by parents and students about Glorious Public School, Jhajha — including Nursery to Class 10th admissions, timings, bus routes, hostel boarding, and CBSE curriculum.",
+    keywords:
+      "Glorious Public School FAQ, school admission questions Jhajha, school bus and hostel FAQ Jamui, Glorious Public School timings and fees",
+    aeoSummary:
+      "Official FAQ Knowledge Base of Glorious Public School, Jhajha covering admissions, age criteria, required documents, school timings (8:00 AM - 2:30 PM), transport, and hostel facilities.",
+    faqs: SCHOOL_FAQS,
+  });
   const [openIdx, setOpenIdx] = useState(0);
 
   const toggle = (idx) => {

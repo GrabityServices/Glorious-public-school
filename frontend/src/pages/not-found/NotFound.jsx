@@ -5,7 +5,10 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function NotFoundPage() {
-  useDocumentTitle("Page Not Found | Glorious Public School");
+  useDocumentTitle("Page Not Found | Glorious Public School, Jhajha", {
+    noindex: true,
+    description: "The requested page could not be found on the Glorious Public School website.",
+  });
 
   return (
     <div

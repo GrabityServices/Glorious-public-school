@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Phone,
@@ -10,12 +10,13 @@ import {
   Navigation,
   ExternalLink,
   Car,
+  Share2,
 } from "lucide-react";
 import { m } from "framer-motion";
 import styles from "./contact.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
-import { useData } from "@/context/DataContext";
+import { useData, DEFAULT_SOCIAL_LINKS } from "@/context/DataContext";
 import {
   sanitizePhoneInput,
   validateIndianPhone,
@@ -25,7 +26,28 @@ import {
 } from "@/utils/validation";
 
 export default function ContactPage() {
-  useDocumentTitle("Contact Us | Glorious Public School, Jhajha");
+  useDocumentTitle("Contact Us & Official School Timings | Glorious Public School, Jhajha", {
+    path: "/contact",
+    schemaType: "ContactPage",
+    description:
+      "Contact Glorious Public School, Jamui Road, Jhajha, District Jamui, Bihar - 811308. Call +91 9534105012, check live school open/closed status (8:00 AM - 2:30 PM), view campus map, or submit an online inquiry.",
+    keywords:
+      "Contact Glorious Public School Jhajha, Glorious Public School phone number, Jamui Road Jhajha school address, Glorious Public School timings, school map Jhajha",
+    aeoSummary:
+      "Glorious Public School is located on Jamui Road, Jhajha, District Jamui, Bihar - 811308. Phone: +91 9534105012, Email: gloriouspublicschool@gmail.com. Academic hours: 8:00 AM – 2:30 PM (Mon–Sat); Admin Office: 8:00 AM – 4:00 PM.",
+    faqs: [
+      {
+        question: "What is the contact number and address of Glorious Public School, Jhajha?",
+        answer:
+          "Glorious Public School is located at Jamui Road, Jhajha, District Jamui, Bihar - 811308. You can call the school reception at +91 9534105012 or email gloriouspublicschool@gmail.com.",
+      },
+      {
+        question: "What are the visiting and office hours at Glorious Public School?",
+        answer:
+          "Academic school hours are 8:00 AM to 2:30 PM (Monday to Saturday). The Administrative & Admission Office is open from 8:00 AM to 4:00 PM, and Principal visiting hours are 9:30 AM to 12:30 PM.",
+      },
+    ],
+  });
   const { addInquiry, schoolInfo } = useData();
 
   const [name, setName] = useState("");
@@ -36,6 +58,28 @@ export default function ContactPage() {
   const [isSent, setIsSent] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  // Live clock to check if current time is between 8:00 AM and 2:30 PM
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentDayIndex = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const todayName = weekdayNames[currentDayIndex];
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  // 8:00 AM = 480 mins, 2:30 PM (14:30) = 870 mins
+  const isWithinSchoolHours = currentMinutes >= 8 * 60 && currentMinutes <= 14 * 60 + 30;
+  const isSchoolOpenNow = currentDayIndex !== 0 && isWithinSchoolHours;
+  // Admin office open 8:00 AM to 4:00 PM (960 mins) Mon-Sat
+  const isAdminOfficeOpenNow = currentDayIndex !== 0 && currentMinutes >= 8 * 60 && currentMinutes <= 16 * 60;
+
+  const socialLinks = {
+    ...DEFAULT_SOCIAL_LINKS,
+    ...(schoolInfo?.socialLinks || {}),
+  };
 
   const handlePhoneChange = (e) => {
     const cleaned = sanitizePhoneInput(e.target.value);
@@ -139,21 +183,21 @@ export default function ContactPage() {
       icon: <Clock size={22} />,
       title: "School Operating Hours",
       desc: "Mon - Fri: 8:00 AM - 2:30 PM | Sat: 8:00 AM - 1:00 PM",
-      note: "Sunday: Closed",
+      note: isSchoolOpenNow
+        ? "Live Status: Currently Open (8:00 AM - 2:30 PM)"
+        : "Live Status: Currently Closed (Opens 8:00 AM)",
     },
   ];
 
-  const openingHours = schoolInfo?.openingHours?.length
-    ? schoolInfo.openingHours
-    : [
-        { day: "Monday", time: "8:00 AM - 2:30 PM", status: "Open" },
-        { day: "Tuesday", time: "8:00 AM - 2:30 PM", status: "Open" },
-        { day: "Wednesday", time: "8:00 AM - 2:30 PM", status: "Open" },
-        { day: "Thursday", time: "8:00 AM - 2:30 PM", status: "Open" },
-        { day: "Friday", time: "8:00 AM - 2:30 PM", status: "Open" },
-        { day: "Saturday", time: "8:00 AM - 1:00 PM", status: "Half Day" },
-        { day: "Sunday", time: "Closed", status: "Holiday" },
-      ];
+  const openingHours = [
+    { day: "Monday", time: "8:00 AM - 2:30 PM" },
+    { day: "Tuesday", time: "8:00 AM - 2:30 PM" },
+    { day: "Wednesday", time: "8:00 AM - 2:30 PM" },
+    { day: "Thursday", time: "8:00 AM - 2:30 PM" },
+    { day: "Friday", time: "8:00 AM - 2:30 PM" },
+    { day: "Saturday", time: "8:00 AM - 1:00 PM (Half Day)" },
+    { day: "Sunday", time: "Weekly Holiday", isSunday: true },
+  ];
 
   return (
     <div className={styles.pageWrapper}>
@@ -170,12 +214,12 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Main Grid: Info & Contact Form */}
+      {/* Main Grid: 2x2 Equal-Height Aligned Blocks */}
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.grid}>
-            {/* Left: Contact Info Cards & Hours */}
-            <div className={styles.infoCol}>
+            {/* Row 1, Left: School Desk & Coordinates */}
+            <div className={styles.deskBlock}>
               <FadeUp>
                 <h2 className={styles.sectionTitle}>School Desk & Coordinates</h2>
                 <p className={styles.sectionDesc}>
@@ -185,7 +229,7 @@ export default function ContactPage() {
 
               <div className={styles.cardsList}>
                 {contactInfos.map((info, idx) => (
-                  <FadeUp key={idx} delay={0.08 * (idx + 1)}>
+                  <FadeUp key={idx} delay={0.06 * (idx + 1)} className={styles.cardItemWrap} fullHeight>
                     <div className={styles.infoCard}>
                       <div className={styles.iconCircle}>{info.icon}</div>
                       <div>
@@ -207,38 +251,18 @@ export default function ContactPage() {
                   </FadeUp>
                 ))}
               </div>
-
-              {/* Hours Box */}
-              <FadeUp delay={0.35}>
-                <div className={styles.hoursCard}>
-                  <h3>Official School Timings</h3>
-                  <table className={styles.hoursTable}>
-                    <tbody>
-                      {openingHours.map((oh, i) => (
-                        <tr key={i}>
-                          <td><strong>{oh.day}</strong></td>
-                          <td>{oh.time}</td>
-                          <td>
-                            <span className={oh.status === "Closed" ? styles.closedBadge : styles.openBadge}>
-                              {oh.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </FadeUp>
             </div>
 
-            {/* Right: Message Form */}
-            <div className={styles.formCol}>
-              <FadeUp delay={0.15}>
+            {/* Row 1, Right: Send Us an Inquiry */}
+            <div className={styles.inquiryBlock}>
+              <FadeUp delay={0.12} fullHeight>
                 <div className={styles.formContainer}>
-                  <h2>Send Us an Inquiry</h2>
-                  <p className={styles.formSub}>
-                    Fill out the form below and our admissions team will respond promptly.
-                  </p>
+                  <div>
+                    <h2>Send Us an Inquiry</h2>
+                    <p className={styles.formSub}>
+                      Fill out the form below and our admissions team will respond promptly.
+                    </p>
+                  </div>
 
                   {isSent ? (
                     <m.div
@@ -345,7 +369,7 @@ export default function ContactPage() {
                         </select>
                       </div>
 
-                      <div className={styles.formGroup}>
+                      <div className={`${styles.formGroup} ${styles.messageGroup}`}>
                         <label>Your Message / Details *</label>
                         <textarea
                           required
@@ -367,12 +391,149 @@ export default function ContactPage() {
                         )}
                       </div>
 
-                      <button type="submit" className="btn btn-gold" style={{ width: "100%" }}>
+                      <button type="submit" className={`btn btn-gold ${styles.submitBtn}`}>
                         <Send size={16} />
                         <span>Send Message</span>
                       </button>
                     </form>
                   )}
+                </div>
+              </FadeUp>
+            </div>
+
+            {/* Row 2, Left: Official School Timings */}
+            <div className={styles.timingsBlock}>
+              <FadeUp delay={0.2} fullHeight>
+                <div className={styles.hoursCard}>
+                  <div className={styles.hoursCardHeader}>
+                    <div>
+                      <h3>Official School Timings</h3>
+                      <p className={styles.hoursLiveSub}>
+                        Live status updates automatically based on school hours (8:00 AM – 2:30 PM)
+                      </p>
+                    </div>
+                    <span className={isSchoolOpenNow ? styles.liveStatusOpen : styles.liveStatusClosed}>
+                      <span className={isSchoolOpenNow ? styles.pulseDotGreen : styles.pulseDotRed} />
+                      {isSchoolOpenNow ? "Open Now" : "Closed"}
+                    </span>
+                  </div>
+
+                  <table className={styles.hoursTable}>
+                    <tbody>
+                      {openingHours.map((oh, i) => {
+                        const isToday = oh.day === todayName;
+                        const rowIsOpen = !oh.isSunday && isWithinSchoolHours;
+                        return (
+                          <tr key={i} className={isToday ? styles.todayRow : ""}>
+                            <td>
+                              <strong>{oh.day}</strong>
+                              {isToday && <span className={styles.todayTag}>Today</span>}
+                            </td>
+                            <td>{oh.time}</td>
+                            <td style={{ textAlign: "right" }}>
+                              <span className={rowIsOpen ? styles.openBadge : styles.closedBadge}>
+                                {rowIsOpen ? "Open" : "Closed"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </FadeUp>
+            </div>
+
+            {/* Row 2, Right: Connect on Official Social Media */}
+            <div className={styles.socialBlock}>
+              <FadeUp delay={0.25} fullHeight>
+                <div className={styles.socialConnectCard}>
+                  <div>
+                    <div className={styles.socialConnectHeader}>
+                      <Share2 size={18} color="var(--accent-red)" />
+                      <h3>Connect on Official Social Media</h3>
+                    </div>
+                    <p className={styles.socialConnectDesc}>
+                      Follow Glorious Public School for live event highlights, celebration videos, and student achievements.
+                    </p>
+                  </div>
+
+                  <div className={styles.socialButtonsGrid}>
+                    <a
+                      href={socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.socialBtn} ${styles.socialInstagram}`}
+                      aria-label="Follow us on Instagram"
+                    >
+                      <div className={styles.socialBtnIconWrap}>
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                        </svg>
+                      </div>
+                      <div className={styles.socialBtnText}>
+                        <strong>Instagram</strong>
+                        <span>Campus Photos & Reels</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.socialBtn} ${styles.socialFacebook}`}
+                      aria-label="Follow us on Facebook"
+                    >
+                      <div className={styles.socialBtnIconWrap}>
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                        </svg>
+                      </div>
+                      <div className={styles.socialBtnText}>
+                        <strong>Facebook</strong>
+                        <span>Community & Updates</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={socialLinks.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.socialBtn} ${styles.socialYoutube}`}
+                      aria-label="Subscribe on YouTube"
+                    >
+                      <div className={styles.socialBtnIconWrap}>
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                          <path d="m10 15 5-3-5-3z" />
+                        </svg>
+                      </div>
+                      <div className={styles.socialBtnText}>
+                        <strong>YouTube</strong>
+                        <span>Event & Annual Videos</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={socialLinks.x}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.socialBtn} ${styles.socialX}`}
+                      aria-label="Follow us on X"
+                    >
+                      <div className={styles.socialBtnIconWrap}>
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      </div>
+                      <div className={styles.socialBtnText}>
+                        <strong>X (Twitter)</strong>
+                        <span>Instant School Alerts</span>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </FadeUp>
             </div>

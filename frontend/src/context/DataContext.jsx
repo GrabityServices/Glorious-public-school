@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { DEFAULT_HERO_SLIDES } from "@/data/sliderData";
+import { SCHOOL_ROUTINE } from "@/data/academicsData";
+import { SCHOOL_CALENDAR_EVENTS } from "@/data/calendarData";
 
 const DataContext = createContext();
 
@@ -36,6 +38,13 @@ const getAuthHeadersOnly = () => {
   return {};
 };
 
+export const DEFAULT_SOCIAL_LINKS = {
+  instagram: "https://www.instagram.com/",
+  facebook: "https://www.facebook.com/",
+  youtube: "https://www.youtube.com/",
+  x: "https://x.com/",
+};
+
 export function DataProvider({ children }) {
   const [notices, setNotices] = useState([]);
   const [events, setEvents] = useState([]);
@@ -61,6 +70,9 @@ export function DataProvider({ children }) {
     showAdmissionNotice: true,
     isAdmissionsOpen: true,
     heroSlides: DEFAULT_HERO_SLIDES,
+    socialLinks: DEFAULT_SOCIAL_LINKS,
+    bellSchedule: SCHOOL_ROUTINE,
+    calendarEvents: SCHOOL_CALENDAR_EVENTS,
     stats: [
       { label: "Dedicated Teachers", value: "25+", suffix: "" },
       { label: "Enrolled Students", value: "800+", suffix: "" },
@@ -133,6 +145,18 @@ export function DataProvider({ children }) {
             ...data,
             isAdmissionsOpen: isAdm,
             showAdmissionNotice: isAdm ? (data.showAdmissionNotice !== false) : false,
+            socialLinks: {
+              ...DEFAULT_SOCIAL_LINKS,
+              ...(data.socialLinks || {}),
+            },
+            bellSchedule:
+              Array.isArray(data.bellSchedule) && data.bellSchedule.length > 0
+                ? data.bellSchedule
+                : SCHOOL_ROUTINE,
+            calendarEvents:
+              Array.isArray(data.calendarEvents) && data.calendarEvents.length > 0
+                ? data.calendarEvents
+                : SCHOOL_CALENDAR_EVENTS,
             heroSlides:
               Array.isArray(data.heroSlides) && data.heroSlides.length > 0
                 ? data.heroSlides
@@ -582,6 +606,18 @@ export function DataProvider({ children }) {
           ...saved,
           isAdmissionsOpen: savedAdm,
           showAdmissionNotice: savedAdm ? (saved.showAdmissionNotice !== false) : false,
+          socialLinks: {
+            ...DEFAULT_SOCIAL_LINKS,
+            ...(saved.socialLinks || {}),
+          },
+          bellSchedule:
+            Array.isArray(saved.bellSchedule) && saved.bellSchedule.length > 0
+              ? saved.bellSchedule
+              : SCHOOL_ROUTINE,
+          calendarEvents:
+            Array.isArray(saved.calendarEvents) && saved.calendarEvents.length > 0
+              ? saved.calendarEvents
+              : SCHOOL_CALENDAR_EVENTS,
           heroSlides:
             Array.isArray(saved.heroSlides) && saved.heroSlides.length > 0
               ? saved.heroSlides

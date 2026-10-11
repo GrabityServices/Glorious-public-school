@@ -1,0 +1,52 @@
+# robots.txt for Glorious Public School, Jhajha, Jamui, Bihar
+# Official Website SEO & AEO (Answer Engine Optimization) Configuration
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /login
+Disallow: /api/
+
+# Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+# AI & Answer Engine Crawlers (AEO Optimization)
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin
+
+# Sitemaps & AI Knowledge Index
+Sitemap: https://gloriouspublicschool.com/sitemap.xml

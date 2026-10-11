@@ -1388,3 +1388,286 @@
   border: 1px solid #fecaca;
 }
 
+/* ========================================================
+   School Timetable & Bell Schedule Editor
+   ======================================================== */
+.bellScheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.bellSlotRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.bellSlotRow:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+.bellSlotIndex {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 6px 9px;
+  border-radius: 6px;
+  min-width: 34px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.bellSlotInputs {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 12px;
+}
+
+.bellInputTimeWrap,
+.bellInputActivityWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bellInputTimeWrap label,
+.bellInputActivityWrap label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bellInputTimeWrap input,
+.bellInputActivityWrap input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #0f172a;
+  background: #ffffff;
+  font-family: inherit;
+}
+
+.bellInputTimeWrap input:focus,
+.bellInputActivityWrap input:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.bellSlotActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.bellFooterActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========================================================
+   Academic Calendar Events Manager (4 Categories)
+   ======================================================== */
+.calCategoryTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 16px 0;
+}
+
+.calCatBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calCatBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.calCatBtnActive {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.calCatCount {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.calEventsAdminList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 460px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.calEventsAdminList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calEventsAdminList::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 9999px;
+}
+
+.calEventsAdminList::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid #f8fafc;
+}
+
+.calEventsAdminList::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.calEventAdminRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.calEventAdminRow:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+.calEventAdminInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.calEventAdminBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calCatTag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.calCat_holiday {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.calCat_exam {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.calCat_celebration {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.calCat_ptm {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.calEventDatePill {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.calEventAdminTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.calEventAdminMeta {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.modalSelect {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #0f172a;
+  background: #ffffff;
+  font-family: inherit;
+}
+
+@media (max-width: 768px) {
+  .bellSlotRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bellSlotInputs {
+    grid-template-columns: 1fr;
+  }
+
+  .bellSlotActions {
+    justify-content: flex-end;
+  }
+
+  .calEventAdminRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+

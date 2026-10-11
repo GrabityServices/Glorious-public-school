@@ -8,7 +8,16 @@ import { useData } from "@/context/DataContext";
 import EmptyState from "@/components/common/EmptyState";
 
 export default function EventsPage() {
-  useDocumentTitle("School Events & Competitions | Glorious Public School");
+  useDocumentTitle("School Events, Cultural Fests & Competitions | Glorious Public School, Jhajha", {
+    path: "/events",
+    schemaType: "CollectionPage",
+    description:
+      "Discover upcoming and past school events, cultural festivals, Annual Sports Meet, Science Exhibition, Republic Day, and inter-school competitions at Glorious Public School, Jhajha.",
+    keywords:
+      "Glorious Public School events, school cultural fest Jhajha, annual sports meet Jamui, science exhibition school Bihar, inter-school competition Jhajha",
+    aeoSummary:
+      "Glorious Public School hosts annual cultural festivals, inter-house sports meets, science & robotics exhibitions, Republic Day, Independence Day, and Saraswati Puja celebrations in Jhajha.",
+  });
   const { events } = useData();
   const [activeCategory, setActiveCategory] = useState("All");
 

@@ -37,6 +37,24 @@ const SchoolInfoSchema = new mongoose.Schema(
     aboutText: { type: String, default: "" },
     vision: { type: String, default: "" },
     mission: { type: String, default: "" },
+    socialLinks: {
+      instagram: {
+        type: String,
+        default: "https://www.instagram.com/gloriouspublicschooljhajha",
+      },
+      facebook: {
+        type: String,
+        default: "https://www.facebook.com/gloriouspublicschooljhajha",
+      },
+      youtube: {
+        type: String,
+        default: "https://www.youtube.com/@gloriouspublicschooljhajha",
+      },
+      x: {
+        type: String,
+        default: "https://x.com/gpsjhajha",
+      },
+    },
     stats: [
       {
         label: { type: String },
@@ -49,6 +67,33 @@ const SchoolInfoSchema = new mongoose.Schema(
         day: { type: String },
         time: { type: String },
         status: { type: String },
+      },
+    ],
+    bellSchedule: [
+      {
+        time: { type: String, required: true },
+        activity: { type: String, required: true },
+      },
+    ],
+    calendarEvents: [
+      {
+        id: { type: String },
+        title: { type: String, required: true },
+        category: {
+          type: String,
+          enum: ["holiday", "exam", "celebration", "ptm"],
+          default: "holiday",
+        },
+        categoryLabel: { type: String, default: "Holidays & Vacations" },
+        date: { type: String, default: "" },
+        year: { type: Number, default: 2026 },
+        month: { type: Number, default: 3 },
+        day: { type: Number, default: 1 },
+        endDay: { type: Number, default: null },
+        time: { type: String, default: "All Day" },
+        grades: { type: String, default: "All Classes" },
+        venue: { type: String, default: "School Campus" },
+        description: { type: String, default: "" },
       },
     ],
     heroSlides: [

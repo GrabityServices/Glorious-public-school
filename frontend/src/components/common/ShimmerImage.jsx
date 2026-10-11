@@ -9,6 +9,7 @@ export default function ShimmerImage({
   fallbackSrc = "/images/dance-&-cultural-fest.webp",
   loading = "lazy",
   theme = "light", // 'light' | 'dark'
+  showIcon,
   style = {},
   wrapperStyle = {},
   onLoad,

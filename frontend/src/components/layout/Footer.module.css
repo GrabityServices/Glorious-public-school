@@ -110,6 +110,35 @@
   color: #e2e8f0;
 }
 
+.socialRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.socialIconBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f1f5f9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.22s ease;
+}
+
+.socialIconBtn:hover {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.35);
+}
+
 .colTitle {
   color: #ffffff;
   font-size: 1.18rem;
@@ -167,6 +196,12 @@
 
 .hoursList strong {
   color: #ffffff;
+}
+
+.footerOpenTag {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .closedTag {

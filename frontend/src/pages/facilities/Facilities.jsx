@@ -17,7 +17,22 @@ import { FACILITIES_DATA } from "@/data/facilitiesData";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function FacilitiesPage() {
-  useDocumentTitle("Our Facilities | Glorious Public School, Jhajha");
+  useDocumentTitle("Campus Facilities | Smart Classes, Labs, Hostel & Bus | Glorious Public School", {
+    path: "/facilities",
+    description:
+      "Explore modern campus facilities at Glorious Public School, Jhajha: Smart Digital Classrooms, Composite Science & Computer Labs, Central Library, Boys & Girls Hostel, GPS School Bus Transport, and 24x7 CCTV security.",
+    keywords:
+      "Glorious Public School facilities, school hostel in Jhajha, school bus transport Jamui, smart classrooms Jhajha, computer and science lab school Bihar",
+    aeoSummary:
+      "Glorious Public School provides Smart Audio-Visual Classrooms, Composite Science & Computer Laboratories, a 5,000+ book Central Library, separate Boys & Girls Residential Hostels, GPS-enabled School Buses across Jhajha & Jamui, and 24x7 CCTV surveillance.",
+    faqs: [
+      {
+        question: "Does Glorious Public School provide school bus transport and hostel facilities?",
+        answer:
+          "Yes, Glorious Public School provides safe GPS-enabled school bus transport across Jhajha, Jamui Road, and nearby villages, as well as a supervised residential boarding hostel with nutritious meals and evening study hours.",
+      },
+    ],
+  });
 
   const iconMap = {
     GraduationCap: <GraduationCap size={32} />,

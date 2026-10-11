@@ -9,7 +9,13 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { SCHOOL_INFO } from "@/data/schoolData";
 
 export default function TermsPage() {
-  useDocumentTitle("Student Code of Conduct & School Rules | Glorious Public School");
+  useDocumentTitle("Student Code of Conduct & School Rules | Glorious Public School, Jhajha", {
+    path: "/terms",
+    description:
+      "Official Student Code of Conduct, attendance rules, uniform guidelines, and academic discipline standards at Glorious Public School, Jhajha.",
+    keywords:
+      "Glorious Public School rules, student code of conduct Jhajha, school attendance and uniform rules",
+  });
 
   return (
     <div className={styles.pageWrapper}>

@@ -5,12 +5,38 @@ import styles from "./academics.module.css";
 import FadeUp from "@/components/motion/FadeUp";
 import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { ACADEMIC_WINGS, SCHOOL_ROUTINE } from "@/data/academicsData";
+import { useData } from "@/context/DataContext";
 
 export default function AcademicsPage() {
-  useDocumentTitle("Academics (Nursery to 10th) | Glorious Public School");
+  useDocumentTitle("Academics, Curriculum & Bell Schedule (Nursery to 10th) | Glorious Public School", {
+    path: "/academics",
+    description:
+      "Explore the CBSE/NCERT curriculum from Nursery to Class 10th at Glorious Public School, Jhajha, including Pre-Primary, Primary, Middle, and Secondary wings, daily Bell Schedule (8:00 AM - 2:30 PM), and CCE assessment.",
+    keywords:
+      "Glorious Public School academics, CBSE curriculum Jhajha, school timetable Jhajha, bell schedule Glorious Public School, Nursery to 10th syllabus Jamui",
+    aeoSummary:
+      "Glorious Public School follows an English-medium CBSE/NCERT curriculum divided into Pre-Primary (Nursery–UKG), Primary (Class 1–5), Middle (Class 6–8), and Secondary (Class 9–10) wings, running daily from 7:50 AM Morning Assembly to 2:30 PM Dispersal.",
+    faqs: [
+      {
+        question: "What curriculum does Glorious Public School follow?",
+        answer:
+          "Glorious Public School follows the CBSE pattern with an NCERT-integrated English-medium curriculum from Nursery to Class 10th, utilizing Continuous & Comprehensive Evaluation (CCE).",
+      },
+      {
+        question: "What is the daily timetable and bell schedule at Glorious Public School?",
+        answer:
+          "Morning Assembly starts at 7:50 AM, 1st to 4th periods run from 8:15 AM to 11:00 AM, Mid-Day Recess is from 11:00 AM to 11:30 AM, 5th to 8th periods run from 11:30 AM to 2:20 PM, and Dispersal is at 2:30 PM.",
+      },
+    ],
+  });
+  const { schoolInfo } = useData();
   const [activeWing, setActiveWing] = useState(ACADEMIC_WINGS[0].id);
 
   const selectedWing = ACADEMIC_WINGS.find((w) => w.id === activeWing) || ACADEMIC_WINGS[0];
+  const bellSchedule =
+    Array.isArray(schoolInfo?.bellSchedule) && schoolInfo.bellSchedule.length > 0
+      ? schoolInfo.bellSchedule
+      : SCHOOL_ROUTINE;
 
   return (
     <div className={styles.pageWrapper}>
@@ -114,8 +140,8 @@ export default function AcademicsPage() {
                 </tr>
               </thead>
               <tbody>
-                {SCHOOL_ROUTINE.map((item, idx) => (
-                  <tr key={idx} className={item.activity.includes("Recess") ? styles.recessRow : ""}>
+                {bellSchedule.map((item, idx) => (
+                  <tr key={idx} className={String(item.activity || "").toLowerCase().includes("recess") || String(item.activity || "").toLowerCase().includes("break") ? styles.recessRow : ""}>
                     <td className={styles.timeCell}>
                       <Clock size={15} style={{ display: "inline", marginRight: "6px" }} />
                       {item.time}

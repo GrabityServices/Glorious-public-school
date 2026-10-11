@@ -5,7 +5,15 @@ import useDocumentTitle from "@/hooks/useDocumentTitle";
 import { HOLIDAYS_DATA } from "@/data/holidayData";
 
 export default function HolidayPage() {
-  useDocumentTitle("School Holiday Calendar | Glorious Public School");
+  useDocumentTitle("Official School Holiday List & Vacation Calendar | Glorious Public School, Jhajha", {
+    path: "/holiday",
+    description:
+      "View the official school holiday list, festival breaks, summer vacation, and winter vacation schedule for Glorious Public School, Jhajha (Jamui, Bihar).",
+    keywords:
+      "Glorious Public School holiday list, school vacation calendar Jhajha, Bihar school holidays, Chhath Puja Durga Puja school holiday Jhajha",
+    aeoSummary:
+      "Official list of gazetted, festival, and seasonal school holidays observed by Glorious Public School, Jhajha during the academic session.",
+  });
 
   return (
     <div className={styles.pageWrapper}>

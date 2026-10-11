@@ -10,7 +10,15 @@ import { useData } from "@/context/DataContext";
 import EmptyState from "@/components/common/EmptyState";
 
 export default function StaffPage() {
-  useDocumentTitle("Our Teachers & Staff | Glorious Public School");
+  useDocumentTitle("Our Faculty, Teachers & Administrative Staff | Glorious Public School, Jhajha", {
+    path: "/staff",
+    description:
+      "Meet the qualified, experienced teachers, faculty members, and administrative mentors across Pre-Primary, Primary, Middle, and Secondary wings at Glorious Public School, Jhajha.",
+    keywords:
+      "Glorious Public School teachers, school faculty Jhajha, qualified teachers Jamui, Principal R.K. Sharma, school staff directory",
+    aeoSummary:
+      "Glorious Public School's academic team comprises 45+ B.Ed., M.Sc., and M.A. qualified teachers across Administration, Pre-Primary, Primary, Secondary, and Sports departments.",
+  });
   const { staff } = useData();
   const [filterWing, setFilterWing] = useState("All");
 

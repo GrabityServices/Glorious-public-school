@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import styles from "./Footer.module.css";
-import { useData } from "@/context/DataContext";
+import { useData, DEFAULT_SOCIAL_LINKS } from "@/context/DataContext";
 import { getAcademicSession } from "@/utils/academicYear";
 
 export default function Footer() {
@@ -21,6 +21,15 @@ export default function Footer() {
   const address = schoolInfo?.address || "Koltex, Petrol Pump, Jhajha, Jamui, Bihar 811308";
   const email = schoolInfo?.email || "gpsjhajha@gmail.com";
   const isAdmissionsOpen = schoolInfo?.isAdmissionsOpen !== false;
+  const socialLinks = {
+    ...DEFAULT_SOCIAL_LINKS,
+    ...(schoolInfo?.socialLinks || {}),
+  };
+
+  const now = new Date();
+  const dayIdx = now.getDay();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const isSchoolOpenNow = dayIdx !== 0 && mins >= 8 * 60 && mins <= 14 * 60 + 30;
 
   return (
     <footer className={styles.footer}>
@@ -75,7 +84,7 @@ export default function Footer() {
 
       <div className={styles.container}>
         <div className={styles.grid}>
-          {/* Col 1: About School */}
+          {/* Col 1: About School & Social Links */}
           <div className={styles.aboutCol}>
             <div className={styles.brand}>
               <img
@@ -95,6 +104,61 @@ export default function Footer() {
               <ShieldCheck size={18} color="var(--accent-gold)" />
               <span>Recognized English Medium Co-Educational Institution</span>
             </div>
+
+            {/* Social Media Links: Instagram, Facebook, YouTube, X */}
+            <div className={styles.socialRow} aria-label="Official Social Media Profiles">
+              <a
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIconBtn}
+                aria-label="Instagram"
+                title="Follow us on Instagram"
+              >
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+              </a>
+              <a
+                href={socialLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIconBtn}
+                aria-label="Facebook"
+                title="Follow us on Facebook"
+              >
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                </svg>
+              </a>
+              <a
+                href={socialLinks.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIconBtn}
+                aria-label="YouTube"
+                title="Subscribe on YouTube"
+              >
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                  <path d="m10 15 5-3-5-3z" />
+                </svg>
+              </a>
+              <a
+                href={socialLinks.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIconBtn}
+                aria-label="X (Twitter)"
+                title="Follow us on X"
+              >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           {/* Col 2: Quick Links */}
@@ -107,7 +171,7 @@ export default function Footer() {
               <li><Link to="/events">Events & Competitions</Link></li>
               <li><Link to="/calendar">School Calendar</Link></li>
               <li><Link to="/news">News & Notice Board</Link></li>
-              <li><Link to="/gallery">Photo Gallery</Link></li>
+              <li><Link to="/gallery">Photo & Video Gallery</Link></li>
               <li><Link to="/holiday">Holiday Calendar</Link></li>
               <li><Link to="/staff">Faculty & Staff</Link></li>
               <li><Link to="/contact">Contact Us</Link></li>
@@ -122,6 +186,12 @@ export default function Footer() {
             </h4>
             <ul className={styles.hoursList}>
               <li>
+                <span>Live Status:</span>
+                <span className={isSchoolOpenNow ? styles.footerOpenTag : styles.closedTag}>
+                  {isSchoolOpenNow ? "● Open (8:00 AM - 2:30 PM)" : "● Closed"}
+                </span>
+              </li>
+              <li>
                 <span>Monday - Friday:</span>
                 <strong>8:00 AM - 2:30 PM</strong>
               </li>
@@ -135,7 +205,7 @@ export default function Footer() {
               </li>
             </ul>
             <div className={styles.officeNote}>
-              <span>* Administrative office remains open till 4:00 PM on weekdays.</span>
+              <span>* Morning Reporting: 7:50 AM. Administrative office remains open till 4:00 PM (Mon–Sat).</span>
             </div>
           </div>
 
