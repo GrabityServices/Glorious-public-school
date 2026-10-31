@@ -95,8 +95,29 @@ export default function useDocumentTitle(title, seo = {}) {
     upsertMeta(
       "name",
       "robots",
-      isAdminOrAuth ? "noindex, nofollow" : "index, follow"
+      isAdminOrAuth
+        ? "noindex, nofollow"
+        : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
     );
+    upsertMeta(
+      "name",
+      "googlebot",
+      isAdminOrAuth
+        ? "noindex, nofollow"
+        : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    );
+    upsertMeta(
+      "name",
+      "bingbot",
+      isAdminOrAuth
+        ? "noindex, nofollow"
+        : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    );
+    upsertMeta("name", "format-detection", "telephone=no");
+    upsertMeta("name", "apple-mobile-web-app-capable", "yes");
+    upsertMeta("name", "apple-mobile-web-app-status-bar-style", "default");
+    upsertMeta("name", "apple-mobile-web-app-title", "Glorious Public School");
+    upsertMeta("name", "application-name", "Glorious Public School");
     upsertCanonical(canonicalUrl);
 
     // Open Graph (WhatsApp / Facebook / LinkedIn)
@@ -157,7 +178,7 @@ export default function useDocumentTitle(title, seo = {}) {
       },
       speakable: {
         "@type": "SpeakableSpecification",
-        cssSelector: ["h1", "h2", "main p"],
+        cssSelector: ["h1", "h2", "main p", ".speakable"],
       },
     };
 
@@ -178,13 +199,22 @@ export default function useDocumentTitle(title, seo = {}) {
         publisher: {
           "@id": `${SITE_URL}/#school`,
         },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SITE_URL}/news?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
       },
       webPageNode,
       {
-        "@type": ["School", "EducationalOrganization"],
+        "@type": ["School", "EducationalOrganization", "LocalBusiness"],
         "@id": `${SITE_URL}/#school`,
         name: "Glorious Public School",
-        alternateName: "Glorious Public School Jhajha",
+        alternateName: [
+          "Glorious Public School Jhajha",
+          "GPS Jhajha",
+          "Glorious School",
+        ],
         slogan: "Creating the Leaders of Tomorrow",
         url: `${SITE_URL}/`,
         foundingDate: "2004",
@@ -194,6 +224,8 @@ export default function useDocumentTitle(title, seo = {}) {
           "@type": "AggregateRating",
           ratingValue: "4.8",
           reviewCount: "120",
+          bestRating: "5",
+          worstRating: "1",
         },
         logo: {
           "@id": `${SITE_URL}/#logo`,
@@ -214,6 +246,10 @@ export default function useDocumentTitle(title, seo = {}) {
           latitude: 24.7736,
           longitude: 86.3792,
         },
+        hasMap: "https://maps.google.com/?q=24.7736,86.3792",
+        priceRange: "₹₹",
+        currenciesAccepted: "INR",
+        paymentAccepted: "Cash, UPI, Net Banking, Cheque",
         openingHoursSpecification: [
           {
             "@type": "OpeningHoursSpecification",
@@ -230,12 +266,22 @@ export default function useDocumentTitle(title, seo = {}) {
           },
         ],
         telephone: "+919534105012",
-        email: "gloriouspublicschool@gmail.com",
+        email: "gpsjhajha@gmail.com",
         sameAs: [
           "https://www.facebook.com/",
           "https://www.instagram.com/",
           "https://www.youtube.com/",
           "https://x.com/",
+        ],
+        knowsAbout: [
+          "CBSE Curriculum",
+          "English Medium Education",
+          "Smart Digital Classrooms",
+          "Science Laboratory",
+          "Computer Lab",
+          "Holistic Child Development",
+          "School Hostel Jhajha",
+          "School Bus Transport Jhajha",
         ],
       },
       {
