@@ -24,7 +24,7 @@
     />
     <meta
       name="keywords"
-      content="Glorious Public School, Glorious Public School Jhajha, school in Jhajha, school in Jamui, Nursery to 10th school, admissions Jhajha, best school Bihar, school hostel Jhajha, school bus Jhajha"
+      content="Glorious Public School, Glorious Public School Jhajha, school in Jhajha, school in Jamui, Nursery to 10th school, admissions Jhajha, best school Bihar, school hostel Jhajha, school bus Jhajha, CBSE pattern Jhajha"
     />
     <meta
       name="author"
@@ -32,7 +32,35 @@
     />
     <meta
       name="robots"
-      content="index, follow"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="bingbot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="format-detection"
+      content="telephone=no"
+    />
+    <meta
+      name="apple-mobile-web-app-capable"
+      content="yes"
+    />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="default"
+    />
+    <meta
+      name="apple-mobile-web-app-title"
+      content="Glorious Public School"
+    />
+    <meta
+      name="application-name"
+      content="Glorious Public School"
     />
     <link
       rel="canonical"
@@ -176,6 +204,24 @@
     />
 
     <!-- =========================
+    FONT AWESOME
+    ========================== -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- =========================
+    TYPED JS
+    ========================== -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"
+      defer
+    ></script>
+
+    <!-- =========================
     GOOGLE FONTS
     ========================== -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -202,6 +248,11 @@
             "inLanguage": "en-IN",
             "publisher": {
               "@id": "https://gloriouspublicschool.com/#school"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://gloriouspublicschool.com/news?q={search_term_string}",
+              "query-input": "required name=search_term_string"
             }
           },
           {
@@ -222,14 +273,14 @@
             },
             "speakable": {
               "@type": "SpeakableSpecification",
-              "cssSelector": ["h1", "h2", "main p"]
+              "cssSelector": ["h1", "h2", "main p", ".speakable"]
             }
           },
           {
-            "@type": ["School", "EducationalOrganization"],
+            "@type": ["School", "EducationalOrganization", "LocalBusiness"],
             "@id": "https://gloriouspublicschool.com/#school",
             "name": "Glorious Public School",
-            "alternateName": "Glorious Public School Jhajha",
+            "alternateName": ["Glorious Public School Jhajha", "GPS Jhajha", "Glorious School"],
             "slogan": "Creating the Leaders of Tomorrow",
             "url": "https://gloriouspublicschool.com/",
             "foundingDate": "2004",
@@ -237,7 +288,9 @@
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": "4.8",
-              "reviewCount": "120"
+              "reviewCount": "120",
+              "bestRating": "5",
+              "worstRating": "1"
             },
             "logo": {
               "@id": "https://gloriouspublicschool.com/#logo"
@@ -258,6 +311,10 @@
               "latitude": 24.7736,
               "longitude": 86.3792
             },
+            "hasMap": "https://maps.google.com/?q=24.7736,86.3792",
+            "priceRange": "₹₹",
+            "currenciesAccepted": "INR",
+            "paymentAccepted": "Cash, UPI, Net Banking, Cheque",
             "openingHoursSpecification": [
               {
                 "@type": "OpeningHoursSpecification",
@@ -280,6 +337,16 @@
               "https://www.instagram.com/",
               "https://www.youtube.com/",
               "https://x.com/"
+            ],
+            "knowsAbout": [
+              "CBSE Curriculum",
+              "English Medium Education",
+              "Smart Digital Classrooms",
+              "Science Laboratory",
+              "Computer Lab",
+              "Holistic Child Development",
+              "School Hostel Jhajha",
+              "School Bus Transport Jhajha"
             ]
           },
           {
@@ -300,6 +367,44 @@
                 "position": 1,
                 "name": "Home",
                 "item": "https://gloriouspublicschool.com/"
+              }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://gloriouspublicschool.com/#home-faqs",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Where is Glorious Public School located in Jhajha, Bihar?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Glorious Public School is located on Jamui Road, Jhajha, District Jamui, Bihar - 811308, near Koltex Petrol Pump."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which classes are offered at Glorious Public School, Jhajha?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Glorious Public School provides English-medium CBSE-pattern education from Pre-Primary (Nursery, LKG, UKG) to Secondary (Class 10th)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What facilities are available at Glorious Public School?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The campus includes Smart Digital Classrooms, Composite Science & Computer Labs, a Central Library, secure Hostel facilities for boys and girls, GPS-tracked school buses, and 24x7 CCTV security."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What are the official school timings?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Official academic hours are 8:00 AM to 2:30 PM from Monday to Saturday. The administrative and admission office is open from 8:00 AM to 4:00 PM."
+                }
               }
             ]
           }
