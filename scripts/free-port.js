@@ -1,7 +1,7 @@
 const { execSync } = require("child_process");
 
 // Free default school application ports
-const targetPorts = process.env.PORT ? [Number(process.env.PORT)] : [3000, 3001, 5000, 5001];
+const targetPorts = process.env.PORT ? [Number(process.env.PORT)] : [ 3001, 5000, 5002];
 
 console.log(`Checking ports: ${targetPorts.join(", ")}...`);
 
