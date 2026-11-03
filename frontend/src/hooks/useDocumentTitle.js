@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE_URL = "https://gloriouspublicschool.com";
+const SITE_URL = "https://thegloriousschool.in";
 const DEFAULT_SOCIAL_IMAGE = `${SITE_URL}/android-chrome-512x512.png`;
 const DEFAULT_LOGO_URL = `${SITE_URL}/images/glorious-public-school-logo.png`;
 
