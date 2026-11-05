@@ -1049,7 +1049,7 @@ const sliderUpload = multer({
     const ext = path.extname(file.originalname).toLowerCase();
   
     if (allowed.includes(ext)) {
-      console.log(`[Slider Upload] Accepted file: ${file.originalname} (${file.size} bytes)`);
+      console.log(`[Slider Upload] Accepted file: ${file.originalname} (${file.size} bytes.)`);
       cb(null, true);
     } else {
       console.log(`[Slider Upload] Rejected file: ${file.originalname} (${file.size} bytes)`);
