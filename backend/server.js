@@ -267,7 +267,7 @@ const noticeUpload = multer({
   storage: noticeStorage,
   limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".jfif", ".bmp", ".pdf"];
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".jfif", ".bmp", ".pdf","heic","avif"];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowed.includes(ext)) {
       cb(null, true);
@@ -473,12 +473,12 @@ const eventUpload = multer({
   storage: eventStorage,
   limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg"];
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg", ".heic", ".avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowed.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif) are allowed for events."));
+      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for events."));
     }
   },
 });
@@ -608,12 +608,12 @@ const staffUpload = multer({
   storage: staffStorage,
   limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg"];
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic", ".avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowed.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif) are allowed for staff photos."));
+      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for staff photos."));
     }
   },
 });
@@ -741,12 +741,12 @@ const galleryUpload = multer({
   storage: galleryStorage,
   limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg"];
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic","avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowed.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif) are allowed for gallery."));
+      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for gallery."));
     }
   },
 });
@@ -1045,12 +1045,15 @@ const sliderUpload = multer({
   storage: sliderStorage,
   limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg"];
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic","heif", ".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
+  
     if (allowed.includes(ext)) {
+      console.log(`[Slider Upload] Accepted file: ${file.originalname} (${file.size} bytes)`);
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .svg) are allowed for slider."));
+      console.log(`[Slider Upload] Rejected file: ${file.originalname} (${file.size} bytes)`);
+      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .svg, .heic, .heif, .nef, .arw, .cr2, .dng, .rw2) are allowed for slider."));
     }
   },
 });
