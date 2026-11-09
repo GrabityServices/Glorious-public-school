@@ -207,14 +207,30 @@ export default function AdminSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 15 * 1024 * 1024) {
-      setUploadSlideError("Image size must be under 15MB.");
+    if (file.size > 30 * 1024 * 1024) {
+      setUploadSlideError("Image size must be under 30MB.");
       return;
     }
 
     setIsUploadingSlide(true);
     setUploadSlideError("");
     try {
+      // Clean up previous uncommitted draft file if user is replacing it before saving
+      if (
+        slideForm.image &&
+        slideForm.image.startsWith("/uploads/") &&
+        slideForm.image !== editingSlide?.image
+      ) {
+        fetch("/api/upload/file", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+          },
+          body: JSON.stringify({ fileUrl: slideForm.image }),
+        }).catch(() => {});
+      }
+
       const res = await uploadSliderImage(file);
       if (res && res.fileUrl) {
         setSlideForm((prev) => ({ ...prev, image: res.fileUrl }));
@@ -1550,7 +1566,7 @@ export default function AdminSettings() {
                     <input
                       type="file"
                       ref={slideFileInputRef}
-                      accept="image/*"
+                      accept=".heic,.heif,.nef,.cr2,.cr3,.arw,.dng,.raw,.jpg,.jpeg,.png,.webp,.jfif,.tif,.tiff,.avif,image/*"
                       onChange={handleSlideImageUpload}
                       style={{ display: "none" }}
                       id="slidePhotoUpload"
@@ -1569,7 +1585,7 @@ export default function AdminSettings() {
                           <Upload size={22} color="#2563eb" />
                           <div>
                             <strong>Click to upload photograph from device</strong>
-                            <p>PNG, JPG, WEBP up to 15MB</p>
+                            <p>Supports JPG, PNG, WEBP, HEIC, NEF & Camera RAW up to 30MB</p>
                           </div>
                         </>
                       )}

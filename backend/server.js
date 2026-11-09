@@ -53,9 +53,232 @@ if (!fs.existsSync(sliderUploadDir)) {
   fs.mkdirSync(sliderUploadDir, { recursive: true });
 }
 
+// =========================================================
+// LOGGING SYSTEM (Access, Errors, Visitor Activity)
+// =========================================================
+const logsDir = path.join(__dirname, "logs");
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+const appendToLog = (filename, text) => {
+  try {
+    const logPath = path.join(logsDir, filename);
+    fs.appendFileSync(logPath, text + "\n", "utf8");
+  } catch (e) {
+    console.error(`[Logger Error] Could not write to ${filename}:`, e.message);
+  }
+};
+
+const getClientIp = (req) => {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.headers["x-real-ip"] || req.socket?.remoteAddress || req.ip || "127.0.0.1";
+};
+
+// Global unhandled error logging
+process.on("unhandledRejection", (reason) => {
+  const logMsg = `[${new Date().toISOString()}] [UNHANDLED REJECTION] ${reason?.stack || reason}`;
+  console.error(logMsg);
+  appendToLog("error.log", logMsg);
+});
+
+process.on("uncaughtException", (err) => {
+  const logMsg = `[${new Date().toISOString()}] [UNCAUGHT EXCEPTION] ${err?.stack || err.message}`;
+  console.error(logMsg);
+  appendToLog("error.log", logMsg);
+});
+
+// Allowed file extensions across the system (Standard images + HEIC + Camera RAW formats)
+const ALLOWED_IMAGE_EXTS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".svg",
+  ".jfif",
+  ".bmp",
+  ".avif",
+  ".tif",
+  ".tiff",
+  ".heic",
+  ".heif",
+  ".nef",
+  ".cr2",
+  ".cr3",
+  ".arw",
+  ".dng",
+  ".raf",
+  ".orf",
+  ".rw2",
+  ".pef",
+];
+const ALLOWED_NOTICE_EXTS = [...ALLOWED_IMAGE_EXTS, ".pdf"];
+
+// Universal file deletion helper (Strips domains, checks /uploads/ boundary, prevents directory traversal)
+function safeDeleteUploadedFile(urlOrPath) {
+  if (!urlOrPath || typeof urlOrPath !== "string") return false;
+  try {
+    let clean = urlOrPath.split("?")[0].split("#")[0].trim();
+    if (clean.startsWith("http://") || clean.startsWith("https://")) {
+      try {
+        clean = new URL(clean).pathname;
+      } catch (_) {}
+    }
+    const uploadsIndex = clean.indexOf("/uploads/");
+    const altIndex = clean.indexOf("uploads/");
+    if (uploadsIndex === -1 && altIndex === -1) {
+      return false; // Not a local uploaded file (e.g. external link or YouTube)
+    }
+    const relativeSubpath =
+      uploadsIndex !== -1
+        ? clean.slice(uploadsIndex + "/uploads/".length)
+        : clean.slice(altIndex + "uploads/".length);
+
+    const normalizedSubpath = path.normalize(relativeSubpath).replace(/^(\.\.[\/\\])+/, "");
+    const baseUploadsDir = path.resolve(__dirname, "uploads");
+    const fullPath = path.resolve(baseUploadsDir, normalizedSubpath);
+
+    // Security guard: verify path is strictly inside backend/uploads/
+    if (!fullPath.startsWith(baseUploadsDir)) {
+      console.warn(`[Security] Blocked path traversal attempt in file deletion: ${urlOrPath}`);
+      return false;
+    }
+
+    let deleted = false;
+    if (fs.existsSync(fullPath)) {
+      const stat = fs.statSync(fullPath);
+      if (stat.isFile()) {
+        fs.unlinkSync(fullPath);
+        deleted = true;
+        console.log(`[File Cleanup] Safely deleted file from disk: ${fullPath}`);
+      }
+    }
+
+    // Also delete any companion extracted JPEG or RAW source file
+    const ext = path.extname(fullPath).toLowerCase();
+    const baseWithoutExt = fullPath.slice(0, -ext.length);
+    if (ext === ".jpg" || ext === ".jpeg") {
+      for (const rawExt of [".nef", ".cr2", ".cr3", ".arw", ".dng", ".heic", ".heif", ".tif", ".tiff"]) {
+        const companion = baseWithoutExt + rawExt;
+        if (fs.existsSync(companion)) {
+          try {
+            fs.unlinkSync(companion);
+            console.log(`[File Cleanup] Deleted companion raw file: ${companion}`);
+          } catch (_) {}
+        }
+      }
+    } else {
+      const companionJpg = baseWithoutExt + ".jpg";
+      if (fs.existsSync(companionJpg)) {
+        try {
+          fs.unlinkSync(companionJpg);
+          console.log(`[File Cleanup] Deleted companion jpeg preview: ${companionJpg}`);
+        } catch (_) {}
+      }
+    }
+
+    return deleted;
+  } catch (err) {
+    console.error(`[File Cleanup Error] Failed to delete file ${urlOrPath}:`, err.message);
+    return false;
+  }
+}
+
+// Pure Node.js embedded JPEG extractor for Camera RAW files (.nef, .cr2, .dng, .arw, etc.)
+function extractRawPreviewJpeg(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  const ext = path.extname(filePath).toLowerCase();
+  const rawExts = [".nef", ".cr2", ".cr3", ".arw", ".dng", ".raf", ".orf", ".rw2", ".pef", ".tif", ".tiff", ".heic", ".heif"];
+  if (!rawExts.includes(ext)) {
+    return null;
+  }
+
+  try {
+    const buffer = fs.readFileSync(filePath);
+    const len = buffer.length;
+    const soiMarker = Buffer.from([0xff, 0xd8, 0xff]);
+    const eoiMarker = Buffer.from([0xff, 0xd9]);
+
+    let bestJpegStart = -1;
+    let bestJpegEnd = -1;
+    let maxLen = 0;
+
+    let searchPos = 0;
+    while (searchPos < len - 4) {
+      const soiIdx = buffer.indexOf(soiMarker, searchPos);
+      if (soiIdx === -1) break;
+
+      let eoiIdx = buffer.indexOf(eoiMarker, soiIdx + 4);
+      let lastValidEoi = -1;
+      while (eoiIdx !== -1 && eoiIdx < len) {
+        lastValidEoi = eoiIdx + 2;
+        const nextSoi = buffer.indexOf(soiMarker, eoiIdx + 2);
+        if (nextSoi !== -1 && nextSoi - soiIdx > 50000) {
+          break;
+        }
+        const nextEoi = buffer.indexOf(eoiMarker, eoiIdx + 2);
+        if (nextEoi === -1) break;
+        eoiIdx = nextEoi;
+      }
+
+      if (lastValidEoi > soiIdx) {
+        const segLen = lastValidEoi - soiIdx;
+        if (segLen > maxLen && segLen > 4096) {
+          maxLen = segLen;
+          bestJpegStart = soiIdx;
+          bestJpegEnd = lastValidEoi;
+        }
+      }
+
+      searchPos = soiIdx + 4;
+    }
+
+    if (bestJpegStart !== -1 && bestJpegEnd > bestJpegStart) {
+      const jpegData = buffer.subarray(bestJpegStart, bestJpegEnd);
+      const targetJpgPath = filePath.slice(0, -ext.length) + ".jpg";
+      fs.writeFileSync(targetJpgPath, jpegData);
+      console.log(
+        `[RAW Extractor] Successfully extracted embedded JPEG preview: ${targetJpgPath} (${jpegData.length} bytes)`
+      );
+      return path.basename(targetJpgPath);
+    }
+  } catch (err) {
+    console.error(`[RAW Extractor Error] Could not extract preview from ${filePath}:`, err.message);
+  }
+  return null;
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Request & Visitor Logging Middleware (Captures IP, Endpoint, Status, Response Time, UA)
+app.use((req, res, next) => {
+  const start = Date.now();
+  const clientIp = getClientIp(req);
+  const method = req.method;
+  const url = req.originalUrl || req.url;
+  const userAgent = req.headers["user-agent"] || "-";
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const status = res.statusCode;
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [IP: ${clientIp}] [${method}] ${url} -> ${status} (${duration}ms) - UA: "${userAgent}"`;
+    appendToLog("access.log", logEntry);
+
+    if (status >= 400) {
+      console.warn(`⚠️ [${status}] ${method} ${url} from IP ${clientIp} (${duration}ms)`);
+    }
+  });
+
+  next();
+});
+
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -265,34 +488,20 @@ const noticeStorage = multer.diskStorage({
 
 const noticeUpload = multer({
   storage: noticeStorage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // Max 30MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".jfif", ".bmp", ".pdf","heic","avif"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (ALLOWED_NOTICE_EXTS.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only images (.jpg, .jpeg, .png, .webp, .gif, .jfif) and PDF documents (.pdf) are allowed."));
+      cb(new Error(`File format ${ext} not allowed. Supported: images (JPG, PNG, WebP, HEIC, NEF, CR2, RAW) and PDF.`));
     }
   },
 });
 
 // Helper to safely delete an attachment file from the uploads folder
 const deleteNoticeFile = (relativeUrl) => {
-  if (!relativeUrl || typeof relativeUrl !== "string") return;
-  // Security check: ensure path is strictly inside /uploads/notices/
-  if (relativeUrl.startsWith("/uploads/notices/")) {
-    const relativePath = relativeUrl.replace(/^\//, "");
-    const fullPath = path.join(__dirname, relativePath);
-    if (fs.existsSync(fullPath)) {
-      try {
-        fs.unlinkSync(fullPath);
-        console.log(`[File Delete] Removed notice attachment from disk: ${fullPath}`);
-      } catch (err) {
-        console.error(`[File Delete Error] Could not delete ${fullPath}:`, err.message);
-      }
-    }
-  }
+  safeDeleteUploadedFile(relativeUrl);
 };
 
 // Direct File Download Route (Forces download with original filename)
@@ -315,7 +524,7 @@ app.post("/api/upload/notice-attachment", requireAuth, (req, res) => {
     if (err) {
       console.error("[Attachment Upload Error]:", err.message);
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ error: "File size exceeds the 15MB limit." });
+        return res.status(400).json({ error: "File size exceeds the 30MB limit." });
       }
       return res.status(400).json({ error: err.message || "Failed to upload file." });
     }
@@ -325,8 +534,15 @@ app.post("/api/upload/notice-attachment", requireAuth, (req, res) => {
     const isPdf =
       req.file.mimetype === "application/pdf" ||
       req.file.originalname.toLowerCase().endsWith(".pdf");
-    const fileUrl = `/uploads/notices/${req.file.filename}`;
-    console.log(`[Attachment Upload] Stored: ${req.file.filename} (${req.file.size} bytes)`);
+
+    let finalFilename = req.file.filename;
+    if (!isPdf) {
+      const previewJpg = extractRawPreviewJpeg(req.file.path);
+      if (previewJpg) finalFilename = previewJpg;
+    }
+
+    const fileUrl = `/uploads/notices/${finalFilename}`;
+    console.log(`[Attachment Upload] Stored: ${finalFilename} (${req.file.size} bytes)`);
     res.json({
       success: true,
       fileUrl,
@@ -471,46 +687,37 @@ const eventStorage = multer.diskStorage({
 
 const eventUpload = multer({
   storage: eventStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // Max 30MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg", ".heic", ".avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (ALLOWED_IMAGE_EXTS.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for events."));
+      cb(new Error(`File format ${ext} not allowed. Supported formats: JPG, PNG, WebP, HEIC, NEF, CR2, RAW.`));
     }
   },
 });
 
 const deleteEventFile = (relativeUrl) => {
-  if (!relativeUrl || typeof relativeUrl !== "string") return;
-  if (relativeUrl.startsWith("/uploads/events/")) {
-    const relativePath = relativeUrl.replace(/^\//, "");
-    const fullPath = path.join(__dirname, relativePath);
-    if (fs.existsSync(fullPath)) {
-      try {
-        fs.unlinkSync(fullPath);
-        console.log(`[File Delete] Removed event image: ${fullPath}`);
-      } catch (err) {
-        console.error(`[File Delete Error] Could not delete event image ${fullPath}:`, err.message);
-      }
-    }
-  }
+  safeDeleteUploadedFile(relativeUrl);
 };
 
 app.post("/api/upload/event-image", requireAuth, (req, res) => {
   eventUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ error: "Image exceeds 10MB limit." });
+        return res.status(400).json({ error: "Image exceeds 30MB limit." });
       }
       return res.status(400).json({ error: err.message || "Failed to upload event image." });
     }
     if (!req.file) {
       return res.status(400).json({ error: "No image file uploaded." });
     }
-    const fileUrl = `/uploads/events/${req.file.filename}`;
+    let finalFilename = req.file.filename;
+    const previewJpg = extractRawPreviewJpeg(req.file.path);
+    if (previewJpg) finalFilename = previewJpg;
+
+    const fileUrl = `/uploads/events/${finalFilename}`;
     console.log(`[Event Image Upload] Saved: ${fileUrl}`);
     res.json({ success: true, fileUrl });
   });
@@ -606,46 +813,37 @@ const staffStorage = multer.diskStorage({
 
 const staffUpload = multer({
   storage: staffStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // Max 30MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic", ".avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (ALLOWED_IMAGE_EXTS.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for staff photos."));
+      cb(new Error(`File format ${ext} not allowed. Supported formats: JPG, PNG, WebP, HEIC, NEF, CR2, RAW.`));
     }
   },
 });
 
 const deleteStaffFile = (relativeUrl) => {
-  if (!relativeUrl || typeof relativeUrl !== "string") return;
-  if (relativeUrl.startsWith("/uploads/staff/")) {
-    const relativePath = relativeUrl.replace(/^\//, "");
-    const fullPath = path.join(__dirname, relativePath);
-    if (fs.existsSync(fullPath)) {
-      try {
-        fs.unlinkSync(fullPath);
-        console.log(`[File Delete] Removed staff photo: ${fullPath}`);
-      } catch (err) {
-        console.error(`[File Delete Error] Could not delete staff photo ${fullPath}:`, err.message);
-      }
-    }
-  }
+  safeDeleteUploadedFile(relativeUrl);
 };
 
 app.post("/api/upload/staff-photo", requireAuth, (req, res) => {
   staffUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ error: "Image exceeds 10MB limit." });
+        return res.status(400).json({ error: "Image exceeds 30MB limit." });
       }
       return res.status(400).json({ error: err.message || "Failed to upload staff photo." });
     }
     if (!req.file) {
       return res.status(400).json({ error: "No image file uploaded." });
     }
-    const fileUrl = `/uploads/staff/${req.file.filename}`;
+    let finalFilename = req.file.filename;
+    const previewJpg = extractRawPreviewJpeg(req.file.path);
+    if (previewJpg) finalFilename = previewJpg;
+
+    const fileUrl = `/uploads/staff/${finalFilename}`;
     console.log(`[Staff Photo Upload] Saved: ${fileUrl}`);
     res.json({ success: true, fileUrl });
   });
@@ -739,46 +937,37 @@ const galleryStorage = multer.diskStorage({
 
 const galleryUpload = multer({
   storage: galleryStorage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // Max 30MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic","avif",".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (ALLOWED_IMAGE_EXTS.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .heic, .avif, .nef, .arw, .cr2, .dng, .rw2) are allowed for gallery."));
+      cb(new Error(`File format ${ext} not allowed. Supported formats: JPG, PNG, WebP, HEIC, NEF, CR2, RAW.`));
     }
   },
 });
 
 const deleteGalleryFile = (relativeUrl) => {
-  if (!relativeUrl || typeof relativeUrl !== "string") return;
-  if (relativeUrl.startsWith("/uploads/gallery/")) {
-    const relativePath = relativeUrl.replace(/^\//, "");
-    const fullPath = path.join(__dirname, relativePath);
-    if (fs.existsSync(fullPath)) {
-      try {
-        fs.unlinkSync(fullPath);
-        console.log(`[File Delete] Removed gallery image: ${fullPath}`);
-      } catch (err) {
-        console.error(`[File Delete Error] Could not delete gallery photo ${fullPath}:`, err.message);
-      }
-    }
-  }
+  safeDeleteUploadedFile(relativeUrl);
 };
 
 app.post("/api/upload/gallery-image", requireAuth, (req, res) => {
   galleryUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ error: "Image exceeds 15MB limit." });
+        return res.status(400).json({ error: "Image exceeds 30MB limit." });
       }
       return res.status(400).json({ error: err.message || "Failed to upload gallery image." });
     }
     if (!req.file) {
       return res.status(400).json({ error: "No image file uploaded." });
     }
-    const fileUrl = `/uploads/gallery/${req.file.filename}`;
+    let finalFilename = req.file.filename;
+    const previewJpg = extractRawPreviewJpeg(req.file.path);
+    if (previewJpg) finalFilename = previewJpg;
+
+    const fileUrl = `/uploads/gallery/${finalFilename}`;
     console.log(`[Gallery Image Upload] Saved: ${fileUrl}`);
     res.json({ success: true, fileUrl });
   });
@@ -1043,17 +1232,13 @@ const sliderStorage = multer.diskStorage({
 
 const sliderUpload = multer({
   storage: sliderStorage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // Max 30MB
   fileFilter: (req, file, cb) => {
-    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".jfif", ".bmp", ".svg",".heic","heif", ".nef", ".arw", ".cr2", ".dng", ".rw2"];
     const ext = path.extname(file.originalname).toLowerCase();
-  
-    if (allowed.includes(ext)) {
-      console.log(`[Slider Upload] Accepted file: ${file.originalname} (${file.size} bytes.)`);
+    if (ALLOWED_IMAGE_EXTS.includes(ext)) {
       cb(null, true);
     } else {
-      console.log(`[Slider Upload] Rejected file: ${file.originalname} (${file.size} bytes)`);
-      cb(new Error("Only image files (.jpg, .jpeg, .png, .webp, .jfif, .svg, .heic, .heif, .nef, .arw, .cr2, .dng, .rw2) are allowed for slider."));
+      cb(new Error(`File format ${ext} not allowed. Supported formats: JPG, PNG, WebP, HEIC, NEF, CR2, RAW.`));
     }
   },
 });
@@ -1062,17 +1247,62 @@ app.post("/api/upload/slider-image", requireAuth, (req, res) => {
   sliderUpload.single("file")(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ error: "Image exceeds 15MB limit." });
+        return res.status(400).json({ error: "Image exceeds 30MB limit." });
       }
       return res.status(400).json({ error: err.message || "Failed to upload slider image." });
     }
     if (!req.file) {
       return res.status(400).json({ error: "No image file uploaded." });
     }
-    const fileUrl = `/uploads/slider/${req.file.filename}`;
+    let finalFilename = req.file.filename;
+    const previewJpg = extractRawPreviewJpeg(req.file.path);
+    if (previewJpg) finalFilename = previewJpg;
+
+    const fileUrl = `/uploads/slider/${finalFilename}`;
     console.log(`[Slider Image Upload] Saved: ${fileUrl}`);
     res.json({ success: true, fileUrl });
   });
+});
+
+// Explicit Uploaded File Deletion Endpoint (For draft cleanups on cancel/replace)
+app.delete("/api/upload/file", requireAuth, (req, res) => {
+  const fileUrl = req.body?.fileUrl || req.query?.fileUrl;
+  if (!fileUrl) {
+    return res.status(400).json({ error: "fileUrl parameter is required." });
+  }
+  const deleted = safeDeleteUploadedFile(fileUrl);
+  res.json({ success: true, deleted, fileUrl });
+});
+
+// =========================================================
+// 6C. AUDIT & ERROR LOGGING APIS (Frontend Error & Visitor Logs)
+// =========================================================
+app.post("/api/logs/client-error", (req, res) => {
+  try {
+    const clientIp = getClientIp(req);
+    const timestamp = new Date().toISOString();
+    const { message, stack, componentStack, route, userAgent } = req.body || {};
+    const logText = `[${timestamp}] [CLIENT ERROR] [IP: ${clientIp}] [Route: ${route || "-"}]\nMessage: ${message || "Unknown error"}\nStack: ${stack || "-"}\nComponent: ${componentStack || "-"}\nUA: ${userAgent || req.headers["user-agent"] || "-"}\n---`;
+    appendToLog("client-error.log", logText);
+    console.error(`🚨 [Client Error from ${clientIp} on ${route || "app"}]:`, message);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to record client error" });
+  }
+});
+
+app.post("/api/logs/visitor", (req, res) => {
+  try {
+    const clientIp = getClientIp(req);
+    const timestamp = new Date().toISOString();
+    const { path: vPath, title, referrer, screen, sessionId } = req.body || {};
+    const userAgent = req.headers["user-agent"] || "-";
+    const logText = `[${timestamp}] [VISIT] [IP: ${clientIp}] Path: "${vPath || "/"}" Title: "${title || ""}" Session: ${sessionId || "-"} Screen: ${screen || "-"} Ref: "${referrer || "-"}" UA: "${userAgent}"`;
+    appendToLog("visitor.log", logText);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to record visitor log" });
+  }
 });
 
 // =========================================================
@@ -1092,12 +1322,23 @@ app.get("/api/school-info", async (req, res) => {
 
 app.put("/api/school-info", requireAuth, async (req, res) => {
   try {
+    const existing = await SchoolInfo.findOne();
     const updateData = { ...req.body };
     delete updateData._id;
     delete updateData.id;
     delete updateData.createdAt;
     delete updateData.updatedAt;
     delete updateData.__v;
+
+    // Automatic cleanup: if slider images were deleted or replaced, delete old file from disk
+    if (existing && Array.isArray(existing.heroSlides) && Array.isArray(updateData.heroSlides)) {
+      const newSlideImages = new Set(updateData.heroSlides.map((s) => s.image).filter(Boolean));
+      existing.heroSlides.forEach((oldSlide) => {
+        if (oldSlide && oldSlide.image && !newSlideImages.has(oldSlide.image)) {
+          safeDeleteUploadedFile(oldSlide.image);
+        }
+      });
+    }
 
     if (updateData.isAdmissionsOpen === false) {
       updateData.showAdmissionNotice = false;
@@ -1109,6 +1350,25 @@ app.put("/api/school-info", requireAuth, async (req, res) => {
     console.error("❌ Failed to update school info in MongoDB Atlas:", err);
     res.status(500).json({ error: "Failed to update school info in MongoDB", details: err.message });
   }
+});
+
+// Global Express Error Handler Middleware
+app.use((err, req, res, next) => {
+  const clientIp = getClientIp(req);
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const url = req.originalUrl || req.url;
+  const errorMsg = `[${timestamp}] [EXPRESS ERROR] [IP: ${clientIp}] [${method} ${url}]\n${err?.stack || err?.message || err}\n---`;
+  appendToLog("error.log", errorMsg);
+  console.error(`💥 [Server Error at ${method} ${url}]:`, err.message);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({
+    error: err.message || "An unexpected internal server error occurred.",
+    timestamp,
+  });
 });
 
 // Active port tracking file for Vite dev server and proxy synchronization

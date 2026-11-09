@@ -120,14 +120,30 @@ export default function AdminNotices() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 15 * 1024 * 1024) {
-      setUploadError("File is too large. Maximum size is 15MB.");
+    if (file.size > 30 * 1024 * 1024) {
+      setUploadError("File is too large. Maximum size is 30MB.");
       return;
     }
 
     setUploading(true);
     setUploadError("");
     try {
+      // Clean up previous uncommitted draft file if user is replacing it before saving
+      if (
+        formData.attachmentUrl &&
+        formData.attachmentUrl.startsWith("/uploads/") &&
+        formData.attachmentUrl !== editingNotice?.attachmentUrl
+      ) {
+        fetch("/api/upload/file", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+          },
+          body: JSON.stringify({ fileUrl: formData.attachmentUrl }),
+        }).catch(() => {});
+      }
+
       const res = await uploadNoticeAttachment(file);
       if (res && res.fileUrl) {
         setFormData((prev) => ({
@@ -481,7 +497,7 @@ export default function AdminNotices() {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileSelect}
-                  accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+                  accept=".heic,.heif,.nef,.cr2,.cr3,.arw,.dng,.raw,.jpg,.jpeg,.png,.webp,.jfif,.tif,.tiff,.avif,.pdf,image/*,application/pdf"
                   style={{ display: "none" }}
                 />
 
@@ -566,7 +582,7 @@ export default function AdminNotices() {
                       )}
                     </div>
                     <div className={styles.uploadSubtext}>
-                      Supports PNG, JPG, JPEG, WEBP, GIF, or PDF (Max 15MB)
+                      Supports JPG, PNG, WEBP, HEIC, NEF, Camera RAW, or PDF (Max 30MB)
                     </div>
                   </div>
                 )}

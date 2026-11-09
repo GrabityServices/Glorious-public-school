@@ -488,6 +488,19 @@ export function DataProvider({ children }) {
     }
   };
 
+  const deleteUploadedFile = async (fileUrl) => {
+    if (!fileUrl) return;
+    try {
+      await fetch("/api/upload/file", {
+        method: "DELETE",
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ fileUrl }),
+      });
+    } catch (err) {
+      console.warn("Failed to delete draft file:", err);
+    }
+  };
+
   // --- CRUD: Inquiries / Admissions (MongoDB Atlas) ---
   const addInquiry = async (inquiry) => {
     try {
@@ -685,6 +698,7 @@ export function DataProvider({ children }) {
         updateGalleryItem,
         deleteGalleryItem,
         uploadGalleryImage,
+        deleteUploadedFile,
 
         refreshData,
         resetToDefaults,

@@ -188,14 +188,30 @@ export default function AdminEvents() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadError("Image size must be under 10MB.");
+    if (file.size > 30 * 1024 * 1024) {
+      setUploadError("Image size must be under 30MB.");
       return;
     }
 
     setIsUploading(true);
     setUploadError("");
     try {
+      // Clean up previous uncommitted draft file if user is replacing it before saving
+      if (
+        formData.image &&
+        formData.image.startsWith("/uploads/") &&
+        formData.image !== events.find((ev) => (ev.id || ev._id) === editingId)?.image
+      ) {
+        fetch("/api/upload/file", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+          },
+          body: JSON.stringify({ fileUrl: formData.image }),
+        }).catch(() => {});
+      }
+
       const res = await uploadEventImage(file);
       if (res && res.fileUrl) {
         setFormData((prev) => ({ ...prev, image: res.fileUrl }));
@@ -577,7 +593,7 @@ export default function AdminEvents() {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
+                        accept=".heic,.heif,.nef,.cr2,.cr3,.arw,.dng,.raw,.jpg,.jpeg,.png,.webp,.jfif,.tif,.tiff,.avif,image/*"
                         style={{ display: "none" }}
                         onChange={handleFileUpload}
                       />
@@ -600,6 +616,9 @@ export default function AdminEvents() {
                         )}
                       </button>
                     </div>
+                    <span style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "6px", display: "block" }}>
+                      Supports JPG, PNG, WEBP, HEIC, NEF & Camera RAW (Max 30MB)
+                    </span>
                   </div>
                 </div>
 
