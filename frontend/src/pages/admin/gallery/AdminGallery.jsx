@@ -102,14 +102,26 @@ export default function AdminGallery() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 15 * 1024 * 1024) {
-      setUploadError("Photo size must be under 15MB.");
+    if (file.size > 30 * 1024 * 1024) {
+      setUploadError("Photo size must be under 30MB.");
       return;
     }
 
     setIsUploading(true);
     setUploadError("");
     try {
+      // Clean up previous uncommitted draft file if user is replacing it before saving
+      if (formImage && formImage.startsWith("/uploads/") && formImage !== editingItem?.image) {
+        fetch("/api/upload/file", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+          },
+          body: JSON.stringify({ fileUrl: formImage }),
+        }).catch(() => {});
+      }
+
       const res = await uploadGalleryImage(file);
       if (res && res.fileUrl) {
         setFormImage(res.fileUrl);
@@ -260,7 +272,7 @@ export default function AdminGallery() {
             Upload campus photographs or add YouTube embedded videos to showcase live on the public Gallery page.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div className={styles.headerActions}>
           <button
             type="button"
             className={styles.addBtn}
@@ -718,7 +730,7 @@ export default function AdminGallery() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/webp,image/jfif,image/bmp"
+                    accept=".heic,.heif,.nef,.cr2,.cr3,.arw,.dng,.raw,.jpg,.jpeg,.png,.webp,.jfif,.tif,.tiff,.avif,image/*"
                     style={{ display: "none" }}
                     onChange={handlePhotoUpload}
                   />
@@ -794,7 +806,7 @@ export default function AdminGallery() {
                             : "Click to Select Photograph from Device"}
                         </span>
                         <span className={styles.dropzoneSub}>
-                          Supports JPG, PNG, WEBP, or JFIF (Max 15MB)
+                          Supports JPG, PNG, WEBP, HEIC, NEF & Camera RAW (Max 30MB)
                         </span>
                       </div>
                     </div>

@@ -54,6 +54,13 @@
   box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* Filter Bar */
 .filterBar {
   display: flex;
@@ -62,7 +69,7 @@
   flex-wrap: wrap;
   gap: 16px;
   background: #ffffff;
-  padding: 12px 18px;
+  padding: 14px 18px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
 }
@@ -72,9 +79,16 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 1 1 auto;
 }
 
 .categoryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   color: #64748b;
@@ -128,13 +142,20 @@
 }
 
 .categoryCountBadge {
-  margin-left: 6px;
-  font-size: 0.74rem;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  margin-left: 2px;
+  font-size: 0.72rem;
+  padding: 0 6px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.08);
   color: inherit;
   font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .categoryBtnActive .categoryCountBadge {
@@ -145,6 +166,8 @@
 .searchWrapper {
   position: relative;
   min-width: 240px;
+  flex: 1;
+  max-width: 380px;
 }
 
 .searchIcon {
@@ -942,39 +965,51 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .headerSection {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 14px;
   }
 
-  .addBtn {
+  .headerActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
     width: 100%;
+  }
+
+  .headerActions .addBtn {
+    flex: 1 1 160px;
     justify-content: center;
   }
 
   .filterBar {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 14px;
+    padding: 14px;
   }
 
   .categoryPills {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .categoryPills::-webkit-scrollbar {
-    display: none;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap; /* ALWAYS wrap so all links (All, Campus, Events, Sports, Academics, Other, Video Gallery) stay 100% visible */
+    overflow: visible;
   }
 
   .categoryBtn {
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  .searchWrapper {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -1017,6 +1052,47 @@
 }
 
 @media (max-width: 480px) {
+  .headerSection {
+    padding: 16px 14px;
+  }
+
+  .headerTitle h2 {
+    font-size: 1.15rem;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .headerActions .addBtn {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .filterBar {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .categoryPills {
+    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .categoryBtn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .categoryCountBadge {
+    font-size: 0.68rem;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 4px;
+  }
+
   .galleryGrid {
     grid-template-columns: 1fr;
     gap: 14px;

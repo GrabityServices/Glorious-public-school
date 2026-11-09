@@ -163,96 +163,6 @@ const INITIAL_GALLERY = [
   }
 ];
 
-const INITIAL_INQUIRIES = [
-  {
-    appId: "GPS-842910",
-    type: "Online Admission",
-    studentName: "Aarav Kumar",
-    dob: "2016-04-12",
-    gender: "Male",
-    applyingClass: "Class 6th",
-    gradeApplying: "Class 6th",
-    grade: "Class 6th",
-    fatherName: "Sanjay Kumar",
-    motherName: "Sunita Devi",
-    parentName: "Sanjay Kumar",
-    email: "sanjay.k@gmail.com",
-    phone: "9876543210",
-    address: "Near Purani Bazar, Post Jhajha, Dist Jamui, Bihar 811308",
-    needTransport: "Yes",
-    needHostel: "Yes",
-    previousSchool: "St. Joseph Academy, Jamui (Class 5th)",
-    date: "19 Sep, 2026",
-    status: "Pending",
-    message: "Seeking admission in Class 6th with hostel accommodation and transport.",
-  },
-  {
-    appId: "GPS-592184",
-    type: "Online Admission",
-    studentName: "Ananya Sharma",
-    dob: "2021-08-25",
-    gender: "Female",
-    applyingClass: "Nursery",
-    gradeApplying: "Nursery",
-    grade: "Nursery",
-    fatherName: "Vikram Sharma",
-    motherName: "Pooja Sharma",
-    parentName: "Vikram Sharma",
-    email: "vikram.sharma.jhajha@gmail.com",
-    phone: "9431208945",
-    address: "Railway Colony, Quarter No 42, Jhajha, Jamui 811308",
-    needTransport: "Yes",
-    needHostel: "No",
-    previousSchool: "First admission / Playgroup",
-    date: "28 Sep, 2026",
-    status: "Reviewed",
-    message: "Applying for Nursery session 2026-2027. Need school bus route for Railway Colony.",
-  },
-  {
-    appId: "GPS-710492",
-    type: "Online Admission",
-    studentName: "Rohan Verma",
-    dob: "2017-11-05",
-    gender: "Male",
-    applyingClass: "Class 4th",
-    gradeApplying: "Class 4th",
-    grade: "Class 4th",
-    fatherName: "Manoj Verma",
-    motherName: "Anita Verma",
-    parentName: "Manoj Verma",
-    email: "manoj.verma82@gmail.com",
-    phone: "9934567812",
-    address: "Bazar Samiti Road, Jhajha, Jamui, Bihar",
-    needTransport: "No",
-    needHostel: "No",
-    previousSchool: "DAV Public School, Jamui",
-    date: "02 Oct, 2026",
-    status: "Admitted",
-    message: "Transfer from Jamui due to parental relocation to Jhajha.",
-  },
-  {
-    appId: "",
-    type: "Contact Inquiry",
-    name: "Rajesh Mishra",
-    email: "rajesh.mishra.jhajha@gmail.com",
-    phone: "9835123456",
-    gradeApplying: "General Inquiry",
-    date: "03 Oct, 2026",
-    status: "Pending",
-    message: "Kindly provide information regarding school bus routes covering Jhajha Railway Station Road and timing.",
-  },
-  {
-    appId: "",
-    type: "Contact Inquiry",
-    name: "Sunita Devi",
-    email: "sunita.k@gmail.com",
-    phone: "9470123456",
-    gradeApplying: "Fee Structure",
-    date: "04 Oct, 2026",
-    status: "Reviewed",
-    message: "Please share the detailed fee structure and book list for Class 2nd for the upcoming academic session 2026-27.",
-  },
-];
 
 const INITIAL_SCHOOL_INFO = {
   name: "Glorious Public School",
@@ -362,11 +272,7 @@ const seedDatabase = async () => {
       seeded = true;
     }
 
-    // 5. Inquiries
-    if ((await Inquiry.countDocuments()) === 0) {
-      await Inquiry.insertMany(INITIAL_INQUIRIES);
-      seeded = true;
-    }
+    // 5. Inquiries (Left empty - no mock/fake user inquiries are seeded)
 
     // 6. School Info
     if ((await SchoolInfo.countDocuments()) === 0) {
