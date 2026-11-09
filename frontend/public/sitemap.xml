@@ -3,23 +3,23 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- Home Page -->
   <url>
-    <loc>https://gloriouspublicschool.com/</loc>
+    <loc>https://thegloriousschool.in/</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://gloriouspublicschool.com/images/glorious-public-school-logo.png</image:loc>
+      <image:loc>https://thegloriousschool.in/images/glorious-public-school-logo.png</image:loc>
       <image:title>Glorious Public School Official Crest Logo</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://gloriouspublicschool.com/images/glorious-public-school.png</image:loc>
+      <image:loc>https://thegloriousschool.in/images/glorious-public-school.png</image:loc>
       <image:title>Glorious Public School Campus, Jhajha, Jamui, Bihar</image:title>
     </image:image>
   </url>
 
   <!-- About Us -->
   <url>
-    <loc>https://gloriouspublicschool.com/about</loc>
+    <loc>https://thegloriousschool.in/about</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -27,7 +27,7 @@
 
   <!-- Academics & Bell Schedule -->
   <url>
-    <loc>https://gloriouspublicschool.com/academics</loc>
+    <loc>https://thegloriousschool.in/academics</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -35,7 +35,7 @@
 
   <!-- Online Admissions -->
   <url>
-    <loc>https://gloriouspublicschool.com/admissions</loc>
+    <loc>https://thegloriousschool.in/admissions</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
@@ -43,7 +43,7 @@
 
   <!-- Campus Facilities -->
   <url>
-    <loc>https://gloriouspublicschool.com/facilities</loc>
+    <loc>https://thegloriousschool.in/facilities</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -51,7 +51,7 @@
 
   <!-- Academic Calendar -->
   <url>
-    <loc>https://gloriouspublicschool.com/calendar</loc>
+    <loc>https://thegloriousschool.in/calendar</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -59,7 +59,7 @@
 
   <!-- Events & Celebrations -->
   <url>
-    <loc>https://gloriouspublicschool.com/events</loc>
+    <loc>https://thegloriousschool.in/events</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -67,7 +67,7 @@
 
   <!-- Photo & Video Gallery -->
   <url>
-    <loc>https://gloriouspublicschool.com/gallery</loc>
+    <loc>https://thegloriousschool.in/gallery</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -75,7 +75,7 @@
 
   <!-- News & Notices -->
   <url>
-    <loc>https://gloriouspublicschool.com/news</loc>
+    <loc>https://thegloriousschool.in/news</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
@@ -83,7 +83,7 @@
 
   <!-- Holiday List & Notifications -->
   <url>
-    <loc>https://gloriouspublicschool.com/holiday</loc>
+    <loc>https://thegloriousschool.in/holiday</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
@@ -91,7 +91,7 @@
 
   <!-- Faculty & Staff Directory -->
   <url>
-    <loc>https://gloriouspublicschool.com/staff</loc>
+    <loc>https://thegloriousschool.in/staff</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
@@ -99,7 +99,7 @@
 
   <!-- Frequently Asked Questions (AEO Hub) -->
   <url>
-    <loc>https://gloriouspublicschool.com/faq</loc>
+    <loc>https://thegloriousschool.in/faq</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -107,7 +107,7 @@
 
   <!-- Contact Us & Official School Timings -->
   <url>
-    <loc>https://gloriouspublicschool.com/contact</loc>
+    <loc>https://thegloriousschool.in/contact</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
@@ -115,7 +115,7 @@
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://gloriouspublicschool.com/privacy</loc>
+    <loc>https://thegloriousschool.in/privacy</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.40</priority>
@@ -123,7 +123,7 @@
 
   <!-- Terms & Conditions -->
   <url>
-    <loc>https://gloriouspublicschool.com/terms</loc>
+    <loc>https://thegloriousschool.in/terms</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.40</priority>

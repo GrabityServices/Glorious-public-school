@@ -139,7 +139,7 @@ export default function ContactPage() {
     await addInquiry({
       name: name.trim(),
       phone: phone.trim(),
-      email: email.trim() || "inquiry@gloriouspublicschool.com",
+      email: email.trim() || "inquiry@thegloriousschool.in",
       gradeApplying: subject,
       message: message.trim(),
       type: "Contact Inquiry",

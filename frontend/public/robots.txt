@@ -49,4 +49,4 @@ Allow: /
 Disallow: /admin
 
 # Sitemaps & AI Knowledge Index
-Sitemap: https://gloriouspublicschool.com/sitemap.xml
+Sitemap: https://thegloriousschool.in/sitemap.xml

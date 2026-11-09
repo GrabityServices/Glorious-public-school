@@ -42,7 +42,7 @@ export default function EventDetailPage() {
             },
           },
           organizer: {
-            "@id": "https://gloriouspublicschool.com/#school",
+            "@id": "https://thegloriousschool.in/#school",
           },
         }
       : null,
