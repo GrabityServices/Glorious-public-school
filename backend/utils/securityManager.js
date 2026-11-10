@@ -1,27 +1,21 @@
 
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require("fs/promises");
+const path = require("path");
+const crypto = require("crypto");
 
 const DATA_DIR = path.join(__dirname, "../data/security");
 
 const FILES = {
-  attempts: path.join(DATA_DIR, "login-attempts.json"),
-  blocked: path.join(DATA_DIR, "blocked-users.json"),
-  devices: path.join(DATA_DIR, "devices.json"),
+  attempts: path.join(DATA_DIR, "ip-security.json"),
   passwords: path.join(DATA_DIR, "password-history.json"),
 };
 
-const DEVICE_LIFETIME = 24 * 60 * 60 * 1000;
-const BLOCK_DURATION = 12 * 60 * 60 * 1000;
 const ATTEMPT_LIMIT = 5;
+const BLOCK_DURATION = 12 * 60 * 60 * 1000;
 const PASSWORD_WINDOW = 7 * 24 * 60 * 60 * 1000;
 const PASSWORD_LIMIT = 2;
 
-// Serialize operations per file to avoid concurrent writes.
+// Serialize writes within this Node.js process.
 const queues = new Map();
 
 async function withFile(file, operation) {
@@ -43,7 +37,12 @@ async function withFile(file, operation) {
     const tempFile = `${file}.${crypto.randomUUID()}.tmp`;
 
     try {
-      await fs.writeFile(tempFile, JSON.stringify(data, null, 2), "utf8");
+      await fs.writeFile(
+        tempFile,
+        JSON.stringify(data, null, 2),
+        "utf8"
+      );
+
       await fs.rename(tempFile, file);
     } catch (error) {
       await fs.rm(tempFile, { force: true }).catch(() => {});
@@ -58,159 +57,111 @@ async function withFile(file, operation) {
   return current;
 }
 
-function accountKey(identifier) {
+// Normalize IP addresses consistently.
+function normalizeIP(ip) {
+  if (!ip || typeof ip !== "string") return "unknown";
+
+  let value = ip.trim();
+
+  if (value.startsWith("::ffff:")) {
+    value = value.substring(7);
+  }
+
+  if (value === "::1") {
+    value = "127.0.0.1";
+  }
+
+  return value;
+}
+
+function getIPKey(ip) {
+  const normalized = normalizeIP(ip);
+
   return crypto
     .createHash("sha256")
-    .update(String(identifier).trim().toLowerCase())
+    .update(normalized)
     .digest("hex");
 }
 
-// DEVICE MANAGEMENT
-
-export async function getDeviceId(req, res) {
-  const existingId = req.cookies?.admin_device;
+// CHECK IP BLOCK
+async function checkIPAllowed(ip) {
+  const key = getIPKey(ip);
   const now = Date.now();
 
-  const device = await withFile(FILES.devices, (devices) => {
-    let record = existingId && devices[existingId];
+  return withFile(FILES.attempts, (data) => {
+    const record = data[key];
 
-    if (
-      record &&
-      record.expiresAt > now &&
-      record.issuedAt <= now
-    ) {
-      return {
-        id: existingId,
-        expiresAt: record.expiresAt,
-      };
+    if (!record) {
+      return { blocked: false };
     }
 
-    if (existingId) {
-      delete devices[existingId];
-    }
-
-    const id = crypto.randomUUID();
-
-    devices[id] = {
-      issuedAt: now,
-      expiresAt: now + DEVICE_LIFETIME,
-    };
-
-    return {
-      id,
-      expiresAt: devices[id].expiresAt,
-    };
-  });
-
-  res.cookie("admin_device", device.id, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    path: "/api/auth",
-    maxAge: Math.max(0, device.expiresAt - now),
-  });
-
-  return device.id;
-}
-
-// CHECK LOGIN BLOCK
-
-export async function checkLoginAllowed(identifier, deviceId) {
-  const account = accountKey(identifier);
-  const now = Date.now();
-
-  return withFile(FILES.blocked, (blocked) => {
-    const accountBlock = blocked[`account:${account}`];
-    const deviceBlock = blocked[`device:${deviceId}`];
-
-    if (accountBlock?.expiresAt > now) {
+    if (record.blockedUntil > now) {
       return {
         blocked: true,
-        until: accountBlock.expiresAt,
+        until: record.blockedUntil,
+        attempts: record.count,
       };
     }
 
-    if (deviceBlock?.expiresAt > now) {
-      return {
-        blocked: true,
-        until: deviceBlock.expiresAt,
-      };
+    // Expired block: reset the IP counter.
+    if (record.blockedUntil && record.blockedUntil <= now) {
+      delete data[key];
+      return { blocked: false };
     }
 
     return { blocked: false };
   });
 }
 
-// RECORD FAILED PASSWORD
-
-export async function recordFailedLogin(identifier, deviceId) {
-  const account = accountKey(identifier);
+// RECORD FAILED LOGIN OR PASSWORD VERIFICATION
+async function recordFailedAttempt(ip) {
+  const key = getIPKey(ip);
   const now = Date.now();
 
-  return withFile(FILES.attempts, async (attempts) => {
-    const keys = [
-      `account:${account}`,
-      `device:${deviceId}`,
-    ];
+  return withFile(FILES.attempts, (data) => {
+    let record = data[key];
 
-    let highestAttempts = 0;
-
-    for (const key of keys) {
-      let record = attempts[key];
-
-      if (!record || now - record.firstAttemptAt >= BLOCK_DURATION) {
-        record = {
-          count: 0,
-          firstAttemptAt: now,
-        };
-      }
-
-      record.count++;
-      record.lastAttemptAt = now;
-
-      attempts[key] = record;
-      highestAttempts = Math.max(highestAttempts, record.count);
+    if (
+      !record ||
+      now - record.firstAttemptAt >= BLOCK_DURATION
+    ) {
+      record = {
+        count: 0,
+        firstAttemptAt: now,
+        lastAttemptAt: now,
+        blockedUntil: 0,
+      };
     }
 
-    if (highestAttempts >= ATTEMPT_LIMIT) {
-      await withFile(FILES.blocked, (blocked) => {
-        const expiresAt = now + BLOCK_DURATION;
+    record.count++;
+    record.lastAttemptAt = now;
 
-        blocked[`account:${account}`] = {
-          blockedAt: now,
-          expiresAt,
-          reason: "5 failed login attempts",
-        };
-
-        blocked[`device:${deviceId}`] = {
-          blockedAt: now,
-          expiresAt,
-          reason: "5 failed login attempts",
-        };
-      });
+    if (record.count >= ATTEMPT_LIMIT) {
+      record.blockedUntil = now + BLOCK_DURATION;
     }
+
+    data[key] = record;
 
     return {
-      attempts: highestAttempts,
-      blocked: highestAttempts >= ATTEMPT_LIMIT,
+      attempts: record.count,
+      blocked: record.blockedUntil > now,
+      until: record.blockedUntil || null,
     };
   });
 }
 
-// RECORD SUCCESSFUL LOGIN
+// SUCCESSFUL AUTHENTICATION
+async function recordSuccessfulAttempt(ip) {
+  const key = getIPKey(ip);
 
-export async function recordSuccessfulLogin(identifier, deviceId) {
-  const account = accountKey(identifier);
-
-  await withFile(FILES.attempts, (attempts) => {
-    delete attempts[`account:${account}`];
-    delete attempts[`device:${deviceId}`];
+  await withFile(FILES.attempts, (data) => {
+    // A successful authentication resets this IP's counter.
+    delete data[key];
   });
 }
 
-// PASSWORD CHANGE LIMIT
-
-export async function reservePasswordChange(adminId) {
+// WEEKLY PASSWORD CHANGE LIMIT
+async function reservePasswordChange(adminId) {
   const now = Date.now();
   const key = String(adminId);
 
@@ -234,84 +185,84 @@ export async function reservePasswordChange(adminId) {
       };
     }
 
-    const reservation = crypto.randomUUID();
-
     recent.push(now);
-
     history[key] = recent;
 
     return {
       allowed: true,
-      reservation,
       timestamp: now,
     };
   });
 }
 
-// ROLLBACK IF PASSWORD SAVE FAILS
-
-export async function cancelPasswordChange(adminId, reservation) {
-  // Reservations are represented by timestamps in this implementation.
-  // The route should use the timestamp returned above.
-  if (!Number.isFinite(reservation)) return;
+// ROLLBACK PASSWORD CHANGE RESERVATION
+async function cancelPasswordChange(adminId, timestamp) {
+  if (!Number.isFinite(timestamp)) return;
 
   const key = String(adminId);
 
   await withFile(FILES.passwords, (history) => {
     const entries = history[key] || [];
+    const index = entries.lastIndexOf(timestamp);
 
-    const index = entries.lastIndexOf(reservation);
+    if (index !== -1) {
+      entries.splice(index, 1);
+    }
 
-    if (index !== -1) entries.splice(index, 1);
-
-    history[key] = entries;
+    if (entries.length) {
+      history[key] = entries;
+    } else {
+      delete history[key];
+    }
   });
 }
 
-// CLEAN EXPIRED SECURITY DATA
-
-export async function cleanupSecurityData() {
+// CLEAN EXPIRED DATA
+async function cleanupSecurityData() {
   const now = Date.now();
 
-  await withFile(FILES.devices, (devices) => {
-    for (const [id, record] of Object.entries(devices)) {
-      if (!record || record.expiresAt <= now) {
-        delete devices[id];
-      }
-    }
-  });
-
-  await withFile(FILES.blocked, (blocked) => {
-    for (const [key, record] of Object.entries(blocked)) {
-      if (!record || record.expiresAt <= now) {
-        delete blocked[key];
-      }
-    }
-  });
-
-  await withFile(FILES.attempts, (attempts) => {
-    for (const [key, record] of Object.entries(attempts)) {
+  await withFile(FILES.attempts, (data) => {
+    for (const [key, record] of Object.entries(data)) {
       if (
         !record ||
-        now - record.lastAttemptAt >= 24 * 60 * 60 * 1000
+        (record.blockedUntil && record.blockedUntil <= now) ||
+        (
+          !record.blockedUntil &&
+          now - record.lastAttemptAt >= BLOCK_DURATION
+        )
       ) {
-        delete attempts[key];
+        delete data[key];
       }
     }
   });
 
   await withFile(FILES.passwords, (history) => {
-    for (const [adminId, entries] of Object.entries(history)) {
-      const recent = (Array.isArray(entries) ? entries : [])
-        .filter(timestamp => timestamp > now - PASSWORD_WINDOW);
+    for (const [key, entries] of Object.entries(history)) {
+      const recent = (
+        Array.isArray(entries) ? entries : []
+      ).filter(
+        timestamp =>
+          Number.isFinite(timestamp) &&
+          timestamp > now - PASSWORD_WINDOW
+      );
 
       if (recent.length) {
-        history[adminId] = recent;
+        history[key] = recent;
       } else {
-        delete history[adminId];
+        delete history[key];
       }
     }
   });
 
-  console.log("GPS: Security JSON cleanup completed");
+  console.log("[Security] IP security cleanup completed.");
 }
+
+module.exports = {
+  normalizeIP,
+  checkIPAllowed,
+  recordFailedAttempt,
+  recordSuccessfulAttempt,
+  reservePasswordChange,
+  cancelPasswordChange,
+  cleanupSecurityData,
+};

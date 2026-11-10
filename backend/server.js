@@ -9,15 +9,20 @@ const seedDatabase = require("./seed");
 const cookieParser = require("cookie-parser");
 
 const indiaOnly=require("./middleware/indiaOnly");
+
 const {
   cleanupSecurityData,
-  getDeviceId,
-  checkLoginAllowed,
-  recordFailedLogin,
-  recordSuccessfulLogin,
+  checkIPAllowed,
+  recordFailedAttempt,
+  recordSuccessfulAttempt,
   reservePasswordChange,
   cancelPasswordChange,
 } = require("./utils/securityManager");
+
+const {
+  signToken,
+  requireAuth,
+} = require("./middleware/auth");
 
 
 
@@ -41,13 +46,14 @@ const SchoolInfo = require("./models/SchoolInfo");
 const Admin = require("./models/Admin");
 
 // Authentication & Security Middleware
-const { signToken, requireAuth, loginRateLimiter } = require("./middleware/auth");
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 let currentListeningPort = parseInt(PORT, 10) || 5000;
 
 app.use(cookieParser());
+
 
 
 const cleanupTimestampFile = path.join(
@@ -378,230 +384,328 @@ app.get("/api/db-status", (req, res) => {
   res.json(getDbState());
 });
 
-// =========================================================
-// 1.5. SECURE AUTHENTICATION & ADMIN CREDENTIALS API
-// =========================================================
 
-// POST /api/auth/login - Admin Login with brute force rate limiting
+/* =========================================================
+   1.5. SECURE ADMIN AUTHENTICATION APIs
+   Shared IP protection for login and password change
+========================================================= */
 
-app.post(
-  "/api/auth/login",  loginRateLimiter,
-  async (req, res) => {
-    try {
-      const { identifier, password } = req.body;
+// Security configuration
+const AUTH_MAX_ATTEMPTS = 5;
+const AUTH_BLOCK_DURATION = 12 * 60 * 60 * 1000;
 
-      if (
-        typeof identifier !== "string" ||
-        typeof password !== "string" ||
-        !identifier.trim() ||
-        !password
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: "Username/email and password are required.",
-        });
-      }
+// Get the trusted client IP.
+// Requires correctly configured Express proxy trust.
+function getAuthClientIP(req) {
+  return req.ip || req.socket?.remoteAddress || "unknown";
+}
 
-      const cleanId = identifier.trim().toLowerCase();
+// Check whether an IP is currently blocked.
+async function checkAuthIP(ip, res) {
+  const status = await checkIPAllowed(ip);
 
-      // Generate or retrieve 24-hour device ID
-      const deviceId = await getDeviceId(req, res);
+  if (status.blocked) {
+    res.status(429).json({
+      success: false,
+      blocked: true,
+      error: "Too many failed attempts.",
+      message: "This IP is temporarily blocked for 12 hours.",
+      blockedUntil: status.until
+        ? new Date(status.until).toISOString()
+        : new Date(Date.now() + AUTH_BLOCK_DURATION).toISOString(),
+    });
 
-      // Check account and device blocks
-      const security = await checkLoginAllowed(
-        cleanId,
-        deviceId
-      );
+    return false;
+  }
 
-      if (security.blocked) {
-        return res.status(429).json({
-          success: false,
-          error: "Login temporarily blocked.",
-          message: "Too many failed attempts. Try again after 12 hours.",
-          blockedUntil: new Date(security.until).toISOString(),
-        });
-      }
+  return true;
+}
 
-      // Find administrator
-      const admin = await Admin.findOne({
-        $or: [
-          { email: cleanId },
-          { username: cleanId },
-        ],
-      });
+// Record failed authentication from the same IP security system.
+async function failAuth(ip, res, message) {
+  const result = await recordFailedAttempt(ip);
 
-      // Unknown username also counts as a failed attempt
-      if (!admin) {
-        const result = await recordFailedLogin(
-          cleanId,
-          deviceId
-        );
+  const attempts = Number(result?.attempts || 0);
+  const blocked = Boolean(result?.blocked);
 
-        return res.status(result.blocked ? 429 : 401).json({
-          success: false,
-          error: "Invalid username/email or password.",
-          attemptsRemaining: Math.max(
-            0,
-            5 - result.attempts
-          ),
-        });
-      }
+  return res.status(blocked ? 429 : 401).json({
+    success: false,
+    blocked,
+    error: blocked
+      ? "Too many failed attempts. IP blocked for 12 hours."
+      : message,
+    attempts,
+    attemptsRemaining: Math.max(0, AUTH_MAX_ATTEMPTS - attempts),
+    blockedUntil: result?.until
+      ? new Date(result.until).toISOString()
+      : null,
+  });
+}
 
-      // Verify password
-      const isMatch = await admin.comparePassword(password);
+/* =========================================================
+   POST /api/auth/login
+========================================================= */
 
-      if (!isMatch) {
-        const result = await recordFailedLogin(
-          cleanId,
-          deviceId
-        );
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { identifier, password } = req.body || {};
 
-        return res.status(result.blocked ? 429 : 401).json({
-          success: false,
-          error: result.blocked
-            ? "Login blocked for 12 hours."
-            : "Invalid username/email or password.",
-          attemptsRemaining: Math.max(
-            0,
-            5 - result.attempts
-          ),
-        });
-      }
-
-      // Successful login: reset failed attempts
-      await recordSuccessfulLogin(cleanId, deviceId);
-
-      admin.lastLogin = new Date();
-      await admin.save();
-
-      // Existing JWT system
-      const token = signToken(admin);
-
-      const expiresIn = 3600;
-      const expiresAt = Date.now() + expiresIn * 1000;
-
-      return res.json({
-        success: true,
-        token,
-        expiresIn,
-        expiresAt,
-        admin: {
-          id: admin._id.toString(),
-          username: admin.username,
-          email: admin.email,
-          name: admin.name,
-          role: admin.role,
-          avatar: admin.avatar,
-          lastLogin: admin.lastLogin,
-        },
-      });
-
-    } catch (error) {
-      console.error("Login security error:", error);
-
-      return res.status(500).json({
+    // Validate input
+    if (
+      typeof identifier !== "string" ||
+      typeof password !== "string" ||
+      !identifier.trim() ||
+      !password
+    ) {
+      return res.status(400).json({
         success: false,
-        error: "An internal error occurred during authentication.",
+        error: "Username/email and password are required.",
       });
     }
-  }
-);
 
-// GET /api/auth/me - Verify current token and return authenticated profile
-app.get("/api/auth/me", requireAuth, async (req, res) => {
-  res.json({
-    authenticated: true,
-    admin: req.admin,
-  });
+    if (identifier.length > 150 || password.length > 200) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid login credentials.",
+      });
+    }
+
+    const clientIP = getAuthClientIP(req);
+
+    // Check global IP block before database authentication.
+    if (!(await checkAuthIP(clientIP, res))) return;
+
+    const cleanId = identifier.trim().toLowerCase();
+
+    // Find admin by username or email.
+    const admin = await Admin.findOne({
+      $or: [
+        { email: cleanId },
+        { username: cleanId },
+      ],
+    });
+
+    // Unknown account counts as a failed attempt.
+    if (!admin) {
+      return await failAuth(
+        clientIP,
+        res,
+        "Invalid username/email or password."
+      );
+    }
+
+    // Verify password using existing Admin model method.
+    const isMatch = await admin.comparePassword(password);
+
+    if (!isMatch) {
+      return await failAuth(
+        clientIP,
+        res,
+        "Invalid username/email or password."
+      );
+    }
+
+    // Reset IP failures only after successful authentication.
+    await recordSuccessfulAttempt(clientIP);
+
+    // Update last login.
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    // Generate existing JWT.
+    const token = signToken(admin);
+
+    const expiresIn = 3600;
+    const expiresAt = Date.now() + expiresIn * 1000;
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      token,
+      expiresIn,
+      expiresAt,
+      admin: {
+        id: admin._id.toString(),
+        username: admin.username,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        avatar: admin.avatar,
+        lastLogin: admin.lastLogin,
+      },
+    });
+
+  } catch (error) {
+    console.error("[LOGIN API ERROR]", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error during login.",
+    });
+  }
 });
 
-// PUT /api/auth/change-password - Change password securely with bcrypt verification
+
+/* =========================================================
+   GET /api/auth/me
+========================================================= */
+
+app.get("/api/auth/me", requireAuth, async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      authenticated: true,
+      admin: req.admin,
+    });
+  } catch (error) {
+    console.error("[AUTH ME ERROR]", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Unable to verify administrator.",
+    });
+  }
+});
+
+
+/* =========================================================
+   PUT /api/auth/change-password
+========================================================= */
 
 app.put(
   "/api/auth/change-password",
   requireAuth,
   async (req, res) => {
-    let reservationTimestamp = null;
+
     let adminId = null;
+    let reservationTimestamp = null;
 
     try {
       const {
         currentPassword,
         newPassword,
         confirmPassword,
-      } = req.body;
+      } = req.body || {};
 
-      if (!currentPassword || !newPassword) {
+      // Validate input.
+      if (
+        typeof currentPassword !== "string" ||
+        typeof newPassword !== "string" ||
+        !currentPassword ||
+        !newPassword
+      ) {
         return res.status(400).json({
+          success: false,
           error: "Current password and new password are required.",
         });
       }
 
+      if (
+        currentPassword.length > 200 ||
+        newPassword.length > 200
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid password length.",
+        });
+      }
+
+      if (
+        confirmPassword !== undefined &&
+        (
+          typeof confirmPassword !== "string" ||
+          newPassword !== confirmPassword
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "New password and confirmation do not match.",
+        });
+      }
+
+      const clientIP = getAuthClientIP(req);
+
+      // Same IP block as login.
+      if (!(await checkAuthIP(clientIP, res))) return;
+
+      // Validate new password.
       if (newPassword.length < 8) {
         return res.status(400).json({
+          success: false,
           error: "Password must be at least 8 characters long.",
         });
       }
 
       if (!/[a-z]/.test(newPassword)) {
         return res.status(400).json({
+          success: false,
           error: "Password must contain a lowercase letter.",
         });
       }
 
       if (!/[A-Z]/.test(newPassword)) {
         return res.status(400).json({
+          success: false,
           error: "Password must contain an uppercase letter.",
         });
       }
 
       if (!/[0-9]/.test(newPassword)) {
         return res.status(400).json({
+          success: false,
           error: "Password must contain a number.",
         });
       }
 
       if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
         return res.status(400).json({
+          success: false,
           error: "Password must contain a special character.",
         });
       }
 
-      if (confirmPassword && newPassword !== confirmPassword) {
-        return res.status(400).json({
-          error: "New password and confirmation do not match.",
+      // Get authenticated admin ID from JWT middleware.
+      adminId = req.admin?._id?.toString();
+
+      if (!adminId) {
+        return res.status(401).json({
+          success: false,
+          error: "Authentication required.",
         });
       }
-
-      adminId = req.admin._id.toString();
 
       const admin = await Admin.findById(adminId);
 
       if (!admin) {
         return res.status(404).json({
+          success: false,
           error: "Administrator account not found.",
         });
       }
 
-      // Verify current password
+      // Verify existing password.
       const isCurrentValid = await admin.comparePassword(
         currentPassword
       );
 
       if (!isCurrentValid) {
-        return res.status(400).json({
-          error: "Current password is incorrect.",
-        });
+        return await failAuth(
+          clientIP,
+          res,
+          "Current password is incorrect."
+        );
       }
 
-      // Prevent reusing current password
+      // Prevent password reuse.
       if (await admin.comparePassword(newPassword)) {
         return res.status(400).json({
+          success: false,
           error: "New password must be different from current password.",
         });
       }
 
-      // Check weekly password-change limit
+      // Keep existing weekly limit:
+      // Maximum 2 password changes in 7 days.
       const limit = await reservePasswordChange(adminId);
 
       if (!limit.allowed) {
@@ -609,18 +713,17 @@ app.put(
           success: false,
           error: "Weekly password change limit reached.",
           message: "You can change your password only twice in 7 days.",
-          nextAllowedAt: new Date(
-            limit.nextAllowedAt
-          ).toISOString(),
+          nextAllowedAt: limit.nextAllowedAt
+            ? new Date(limit.nextAllowedAt).toISOString()
+            : null,
         });
       }
 
       reservationTimestamp = limit.timestamp;
 
+      // Update password using existing Mongoose hashing hook.
       try {
         admin.password = newPassword;
-
-        // Mongoose password hashing hook
         await admin.save();
 
       } catch (saveError) {
@@ -630,16 +733,48 @@ app.put(
         );
 
         reservationTimestamp = null;
+
         throw saveError;
       }
 
-      return res.json({
+      // Successful password update.
+      // Do not let a security-counter error report a false save failure.
+      try {
+        await recordSuccessfulAttempt(clientIP);
+      } catch (securityError) {
+        console.error(
+          "[AUTH COUNTER RESET ERROR]",
+          securityError
+        );
+      }
+
+      reservationTimestamp = null;
+
+      return res.status(200).json({
         success: true,
         message: "Password updated successfully.",
       });
 
     } catch (error) {
-      console.error("Password change error:", error);
+      console.error("[PASSWORD CHANGE API ERROR]", error);
+
+      // Roll back weekly reservation if saving failed unexpectedly.
+      if (
+        adminId &&
+        reservationTimestamp !== null
+      ) {
+        try {
+          await cancelPasswordChange(
+            adminId,
+            reservationTimestamp
+          );
+        } catch (rollbackError) {
+          console.error(
+            "[PASSWORD LIMIT ROLLBACK ERROR]",
+            rollbackError
+          );
+        }
+      }
 
       return res.status(500).json({
         success: false,
@@ -648,6 +783,7 @@ app.put(
     }
   }
 );
+
 
 // PUT /api/auth/profile - Update administrator name, email, avatar
 app.put("/api/auth/profile", requireAuth, async (req, res) => {
