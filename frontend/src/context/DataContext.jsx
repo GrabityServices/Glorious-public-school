@@ -107,12 +107,15 @@ export function DataProvider({ children }) {
   // Fetch all live data directly from MongoDB Atlas API
   const refreshData = useCallback(async () => {
     try {
+      const hasAdminToken =
+        typeof window !== "undefined" && Boolean(localStorage.getItem("gps_admin_token"));
+
       const [noticesRes, eventsRes, staffRes, galleryRes, inqRes, infoRes] = await Promise.allSettled([
         fetch("/api/notices"),
         fetch("/api/events"),
         fetch("/api/staff"),
         fetch("/api/gallery"),
-        fetch("/api/inquiries", { headers: getAuthHeadersOnly() }),
+        hasAdminToken ? fetch("/api/inquiries", { headers: getAuthHeadersOnly() }) : Promise.resolve(null),
         fetch("/api/school-info"),
       ]);
 
@@ -132,7 +135,7 @@ export function DataProvider({ children }) {
         const data = await galleryRes.value.json();
         setGallery(data);
       }
-      if (inqRes.status === "fulfilled" && inqRes.value.ok) {
+      if (inqRes.status === "fulfilled" && inqRes.value && inqRes.value.ok) {
         const data = await inqRes.value.json();
         setInquiries(data);
       }

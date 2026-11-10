@@ -17,7 +17,7 @@ const SchoolInfo = require("./models/SchoolInfo");
 const Admin = require("./models/Admin");
 
 // Authentication & Security Middleware
-const { signToken, requireAuth, loginRateLimiter } = require("./middleware/auth");
+const { signToken, requireAuth, loginRateLimiter, getLoginStatus } = require("./middleware/auth");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -279,8 +279,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve uploaded files statically
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve uploaded files statically with browser caching
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    maxAge: "7d",
+    etag: true,
+  })
+);
+
+// Fallback for missing uploads: cache 404 response to avoid browser hammering
+app.use("/uploads", (req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.status(404).send("File not found on server.");
+});
 
 // =========================================================
 // 1. SYSTEM HEALTH & DB STATUS
@@ -311,13 +323,30 @@ app.get("/api/db-status", (req, res) => {
 // 1.5. SECURE AUTHENTICATION & ADMIN CREDENTIALS API
 // =========================================================
 
+// GET /api/auth/login-status - Returns current IP rate limit status, lockout status & remaining cooldown
+app.get("/api/auth/login-status", (req, res) => {
+  const ip = getClientIp(req);
+  const status = getLoginStatus(ip);
+  res.json(status);
+});
+
 // POST /api/auth/login - Admin Login with brute force rate limiting
 app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
   try {
     const { identifier, password } = req.body;
     if (!identifier || !password) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(400).json({ error: "Username/email and password are required." });
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(400).json({
+        error: "Username/email and password are required.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
     }
 
     const cleanId = identifier.trim().toLowerCase();
@@ -326,14 +355,34 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
     });
 
     if (!admin) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(401).json({ error: "Invalid username/email or password." });
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(401).json({
+        error: "Invalid username/email or password.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
     }
 
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(401).json({ error: "Invalid username/email or password." });
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(401).json({
+        error: "Invalid username/email or password.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
     }
 
     // Success: reset rate limit attempts
@@ -1314,6 +1363,38 @@ app.get("/api/school-info", async (req, res) => {
     if (!info) {
       info = await SchoolInfo.create({});
     }
+
+    // Auto-heal missing uploaded files in heroSlides so clients never receive broken URLs
+    if (info && Array.isArray(info.heroSlides) && info.heroSlides.length > 0) {
+      let modified = false;
+      const defaultAssets = [
+        "/images/glorious-public-school.png",
+        "/images/dance-&-cultural-fest.webp",
+        "/images/annual-sports-meet.jpg",
+        "/images/science-exhibition.jpg",
+        "/images/yoga-and-fitness.jpg",
+      ];
+      info.heroSlides = info.heroSlides.map((slide, idx) => {
+        const slideObj = slide && slide.toObject ? slide.toObject() : { ...slide };
+        if (slideObj && slideObj.image && slideObj.image.startsWith("/uploads/")) {
+          const relativePath = slideObj.image.replace(/^\//, "");
+          const fullPath = path.join(__dirname, relativePath);
+          if (!fs.existsSync(fullPath)) {
+            console.warn(
+              `⚠️ [Self-Healing] Missing slider file on disk: ${slideObj.image}. Auto-repairing with default asset.`
+            );
+            slideObj.image = defaultAssets[idx % defaultAssets.length];
+            modified = true;
+          }
+        }
+        return slideObj;
+      });
+
+      if (modified) {
+        await SchoolInfo.updateOne({ _id: info._id }, { $set: { heroSlides: info.heroSlides } });
+      }
+    }
+
     res.json(info);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch school info from MongoDB", details: err.message });
