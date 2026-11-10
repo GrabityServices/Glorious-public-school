@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import MotionProvider from "@/components/motion/MotionProvider";
 import AppRoutes from "@/routes/AppRoutes";
+import UpdatePrompt from "@/components/UpdatePrompt";
 import { AuthProvider } from "@/context/AuthContext";
 import { DataProvider } from "@/context/DataContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
@@ -25,6 +26,7 @@ export default function App() {
           <ConfirmProvider>
             <VisitorRouteTracker />
             <AppRoutes />
+            <UpdatePrompt />
           </ConfirmProvider>
         </MotionProvider>
       </DataProvider>

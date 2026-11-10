@@ -6,6 +6,30 @@ const cors = require("cors");
 const multer = require("multer");
 const { connectDB, getDbState, getMaskedUri } = require("./db");
 const seedDatabase = require("./seed");
+const cookieParser = require("cookie-parser");
+
+const indiaOnly=require("./middleware/indiaOnly");
+const {
+  cleanupSecurityData,
+  getDeviceId,
+  checkLoginAllowed,
+  recordFailedLogin,
+  recordSuccessfulLogin,
+  reservePasswordChange,
+  cancelPasswordChange,
+} = require("./utils/securityManager");
+
+
+
+
+// Security data cleanup every 24 hours
+cleanupSecurityData().catch(console.error);
+
+const securityCleanupInterval = setInterval(() => {
+  cleanupSecurityData().catch(console.error);
+}, 24 * 60 * 60 * 1000);
+
+securityCleanupInterval.unref();
 
 // Mongoose Models
 const Notice = require("./models/Notice");
@@ -22,6 +46,53 @@ const { signToken, requireAuth, loginRateLimiter } = require("./middleware/auth"
 const app = express();
 const PORT = process.env.PORT || 5000;
 let currentListeningPort = parseInt(PORT, 10) || 5000;
+
+app.use(cookieParser());
+
+
+const cleanupTimestampFile = path.join(
+  process.cwd(),
+  "data/security/last-cleanup.json"
+);
+
+const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000;
+
+async function runScheduledCleanup() {
+  try {
+    let lastCleanup = 0;
+
+    try {
+      const data = JSON.parse(
+        await fs.promises.readFile(cleanupTimestampFile, "utf8")
+      );
+
+      lastCleanup = data.lastCleanup || 0;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+
+    const now = Date.now();
+
+    if (now - lastCleanup >= CLEANUP_INTERVAL) {
+      await cleanupSecurityData();
+
+      await fs.promises.writeFile(
+        cleanupTimestampFile,
+        JSON.stringify({ lastCleanup: Date.now() }, null, 2)
+      );
+
+      console.log("GPS: Scheduled security cleanup completed");
+    }
+  } catch (error) {
+    console.error("GPS: Security cleanup failed:", error);
+  }
+}
+
+runScheduledCleanup();
+
+setInterval(runScheduledCleanup, 60 * 60 * 1000).unref();
+
+
 
 // Connect to MongoDB and seed if collections are empty
 (async () => {
@@ -312,60 +383,129 @@ app.get("/api/db-status", (req, res) => {
 // =========================================================
 
 // POST /api/auth/login - Admin Login with brute force rate limiting
-app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
-  try {
-    const { identifier, password } = req.body;
-    if (!identifier || !password) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(400).json({ error: "Username/email and password are required." });
+
+app.post(
+  "/api/auth/login",  loginRateLimiter,
+  async (req, res) => {
+    try {
+      const { identifier, password } = req.body;
+
+      if (
+        typeof identifier !== "string" ||
+        typeof password !== "string" ||
+        !identifier.trim() ||
+        !password
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Username/email and password are required.",
+        });
+      }
+
+      const cleanId = identifier.trim().toLowerCase();
+
+      // Generate or retrieve 24-hour device ID
+      const deviceId = await getDeviceId(req, res);
+
+      // Check account and device blocks
+      const security = await checkLoginAllowed(
+        cleanId,
+        deviceId
+      );
+
+      if (security.blocked) {
+        return res.status(429).json({
+          success: false,
+          error: "Login temporarily blocked.",
+          message: "Too many failed attempts. Try again after 12 hours.",
+          blockedUntil: new Date(security.until).toISOString(),
+        });
+      }
+
+      // Find administrator
+      const admin = await Admin.findOne({
+        $or: [
+          { email: cleanId },
+          { username: cleanId },
+        ],
+      });
+
+      // Unknown username also counts as a failed attempt
+      if (!admin) {
+        const result = await recordFailedLogin(
+          cleanId,
+          deviceId
+        );
+
+        return res.status(result.blocked ? 429 : 401).json({
+          success: false,
+          error: "Invalid username/email or password.",
+          attemptsRemaining: Math.max(
+            0,
+            5 - result.attempts
+          ),
+        });
+      }
+
+      // Verify password
+      const isMatch = await admin.comparePassword(password);
+
+      if (!isMatch) {
+        const result = await recordFailedLogin(
+          cleanId,
+          deviceId
+        );
+
+        return res.status(result.blocked ? 429 : 401).json({
+          success: false,
+          error: result.blocked
+            ? "Login blocked for 12 hours."
+            : "Invalid username/email or password.",
+          attemptsRemaining: Math.max(
+            0,
+            5 - result.attempts
+          ),
+        });
+      }
+
+      // Successful login: reset failed attempts
+      await recordSuccessfulLogin(cleanId, deviceId);
+
+      admin.lastLogin = new Date();
+      await admin.save();
+
+      // Existing JWT system
+      const token = signToken(admin);
+
+      const expiresIn = 3600;
+      const expiresAt = Date.now() + expiresIn * 1000;
+
+      return res.json({
+        success: true,
+        token,
+        expiresIn,
+        expiresAt,
+        admin: {
+          id: admin._id.toString(),
+          username: admin.username,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role,
+          avatar: admin.avatar,
+          lastLogin: admin.lastLogin,
+        },
+      });
+
+    } catch (error) {
+      console.error("Login security error:", error);
+
+      return res.status(500).json({
+        success: false,
+        error: "An internal error occurred during authentication.",
+      });
     }
-
-    const cleanId = identifier.trim().toLowerCase();
-    const admin = await Admin.findOne({
-      $or: [{ email: cleanId }, { username: cleanId }],
-    });
-
-    if (!admin) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(401).json({ error: "Invalid username/email or password." });
-    }
-
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) {
-      if (res.recordFailedLogin) res.recordFailedLogin();
-      return res.status(401).json({ error: "Invalid username/email or password." });
-    }
-
-    // Success: reset rate limit attempts
-    if (res.recordSuccessfulLogin) res.recordSuccessfulLogin();
-
-    admin.lastLogin = new Date();
-    await admin.save();
-
-    const token = signToken(admin);
-    const expiresIn = 3600; // 1 hour in seconds
-    const expiresAt = Date.now() + expiresIn * 1000;
-
-    res.json({
-      success: true,
-      token,
-      expiresIn,
-      expiresAt,
-      admin: {
-        id: admin._id.toString(),
-        username: admin.username,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role,
-        avatar: admin.avatar,
-        lastLogin: admin.lastLogin,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ error: "An internal error occurred during authentication." });
   }
-});
+);
 
 // GET /api/auth/me - Verify current token and return authenticated profile
 app.get("/api/auth/me", requireAuth, async (req, res) => {
@@ -376,62 +516,138 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
 });
 
 // PUT /api/auth/change-password - Change password securely with bcrypt verification
-app.put("/api/auth/change-password", requireAuth, async (req, res) => {
-  try {
-    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Current password and new password are required." });
-    }
+app.put(
+  "/api/auth/change-password",
+  requireAuth,
+  async (req, res) => {
+    let reservationTimestamp = null;
+    let adminId = null;
 
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: "New password must be at least 8 characters long." });
-    }
+    try {
+      const {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      } = req.body;
 
-    if (!/[a-z]/.test(newPassword)) {
-      return res.status(400).json({ error: "Password must contain at least one lowercase letter (a-z)." });
-    }
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          error: "Current password and new password are required.",
+        });
+      }
 
-    if (!/[A-Z]/.test(newPassword)) {
-      return res.status(400).json({ error: "Password must contain at least one uppercase letter (A-Z)." });
-    }
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          error: "Password must be at least 8 characters long.",
+        });
+      }
 
-    if (!/[0-9]/.test(newPassword)) {
-      return res.status(400).json({ error: "Password must contain at least one number (0-9)." });
-    }
+      if (!/[a-z]/.test(newPassword)) {
+        return res.status(400).json({
+          error: "Password must contain a lowercase letter.",
+        });
+      }
 
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
-      return res.status(400).json({
-        error: "Password must contain at least one special symbol (!@#$%^&*()_+-=[]{}...).",
+      if (!/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({
+          error: "Password must contain an uppercase letter.",
+        });
+      }
+
+      if (!/[0-9]/.test(newPassword)) {
+        return res.status(400).json({
+          error: "Password must contain a number.",
+        });
+      }
+
+      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
+        return res.status(400).json({
+          error: "Password must contain a special character.",
+        });
+      }
+
+      if (confirmPassword && newPassword !== confirmPassword) {
+        return res.status(400).json({
+          error: "New password and confirmation do not match.",
+        });
+      }
+
+      adminId = req.admin._id.toString();
+
+      const admin = await Admin.findById(adminId);
+
+      if (!admin) {
+        return res.status(404).json({
+          error: "Administrator account not found.",
+        });
+      }
+
+      // Verify current password
+      const isCurrentValid = await admin.comparePassword(
+        currentPassword
+      );
+
+      if (!isCurrentValid) {
+        return res.status(400).json({
+          error: "Current password is incorrect.",
+        });
+      }
+
+      // Prevent reusing current password
+      if (await admin.comparePassword(newPassword)) {
+        return res.status(400).json({
+          error: "New password must be different from current password.",
+        });
+      }
+
+      // Check weekly password-change limit
+      const limit = await reservePasswordChange(adminId);
+
+      if (!limit.allowed) {
+        return res.status(429).json({
+          success: false,
+          error: "Weekly password change limit reached.",
+          message: "You can change your password only twice in 7 days.",
+          nextAllowedAt: new Date(
+            limit.nextAllowedAt
+          ).toISOString(),
+        });
+      }
+
+      reservationTimestamp = limit.timestamp;
+
+      try {
+        admin.password = newPassword;
+
+        // Mongoose password hashing hook
+        await admin.save();
+
+      } catch (saveError) {
+        await cancelPasswordChange(
+          adminId,
+          reservationTimestamp
+        );
+
+        reservationTimestamp = null;
+        throw saveError;
+      }
+
+      return res.json({
+        success: true,
+        message: "Password updated successfully.",
+      });
+
+    } catch (error) {
+      console.error("Password change error:", error);
+
+      return res.status(500).json({
+        success: false,
+        error: "Failed to update password.",
       });
     }
-
-    if (confirmPassword && newPassword !== confirmPassword) {
-      return res.status(400).json({ error: "New password and confirmation do not match." });
-    }
-
-    const admin = await Admin.findById(req.admin._id);
-    if (!admin) {
-      return res.status(404).json({ error: "Administrator account not found." });
-    }
-
-    const isCurrentValid = await admin.comparePassword(currentPassword);
-    if (!isCurrentValid) {
-      return res.status(400).json({ error: "Current password is incorrect." });
-    }
-
-    admin.password = newPassword; // Automatically hashed by Mongoose pre-save hook
-    await admin.save();
-
-    res.json({
-      success: true,
-      message: "Password updated successfully. Please use your new password for subsequent logins.",
-    });
-  } catch (error) {
-    console.error("Password change error:", error);
-    res.status(500).json({ error: "Failed to update password." });
   }
-});
+);
 
 // PUT /api/auth/profile - Update administrator name, email, avatar
 app.put("/api/auth/profile", requireAuth, async (req, res) => {
