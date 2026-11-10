@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const ADMIN_TOKEN_KEY = "gps_admin_token";
 export const ADMIN_USER_KEY = "gps_admin_user";
@@ -174,7 +174,19 @@ export function AuthProvider({ children }) {
       } else {
         const errMsg = data.error || "Invalid username/email or password.";
         setAuthError(errMsg);
-        return { success: false, error: errMsg };
+        return {
+          success: false,
+          error: errMsg,
+          failedAttempts: data.failedAttempts || 0,
+          maxAttempts: data.maxAttempts || 4,
+          remainingAttempts: data.remainingAttempts,
+          warning: data.warning || null,
+          isLocked: Boolean(data.isLocked),
+          lockedUntil: data.lockedUntil || 0,
+          remainingSeconds: data.remainingSeconds || 0,
+          waitMinutes: data.waitMinutes || 0,
+          code: data.code,
+        };
       }
     } catch (err) {
       console.error("[Auth Login Error]:", err);
@@ -182,6 +194,27 @@ export function AuthProvider({ children }) {
       setAuthError(errMsg);
       return { success: false, error: errMsg };
     }
+  };
+
+  const checkLoginStatus = async () => {
+    try {
+      const res = await fetch("/api/auth/login-status");
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.warn("[Auth] Could not fetch login status:", err);
+    }
+    return {
+      isLocked: false,
+      failedAttempts: 0,
+      maxAttempts: 4,
+      remainingAttempts: 4,
+      lockedUntil: 0,
+      remainingSeconds: 0,
+      waitMinutes: 0,
+      warning: null,
+    };
   };
 
   const changePassword = async (currentPassword, newPassword, confirmPassword) => {
@@ -251,6 +284,7 @@ export function AuthProvider({ children }) {
         authError,
         setAuthError,
         login,
+        checkLoginStatus,
         logout,
         changePassword,
         updateProfile,
@@ -261,10 +295,5 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-}
+export { useAuth } from "./useAuth";
+export default AuthProvider;

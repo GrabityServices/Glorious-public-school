@@ -6,32 +6,6 @@ const cors = require("cors");
 const multer = require("multer");
 const { connectDB, getDbState, getMaskedUri } = require("./db");
 const seedDatabase = require("./seed");
-const cookieParser = require("cookie-parser");
-
-const indiaOnly=require("./middleware/indiaOnly");
-const {
-  cleanupSecurityData,
-  checkIPAllowed,
-  recordFailedAttempt,
-  recordSuccessfulAttempt,
-  reservePasswordChange,
-  cancelPasswordChange,
-} = require("./utils/securityManager");
-
-const {
-  signToken,
-  requireAuth,
-} = require("./middleware/auth");
-
-
-// Security data cleanup every 24 hours
-cleanupSecurityData().catch(console.error);
-
-const securityCleanupInterval = setInterval(() => {
-  cleanupSecurityData().catch(console.error);
-}, 24 * 60 * 60 * 1000);
-
-securityCleanupInterval.unref();
 
 // Mongoose Models
 const Notice = require("./models/Notice");
@@ -43,59 +17,11 @@ const SchoolInfo = require("./models/SchoolInfo");
 const Admin = require("./models/Admin");
 
 // Authentication & Security Middleware
+const { signToken, requireAuth, loginRateLimiter, getLoginStatus } = require("./middleware/auth");
 
 const app = express();
-app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 let currentListeningPort = parseInt(PORT, 10) || 5000;
-
-app.use(cookieParser());
-
-
-
-const cleanupTimestampFile = path.join(
-  process.cwd(),
-  "data/security/last-cleanup.json"
-);
-
-const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000;
-
-async function runScheduledCleanup() {
-  try {
-    let lastCleanup = 0;
-
-    try {
-      const data = JSON.parse(
-        await fs.promises.readFile(cleanupTimestampFile, "utf8")
-      );
-
-      lastCleanup = data.lastCleanup || 0;
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-    }
-
-    const now = Date.now();
-
-    if (now - lastCleanup >= CLEANUP_INTERVAL) {
-      await cleanupSecurityData();
-
-      await fs.promises.writeFile(
-        cleanupTimestampFile,
-        JSON.stringify({ lastCleanup: Date.now() }, null, 2)
-      );
-
-      console.log("GPS: Scheduled security cleanup completed");
-    }
-  } catch (error) {
-    console.error("GPS: Security cleanup failed:", error);
-  }
-}
-
-runScheduledCleanup();
-
-setInterval(runScheduledCleanup, 60 * 60 * 1000).unref();
-
-
 
 // Connect to MongoDB and seed if collections are empty
 (async () => {
@@ -353,8 +279,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve uploaded files statically
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve uploaded files statically with browser caching
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    maxAge: "7d",
+    etag: true,
+  })
+);
+
+// Fallback for missing uploads: cache 404 response to avoid browser hammering
+app.use("/uploads", (req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.status(404).send("File not found on server.");
+});
 
 // =========================================================
 // 1. SYSTEM HEALTH & DB STATUS
@@ -381,523 +319,168 @@ app.get("/api/db-status", (req, res) => {
   res.json(getDbState());
 });
 
+// =========================================================
+// 1.5. SECURE AUTHENTICATION & ADMIN CREDENTIALS API
+// =========================================================
 
-/* =========================================================
-   1.5. SECURE ADMIN AUTHENTICATION APIs
-   Shared IP protection for login and password change
-========================================================= */
+// GET /api/auth/login-status - Returns current IP rate limit status, lockout status & remaining cooldown
+app.get("/api/auth/login-status", (req, res) => {
+  const ip = getClientIp(req);
+  const status = getLoginStatus(ip);
+  res.json(status);
+});
 
-// Security configuration
-const AUTH_MAX_ATTEMPTS = 5;
-const AUTH_BLOCK_DURATION = 12 * 60 * 60 * 1000;
+// POST /api/auth/login - Admin Login with brute force rate limiting
+app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(400).json({
+        error: "Username/email and password are required.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
+    }
 
-// Get the trusted client IP.
-// Requires correctly configured Express proxy trust.
-function getAuthClientIP(req) {
-  return req.ip || req.socket?.remoteAddress || "unknown";
-}
-
-// Check whether an IP is currently blocked.
-async function checkAuthIP(ip, res) {
-  const status = await checkIPAllowed(ip);
-
-  if (status.blocked) {
-    res.status(429).json({
-      success: false,
-      blocked: true,
-      error: "Too many failed attempts.",
-      message: "This IP is temporarily blocked for 12 hours.",
-      blockedUntil: status.until
-        ? new Date(status.until).toISOString()
-        : new Date(Date.now() + AUTH_BLOCK_DURATION).toISOString(),
+    const cleanId = identifier.trim().toLowerCase();
+    const admin = await Admin.findOne({
+      $or: [{ email: cleanId }, { username: cleanId }],
     });
 
-    return false;
+    if (!admin) {
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(401).json({
+        error: "Invalid username/email or password.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
+    }
+
+    const isMatch = await admin.comparePassword(password);
+    if (!isMatch) {
+      const attemptInfo = res.recordFailedLogin ? res.recordFailedLogin() : null;
+      if (attemptInfo && attemptInfo.isLocked) {
+        return res.status(429).json(attemptInfo);
+      }
+      return res.status(401).json({
+        error: "Invalid username/email or password.",
+        failedAttempts: attemptInfo?.failedAttempts || 0,
+        maxAttempts: attemptInfo?.maxAttempts || 4,
+        remainingAttempts: attemptInfo?.remainingAttempts,
+        warning: attemptInfo?.warning,
+        isLocked: false,
+      });
+    }
+
+    // Success: reset rate limit attempts
+    if (res.recordSuccessfulLogin) res.recordSuccessfulLogin();
+
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    const token = signToken(admin);
+    const expiresIn = 3600; // 1 hour in seconds
+    const expiresAt = Date.now() + expiresIn * 1000;
+
+    res.json({
+      success: true,
+      token,
+      expiresIn,
+      expiresAt,
+      admin: {
+        id: admin._id.toString(),
+        username: admin.username,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        avatar: admin.avatar,
+        lastLogin: admin.lastLogin,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "An internal error occurred during authentication." });
   }
+});
 
-  return true;
-}
-
-// Record failed authentication from the same IP security system.
-async function failAuth(ip, res, message) {
-  const result = await recordFailedAttempt(ip);
-
-  const attempts = Number(result?.attempts || 0);
-  const blocked = Boolean(result?.blocked);
-
-  return res.status(blocked ? 429 : 401).json({
-    success: false,
-    blocked,
-    error: blocked
-      ? "Too many failed attempts. IP blocked for 12 hours."
-      : message,
-    attempts,
-    attemptsRemaining: Math.max(0, AUTH_MAX_ATTEMPTS - attempts),
-    blockedUntil: result?.until
-      ? new Date(result.until).toISOString()
-      : null,
+// GET /api/auth/me - Verify current token and return authenticated profile
+app.get("/api/auth/me", requireAuth, async (req, res) => {
+  res.json({
+    authenticated: true,
+    admin: req.admin,
   });
-}
+});
 
-/* =========================================================
-   POST /api/auth/login
-========================================================= */
-
-
-/* =========================================================
-   SECURE ADMIN AUTHENTICATION APIs
-   Shared IP protection for login and password change
-========================================================= */
-
-
-// Use Express's resolved client IP.
-// Do NOT manually trust x-forwarded-for inside this function.
-function getAuthClientIP(req) {
-  return req.ip || req.socket?.remoteAddress || "unknown";
-}
-
-// Shared IP block middleware.
-// Runs BEFORE password checking and BEFORE JWT verification.
-async function authIPGuard(req, res, next) {
+// PUT /api/auth/change-password - Change password securely with bcrypt verification
+app.put("/api/auth/change-password", requireAuth, async (req, res) => {
   try {
-    const ip = getAuthClientIP(req);
-    req.authClientIP = ip;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    const status = await checkIPAllowed(ip);
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required." });
+    }
 
-    if (status.blocked) {
-      const blockedUntil = status.until
-        ? new Date(status.until).toISOString()
-        : new Date(Date.now() + AUTH_BLOCK_DURATION).toISOString();
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters long." });
+    }
 
-      return res.status(429).json({
-        success: false,
-        blocked: true,
-        code: "IP_BLOCKED",
-        error: "This IP address is temporarily blocked.",
-        message: "Too many failed authentication attempts. Try again after the block expires.",
-        attempts: status.attempts || AUTH_MAX_ATTEMPTS,
-        blockedUntil,
+    if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one lowercase letter (a-z)." });
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one uppercase letter (A-Z)." });
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ error: "Password must contain at least one number (0-9)." });
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
+      return res.status(400).json({
+        error: "Password must contain at least one special symbol (!@#$%^&*()_+-=[]{}...).",
       });
     }
 
-    return next();
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "New password and confirmation do not match." });
+    }
 
+    const admin = await Admin.findById(req.admin._id);
+    if (!admin) {
+      return res.status(404).json({ error: "Administrator account not found." });
+    }
+
+    const isCurrentValid = await admin.comparePassword(currentPassword);
+    if (!isCurrentValid) {
+      return res.status(400).json({ error: "Current password is incorrect." });
+    }
+
+    admin.password = newPassword; // Automatically hashed by Mongoose pre-save hook
+    await admin.save();
+
+    res.json({
+      success: true,
+      message: "Password updated successfully. Please use your new password for subsequent logins.",
+    });
   } catch (error) {
-    console.error("[AUTH IP CHECK ERROR]", error);
-
-    // Fail closed: if security storage is unavailable,
-    // do not allow authentication to proceed.
-    return res.status(503).json({
-      success: false,
-      error: "Security verification is temporarily unavailable. Please try again later.",
-    });
+    console.error("Password change error:", error);
+    res.status(500).json({ error: "Failed to update password." });
   }
-}
-
-// Record an incorrect password attempt.
-async function failAuth(ip, res, message) {
-  try {
-    const result = await recordFailedAttempt(ip);
-
-    const attempts = Number(result?.attempts || 0);
-    const blocked = Boolean(result?.blocked);
-
-    return res.status(blocked ? 429 : 401).json({
-      success: false,
-      blocked,
-      code: blocked ? "IP_BLOCKED" : "INVALID_CREDENTIALS",
-      error: blocked
-        ? "Too many failed attempts. This IP is blocked for 12 hours."
-        : message,
-      attempts,
-      attemptsRemaining: Math.max(0, AUTH_MAX_ATTEMPTS - attempts),
-      blockedUntil: result?.until
-        ? new Date(result.until).toISOString()
-        : null,
-    });
-
-  } catch (error) {
-    console.error("[AUTH FAILED ATTEMPT ERROR]", error);
-
-    return res.status(503).json({
-      success: false,
-      error: "Security verification failed. Please try again later.",
-    });
-  }
-}
-
-/* =========================================================
-   POST /api/auth/login
-========================================================= */
-
-app.post(
-  "/api/auth/login",
-  authIPGuard,
-  async (req, res) => {
-    try {
-      const { identifier, password } = req.body || {};
-      const clientIP = req.authClientIP;
-
-      if (
-        typeof identifier !== "string" ||
-        typeof password !== "string" ||
-        !identifier.trim() ||
-        !password
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: "Username/email and password are required.",
-        });
-      }
-
-      if (identifier.length > 150 || password.length > 200) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid login credentials.",
-        });
-      }
-
-      const cleanId = identifier.trim().toLowerCase();
-
-      const admin = await Admin.findOne({
-        $or: [
-          { email: cleanId },
-          { username: cleanId },
-        ],
-      });
-
-      if (!admin) {
-        return await failAuth(
-          clientIP,
-          res,
-          "Invalid username/email or password."
-        );
-      }
-
-      const isMatch = await admin.comparePassword(password);
-
-      if (!isMatch) {
-        return await failAuth(
-          clientIP,
-          res,
-          "Invalid username/email or password."
-        );
-      }
-
-      // Re-check immediately after password verification.
-      // This prevents issuing a token if another request blocked
-      // this IP while this login request was being processed.
-      const latestStatus = await checkIPAllowed(clientIP);
-
-      if (latestStatus.blocked) {
-        return res.status(429).json({
-          success: false,
-          blocked: true,
-          code: "IP_BLOCKED",
-          error: "This IP address is temporarily blocked.",
-          blockedUntil: new Date(latestStatus.until).toISOString(),
-        });
-      }
-
-      // Clear old failures only if the IP is not blocked.
-      const resetResult = await recordSuccessfulAttempt(clientIP);
-
-      if (resetResult?.blocked) {
-        return res.status(429).json({
-          success: false,
-          blocked: true,
-          code: "IP_BLOCKED",
-          error: "This IP address is temporarily blocked.",
-          blockedUntil: new Date(resetResult.until).toISOString(),
-        });
-      }
-
-      admin.lastLogin = new Date();
-      await admin.save();
-
-      const token = signToken(admin);
-
-      const expiresIn = 3600;
-      const expiresAt = Date.now() + expiresIn * 1000;
-
-      return res.status(200).json({
-        success: true,
-        message: "Login successful.",
-        token,
-        expiresIn,
-        expiresAt,
-        admin: {
-          id: admin._id.toString(),
-          username: admin.username,
-          email: admin.email,
-          name: admin.name,
-          role: admin.role,
-          avatar: admin.avatar,
-          lastLogin: admin.lastLogin,
-        },
-      });
-
-    } catch (error) {
-      console.error("[LOGIN API ERROR]", error);
-
-      return res.status(500).json({
-        success: false,
-        error: "Internal server error during login.",
-      });
-    }
-  }
-);
-
-/* =========================================================
-   GET /api/auth/me
-========================================================= */
-
-app.get(
-  "/api/auth/me",
-  requireAuth,
-  async (req, res) => {
-    try {
-      return res.status(200).json({
-        success: true,
-        authenticated: true,
-        admin: req.admin,
-      });
-
-    } catch (error) {
-      console.error("[AUTH ME ERROR]", error);
-
-      return res.status(500).json({
-        success: false,
-        error: "Unable to verify administrator.",
-      });
-    }
-  }
-);
-
-/* =========================================================
-   PUT /api/auth/change-password
-========================================================= */
-
-app.put(
-  "/api/auth/change-password",
-
-  // Check IP block before checking JWT or password.
-  authIPGuard,
-
-  // Then verify the admin session.
-  requireAuth,
-
-  async (req, res) => {
-    let adminId = null;
-    let reservationTimestamp = null;
-
-    try {
-      const clientIP = req.authClientIP;
-
-      const {
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      } = req.body || {};
-
-      if (
-        typeof currentPassword !== "string" ||
-        typeof newPassword !== "string" ||
-        !currentPassword ||
-        !newPassword
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: "Current password and new password are required.",
-        });
-      }
-
-      if (
-        currentPassword.length > 200 ||
-        newPassword.length > 200
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid password length.",
-        });
-      }
-
-      if (
-        confirmPassword !== undefined &&
-        (
-          typeof confirmPassword !== "string" ||
-          newPassword !== confirmPassword
-        )
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: "New password and confirmation do not match.",
-        });
-      }
-
-      if (newPassword.length < 8) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must be at least 8 characters long.",
-        });
-      }
-
-      if (!/[a-z]/.test(newPassword)) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must contain a lowercase letter.",
-        });
-      }
-
-      if (!/[A-Z]/.test(newPassword)) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must contain an uppercase letter.",
-        });
-      }
-
-      if (!/[0-9]/.test(newPassword)) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must contain a number.",
-        });
-      }
-
-      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
-        return res.status(400).json({
-          success: false,
-          error: "Password must contain a special character.",
-        });
-      }
-
-      adminId = req.admin?._id?.toString();
-
-      if (!adminId) {
-        return res.status(401).json({
-          success: false,
-          error: "Authentication required.",
-        });
-      }
-
-      const admin = await Admin.findById(adminId);
-
-      if (!admin) {
-        return res.status(404).json({
-          success: false,
-          error: "Administrator account not found.",
-        });
-      }
-
-      // Verify current password.
-      const isCurrentValid = await admin.comparePassword(
-        currentPassword
-      );
-
-      if (!isCurrentValid) {
-        return await failAuth(
-          clientIP,
-          res,
-          "Current password is incorrect."
-        );
-      }
-
-      // Check the block again before changing the password.
-      const latestStatus = await checkIPAllowed(clientIP);
-
-      if (latestStatus.blocked) {
-        return res.status(429).json({
-          success: false,
-          blocked: true,
-          code: "IP_BLOCKED",
-          error: "This IP address is temporarily blocked.",
-          blockedUntil: new Date(latestStatus.until).toISOString(),
-        });
-      }
-
-      // Prevent password reuse.
-      if (await admin.comparePassword(newPassword)) {
-        return res.status(400).json({
-          success: false,
-          error: "New password must be different from current password.",
-        });
-      }
-
-      // Keep the existing limit: 2 changes in 7 days.
-      const limit = await reservePasswordChange(adminId);
-
-      if (!limit.allowed) {
-        return res.status(429).json({
-          success: false,
-          error: "Weekly password change limit reached.",
-          message: "You can change your password only twice in 7 days.",
-          nextAllowedAt: limit.nextAllowedAt
-            ? new Date(limit.nextAllowedAt).toISOString()
-            : null,
-        });
-      }
-
-      reservationTimestamp = limit.timestamp;
-
-      try {
-        // Uses your existing Mongoose password hashing hook.
-        admin.password = newPassword;
-        await admin.save();
-
-      } catch (saveError) {
-        await cancelPasswordChange(
-          adminId,
-          reservationTimestamp
-        );
-
-        reservationTimestamp = null;
-        throw saveError;
-      }
-
-      // Clear unblocked IP failures after a successful change.
-      // An active block is never cleared by this operation.
-      const resetResult = await recordSuccessfulAttempt(clientIP);
-
-      if (resetResult?.blocked) {
-        console.error(
-          "[SECURITY] IP became blocked during password change."
-        );
-      }
-
-      reservationTimestamp = null;
-
-      return res.status(200).json({
-        success: true,
-        message: "Password updated successfully.",
-      });
-
-    } catch (error) {
-      console.error("[PASSWORD CHANGE API ERROR]", error);
-
-      if (
-        adminId &&
-        reservationTimestamp !== null
-      ) {
-        try {
-          await cancelPasswordChange(
-            adminId,
-            reservationTimestamp
-          );
-        } catch (rollbackError) {
-          console.error(
-            "[PASSWORD CHANGE ROLLBACK ERROR]",
-            rollbackError
-          );
-        }
-      }
-
-      return res.status(500).json({
-        success: false,
-        error: "Unable to change password. Please try again.",
-      });
-    }
-  }
-);
+});
 
 // PUT /api/auth/profile - Update administrator name, email, avatar
 app.put("/api/auth/profile", requireAuth, async (req, res) => {
@@ -1780,6 +1363,38 @@ app.get("/api/school-info", async (req, res) => {
     if (!info) {
       info = await SchoolInfo.create({});
     }
+
+    // Auto-heal missing uploaded files in heroSlides so clients never receive broken URLs
+    if (info && Array.isArray(info.heroSlides) && info.heroSlides.length > 0) {
+      let modified = false;
+      const defaultAssets = [
+        "/images/glorious-public-school.png",
+        "/images/dance-&-cultural-fest.webp",
+        "/images/annual-sports-meet.jpg",
+        "/images/science-exhibition.jpg",
+        "/images/yoga-and-fitness.jpg",
+      ];
+      info.heroSlides = info.heroSlides.map((slide, idx) => {
+        const slideObj = slide && slide.toObject ? slide.toObject() : { ...slide };
+        if (slideObj && slideObj.image && slideObj.image.startsWith("/uploads/")) {
+          const relativePath = slideObj.image.replace(/^\//, "");
+          const fullPath = path.join(__dirname, relativePath);
+          if (!fs.existsSync(fullPath)) {
+            console.warn(
+              `⚠️ [Self-Healing] Missing slider file on disk: ${slideObj.image}. Auto-repairing with default asset.`
+            );
+            slideObj.image = defaultAssets[idx % defaultAssets.length];
+            modified = true;
+          }
+        }
+        return slideObj;
+      });
+
+      if (modified) {
+        await SchoolInfo.updateOne({ _id: info._id }, { $set: { heroSlides: info.heroSlides } });
+      }
+    }
+
     res.json(info);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch school info from MongoDB", details: err.message });

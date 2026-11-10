@@ -456,7 +456,7 @@ export default function AdminSecurity() {
               <h4>Brute-Force Defense Active</h4>
             </div>
             <p>
-              Your sign-in endpoint is defended by IP rate limiting. If anyone attempts to enter 5 incorrect passwords consecutively, access from that IP is locked for 15 minutes.
+              Your sign-in endpoint is defended by active IP rate limiting. After 2 failed attempts, a security warning is issued. If someone enters incorrect credentials more than 4 times, access from that IP is automatically locked for 15 minutes.
             </p>
           </div>
 
