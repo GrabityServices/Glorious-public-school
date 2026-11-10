@@ -15,7 +15,7 @@ const BLOCK_DURATION = 12 * 60 * 60 * 1000;
 const PASSWORD_WINDOW = 7 * 24 * 60 * 60 * 1000;
 const PASSWORD_LIMIT = 2;
 
-// Serialize writes within this Node.js process.
+// Serialize file operations inside this Node.js process.
 const queues = new Map();
 
 async function withFile(file, operation) {
@@ -28,12 +28,15 @@ async function withFile(file, operation) {
 
     try {
       data = JSON.parse(await fs.readFile(file, "utf8"));
+
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error(`Invalid security data format: ${file}`);
+      }
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }
 
     const result = await operation(data);
-
     const tempFile = `${file}.${crypto.randomUUID()}.tmp`;
 
     try {
@@ -57,13 +60,13 @@ async function withFile(file, operation) {
   return current;
 }
 
-// Normalize IP addresses consistently.
 function normalizeIP(ip) {
   if (!ip || typeof ip !== "string") return "unknown";
 
   let value = ip.trim();
 
-  if (value.startsWith("::ffff:")) {
+  // Remove IPv4-mapped IPv6 prefix.
+  if (value.toLowerCase().startsWith("::ffff:")) {
     value = value.substring(7);
   }
 
@@ -75,15 +78,13 @@ function normalizeIP(ip) {
 }
 
 function getIPKey(ip) {
-  const normalized = normalizeIP(ip);
-
   return crypto
     .createHash("sha256")
-    .update(normalized)
+    .update(normalizeIP(ip))
     .digest("hex");
 }
 
-// CHECK IP BLOCK
+// Check the shared IP block.
 async function checkIPAllowed(ip) {
   const key = getIPKey(ip);
   const now = Date.now();
@@ -92,28 +93,35 @@ async function checkIPAllowed(ip) {
     const record = data[key];
 
     if (!record) {
-      return { blocked: false };
+      return { blocked: false, attempts: 0 };
     }
 
-    if (record.blockedUntil > now) {
+    if (
+      Number(record.blockedUntil) > now
+    ) {
       return {
         blocked: true,
-        until: record.blockedUntil,
-        attempts: record.count,
+        attempts: Number(record.count) || ATTEMPT_LIMIT,
+        until: Number(record.blockedUntil),
       };
     }
 
-    // Expired block: reset the IP counter.
-    if (record.blockedUntil && record.blockedUntil <= now) {
+    // Remove expired block or stale attempt record.
+    if (
+      (record.blockedUntil && record.blockedUntil <= now) ||
+      (
+        !record.blockedUntil &&
+        now - Number(record.lastAttemptAt || 0) >= BLOCK_DURATION
+      )
+    ) {
       delete data[key];
-      return { blocked: false };
     }
 
-    return { blocked: false };
+    return { blocked: false, attempts: 0 };
   });
 }
 
-// RECORD FAILED LOGIN OR PASSWORD VERIFICATION
+// Record a failed login OR incorrect current password.
 async function recordFailedAttempt(ip) {
   const key = getIPKey(ip);
   const now = Date.now();
@@ -121,9 +129,20 @@ async function recordFailedAttempt(ip) {
   return withFile(FILES.attempts, (data) => {
     let record = data[key];
 
+    // Never reset or extend an existing active block.
+    if (record && Number(record.blockedUntil) > now) {
+      return {
+        attempts: Number(record.count) || ATTEMPT_LIMIT,
+        blocked: true,
+        until: Number(record.blockedUntil),
+      };
+    }
+
+    // Start a fresh attempt window when the previous one expires.
     if (
       !record ||
-      now - record.firstAttemptAt >= BLOCK_DURATION
+      !record.firstAttemptAt ||
+      now - Number(record.firstAttemptAt) >= BLOCK_DURATION
     ) {
       record = {
         count: 0,
@@ -133,7 +152,7 @@ async function recordFailedAttempt(ip) {
       };
     }
 
-    record.count++;
+    record.count = (Number(record.count) || 0) + 1;
     record.lastAttemptAt = now;
 
     if (record.count >= ATTEMPT_LIMIT) {
@@ -150,17 +169,29 @@ async function recordFailedAttempt(ip) {
   });
 }
 
-// SUCCESSFUL AUTHENTICATION
+// Successful authentication clears only an unblocked IP's failures.
+// An active block can NEVER be cleared by knowing the correct password.
 async function recordSuccessfulAttempt(ip) {
   const key = getIPKey(ip);
+  const now = Date.now();
 
-  await withFile(FILES.attempts, (data) => {
-    // A successful authentication resets this IP's counter.
+  return withFile(FILES.attempts, (data) => {
+    const record = data[key];
+
+    if (record && Number(record.blockedUntil) > now) {
+      return {
+        blocked: true,
+        until: Number(record.blockedUntil),
+      };
+    }
+
     delete data[key];
+
+    return { blocked: false };
   });
 }
 
-// WEEKLY PASSWORD CHANGE LIMIT
+// Maximum 2 password changes in 7 days per admin.
 async function reservePasswordChange(adminId) {
   const now = Date.now();
   const key = String(adminId);
@@ -195,14 +226,16 @@ async function reservePasswordChange(adminId) {
   });
 }
 
-// ROLLBACK PASSWORD CHANGE RESERVATION
 async function cancelPasswordChange(adminId, timestamp) {
   if (!Number.isFinite(timestamp)) return;
 
   const key = String(adminId);
 
   await withFile(FILES.passwords, (history) => {
-    const entries = history[key] || [];
+    const entries = Array.isArray(history[key])
+      ? history[key]
+      : [];
+
     const index = entries.lastIndexOf(timestamp);
 
     if (index !== -1) {
@@ -217,7 +250,7 @@ async function cancelPasswordChange(adminId, timestamp) {
   });
 }
 
-// CLEAN EXPIRED DATA
+// Remove expired security records.
 async function cleanupSecurityData() {
   const now = Date.now();
 
@@ -225,10 +258,13 @@ async function cleanupSecurityData() {
     for (const [key, record] of Object.entries(data)) {
       if (
         !record ||
-        (record.blockedUntil && record.blockedUntil <= now) ||
+        (
+          record.blockedUntil &&
+          Number(record.blockedUntil) <= now
+        ) ||
         (
           !record.blockedUntil &&
-          now - record.lastAttemptAt >= BLOCK_DURATION
+          now - Number(record.lastAttemptAt || 0) >= BLOCK_DURATION
         )
       ) {
         delete data[key];

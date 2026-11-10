@@ -9,7 +9,6 @@ const seedDatabase = require("./seed");
 const cookieParser = require("cookie-parser");
 
 const indiaOnly=require("./middleware/indiaOnly");
-
 const {
   cleanupSecurityData,
   checkIPAllowed,
@@ -23,8 +22,6 @@ const {
   signToken,
   requireAuth,
 } = require("./middleware/auth");
-
-
 
 
 // Security data cleanup every 24 hours
@@ -446,127 +443,237 @@ async function failAuth(ip, res, message) {
    POST /api/auth/login
 ========================================================= */
 
-app.post("/api/auth/login", async (req, res) => {
+
+/* =========================================================
+   SECURE ADMIN AUTHENTICATION APIs
+   Shared IP protection for login and password change
+========================================================= */
+
+
+// Use Express's resolved client IP.
+// Do NOT manually trust x-forwarded-for inside this function.
+function getAuthClientIP(req) {
+  return req.ip || req.socket?.remoteAddress || "unknown";
+}
+
+// Shared IP block middleware.
+// Runs BEFORE password checking and BEFORE JWT verification.
+async function authIPGuard(req, res, next) {
   try {
-    const { identifier, password } = req.body || {};
+    const ip = getAuthClientIP(req);
+    req.authClientIP = ip;
 
-    // Validate input
-    if (
-      typeof identifier !== "string" ||
-      typeof password !== "string" ||
-      !identifier.trim() ||
-      !password
-    ) {
-      return res.status(400).json({
+    const status = await checkIPAllowed(ip);
+
+    if (status.blocked) {
+      const blockedUntil = status.until
+        ? new Date(status.until).toISOString()
+        : new Date(Date.now() + AUTH_BLOCK_DURATION).toISOString();
+
+      return res.status(429).json({
         success: false,
-        error: "Username/email and password are required.",
+        blocked: true,
+        code: "IP_BLOCKED",
+        error: "This IP address is temporarily blocked.",
+        message: "Too many failed authentication attempts. Try again after the block expires.",
+        attempts: status.attempts || AUTH_MAX_ATTEMPTS,
+        blockedUntil,
       });
     }
 
-    if (identifier.length > 150 || password.length > 200) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid login credentials.",
-      });
-    }
+    return next();
 
-    const clientIP = getAuthClientIP(req);
+  } catch (error) {
+    console.error("[AUTH IP CHECK ERROR]", error);
 
-    // Check global IP block before database authentication.
-    if (!(await checkAuthIP(clientIP, res))) return;
-
-    const cleanId = identifier.trim().toLowerCase();
-
-    // Find admin by username or email.
-    const admin = await Admin.findOne({
-      $or: [
-        { email: cleanId },
-        { username: cleanId },
-      ],
+    // Fail closed: if security storage is unavailable,
+    // do not allow authentication to proceed.
+    return res.status(503).json({
+      success: false,
+      error: "Security verification is temporarily unavailable. Please try again later.",
     });
+  }
+}
 
-    // Unknown account counts as a failed attempt.
-    if (!admin) {
-      return await failAuth(
-        clientIP,
-        res,
-        "Invalid username/email or password."
-      );
-    }
+// Record an incorrect password attempt.
+async function failAuth(ip, res, message) {
+  try {
+    const result = await recordFailedAttempt(ip);
 
-    // Verify password using existing Admin model method.
-    const isMatch = await admin.comparePassword(password);
+    const attempts = Number(result?.attempts || 0);
+    const blocked = Boolean(result?.blocked);
 
-    if (!isMatch) {
-      return await failAuth(
-        clientIP,
-        res,
-        "Invalid username/email or password."
-      );
-    }
-
-    // Reset IP failures only after successful authentication.
-    await recordSuccessfulAttempt(clientIP);
-
-    // Update last login.
-    admin.lastLogin = new Date();
-    await admin.save();
-
-    // Generate existing JWT.
-    const token = signToken(admin);
-
-    const expiresIn = 3600;
-    const expiresAt = Date.now() + expiresIn * 1000;
-
-    return res.status(200).json({
-      success: true,
-      message: "Login successful.",
-      token,
-      expiresIn,
-      expiresAt,
-      admin: {
-        id: admin._id.toString(),
-        username: admin.username,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role,
-        avatar: admin.avatar,
-        lastLogin: admin.lastLogin,
-      },
+    return res.status(blocked ? 429 : 401).json({
+      success: false,
+      blocked,
+      code: blocked ? "IP_BLOCKED" : "INVALID_CREDENTIALS",
+      error: blocked
+        ? "Too many failed attempts. This IP is blocked for 12 hours."
+        : message,
+      attempts,
+      attemptsRemaining: Math.max(0, AUTH_MAX_ATTEMPTS - attempts),
+      blockedUntil: result?.until
+        ? new Date(result.until).toISOString()
+        : null,
     });
 
   } catch (error) {
-    console.error("[LOGIN API ERROR]", error);
+    console.error("[AUTH FAILED ATTEMPT ERROR]", error);
 
-    return res.status(500).json({
+    return res.status(503).json({
       success: false,
-      error: "Internal server error during login.",
+      error: "Security verification failed. Please try again later.",
     });
   }
-});
+}
 
+/* =========================================================
+   POST /api/auth/login
+========================================================= */
+
+app.post(
+  "/api/auth/login",
+  authIPGuard,
+  async (req, res) => {
+    try {
+      const { identifier, password } = req.body || {};
+      const clientIP = req.authClientIP;
+
+      if (
+        typeof identifier !== "string" ||
+        typeof password !== "string" ||
+        !identifier.trim() ||
+        !password
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Username/email and password are required.",
+        });
+      }
+
+      if (identifier.length > 150 || password.length > 200) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid login credentials.",
+        });
+      }
+
+      const cleanId = identifier.trim().toLowerCase();
+
+      const admin = await Admin.findOne({
+        $or: [
+          { email: cleanId },
+          { username: cleanId },
+        ],
+      });
+
+      if (!admin) {
+        return await failAuth(
+          clientIP,
+          res,
+          "Invalid username/email or password."
+        );
+      }
+
+      const isMatch = await admin.comparePassword(password);
+
+      if (!isMatch) {
+        return await failAuth(
+          clientIP,
+          res,
+          "Invalid username/email or password."
+        );
+      }
+
+      // Re-check immediately after password verification.
+      // This prevents issuing a token if another request blocked
+      // this IP while this login request was being processed.
+      const latestStatus = await checkIPAllowed(clientIP);
+
+      if (latestStatus.blocked) {
+        return res.status(429).json({
+          success: false,
+          blocked: true,
+          code: "IP_BLOCKED",
+          error: "This IP address is temporarily blocked.",
+          blockedUntil: new Date(latestStatus.until).toISOString(),
+        });
+      }
+
+      // Clear old failures only if the IP is not blocked.
+      const resetResult = await recordSuccessfulAttempt(clientIP);
+
+      if (resetResult?.blocked) {
+        return res.status(429).json({
+          success: false,
+          blocked: true,
+          code: "IP_BLOCKED",
+          error: "This IP address is temporarily blocked.",
+          blockedUntil: new Date(resetResult.until).toISOString(),
+        });
+      }
+
+      admin.lastLogin = new Date();
+      await admin.save();
+
+      const token = signToken(admin);
+
+      const expiresIn = 3600;
+      const expiresAt = Date.now() + expiresIn * 1000;
+
+      return res.status(200).json({
+        success: true,
+        message: "Login successful.",
+        token,
+        expiresIn,
+        expiresAt,
+        admin: {
+          id: admin._id.toString(),
+          username: admin.username,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role,
+          avatar: admin.avatar,
+          lastLogin: admin.lastLogin,
+        },
+      });
+
+    } catch (error) {
+      console.error("[LOGIN API ERROR]", error);
+
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error during login.",
+      });
+    }
+  }
+);
 
 /* =========================================================
    GET /api/auth/me
 ========================================================= */
 
-app.get("/api/auth/me", requireAuth, async (req, res) => {
-  try {
-    return res.status(200).json({
-      success: true,
-      authenticated: true,
-      admin: req.admin,
-    });
-  } catch (error) {
-    console.error("[AUTH ME ERROR]", error);
+app.get(
+  "/api/auth/me",
+  requireAuth,
+  async (req, res) => {
+    try {
+      return res.status(200).json({
+        success: true,
+        authenticated: true,
+        admin: req.admin,
+      });
 
-    return res.status(500).json({
-      success: false,
-      error: "Unable to verify administrator.",
-    });
+    } catch (error) {
+      console.error("[AUTH ME ERROR]", error);
+
+      return res.status(500).json({
+        success: false,
+        error: "Unable to verify administrator.",
+      });
+    }
   }
-});
-
+);
 
 /* =========================================================
    PUT /api/auth/change-password
@@ -574,20 +681,26 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
 
 app.put(
   "/api/auth/change-password",
-  requireAuth,
-  async (req, res) => {
 
+  // Check IP block before checking JWT or password.
+  authIPGuard,
+
+  // Then verify the admin session.
+  requireAuth,
+
+  async (req, res) => {
     let adminId = null;
     let reservationTimestamp = null;
 
     try {
+      const clientIP = req.authClientIP;
+
       const {
         currentPassword,
         newPassword,
         confirmPassword,
       } = req.body || {};
 
-      // Validate input.
       if (
         typeof currentPassword !== "string" ||
         typeof newPassword !== "string" ||
@@ -623,12 +736,6 @@ app.put(
         });
       }
 
-      const clientIP = getAuthClientIP(req);
-
-      // Same IP block as login.
-      if (!(await checkAuthIP(clientIP, res))) return;
-
-      // Validate new password.
       if (newPassword.length < 8) {
         return res.status(400).json({
           success: false,
@@ -664,7 +771,6 @@ app.put(
         });
       }
 
-      // Get authenticated admin ID from JWT middleware.
       adminId = req.admin?._id?.toString();
 
       if (!adminId) {
@@ -683,7 +789,7 @@ app.put(
         });
       }
 
-      // Verify existing password.
+      // Verify current password.
       const isCurrentValid = await admin.comparePassword(
         currentPassword
       );
@@ -696,6 +802,19 @@ app.put(
         );
       }
 
+      // Check the block again before changing the password.
+      const latestStatus = await checkIPAllowed(clientIP);
+
+      if (latestStatus.blocked) {
+        return res.status(429).json({
+          success: false,
+          blocked: true,
+          code: "IP_BLOCKED",
+          error: "This IP address is temporarily blocked.",
+          blockedUntil: new Date(latestStatus.until).toISOString(),
+        });
+      }
+
       // Prevent password reuse.
       if (await admin.comparePassword(newPassword)) {
         return res.status(400).json({
@@ -704,8 +823,7 @@ app.put(
         });
       }
 
-      // Keep existing weekly limit:
-      // Maximum 2 password changes in 7 days.
+      // Keep the existing limit: 2 changes in 7 days.
       const limit = await reservePasswordChange(adminId);
 
       if (!limit.allowed) {
@@ -721,8 +839,8 @@ app.put(
 
       reservationTimestamp = limit.timestamp;
 
-      // Update password using existing Mongoose hashing hook.
       try {
+        // Uses your existing Mongoose password hashing hook.
         admin.password = newPassword;
         await admin.save();
 
@@ -733,18 +851,16 @@ app.put(
         );
 
         reservationTimestamp = null;
-
         throw saveError;
       }
 
-      // Successful password update.
-      // Do not let a security-counter error report a false save failure.
-      try {
-        await recordSuccessfulAttempt(clientIP);
-      } catch (securityError) {
+      // Clear unblocked IP failures after a successful change.
+      // An active block is never cleared by this operation.
+      const resetResult = await recordSuccessfulAttempt(clientIP);
+
+      if (resetResult?.blocked) {
         console.error(
-          "[AUTH COUNTER RESET ERROR]",
-          securityError
+          "[SECURITY] IP became blocked during password change."
         );
       }
 
@@ -758,7 +874,6 @@ app.put(
     } catch (error) {
       console.error("[PASSWORD CHANGE API ERROR]", error);
 
-      // Roll back weekly reservation if saving failed unexpectedly.
       if (
         adminId &&
         reservationTimestamp !== null
@@ -770,7 +885,7 @@ app.put(
           );
         } catch (rollbackError) {
           console.error(
-            "[PASSWORD LIMIT ROLLBACK ERROR]",
+            "[PASSWORD CHANGE ROLLBACK ERROR]",
             rollbackError
           );
         }
@@ -778,12 +893,11 @@ app.put(
 
       return res.status(500).json({
         success: false,
-        error: "Failed to update password.",
+        error: "Unable to change password. Please try again.",
       });
     }
   }
 );
-
 
 // PUT /api/auth/profile - Update administrator name, email, avatar
 app.put("/api/auth/profile", requireAuth, async (req, res) => {
