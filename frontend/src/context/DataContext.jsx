@@ -39,7 +39,7 @@ const getAuthHeadersOnly = () => {
 };
 
 export const DEFAULT_SOCIAL_LINKS = {
-  instagram: "https://www.instagram.com/",
+  instagram: "https://www.instagram.com/gpsjhajha",
   facebook: "https://www.facebook.com/",
   youtube: "https://www.youtube.com/",
   x: "https://x.com/",

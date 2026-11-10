@@ -203,45 +203,63 @@ export default function AdminSettings() {
     setSliderModalOpen(true);
   };
 
-  const handleSlideImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ const handleSlideImageUpload = async (e) => {
+   const file = e.target.files?.[0];
+   if (!file) return;
 
-    if (file.size > 30 * 1024 * 1024) {
-      setUploadSlideError("Image size must be under 30MB.");
-      return;
-    }
+   if (file.size > 30 * 1024 * 1024) {
+     setUploadSlideError("Image size must be under 30MB.");
+     return;
+   }
 
-    setIsUploadingSlide(true);
-    setUploadSlideError("");
-    try {
-      // Clean up previous uncommitted draft file if user is replacing it before saving
-      if (
-        slideForm.image &&
-        slideForm.image.startsWith("/uploads/") &&
-        slideForm.image !== editingSlide?.image
-      ) {
-        fetch("/api/upload/file", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
-          },
-          body: JSON.stringify({ fileUrl: slideForm.image }),
-        }).catch(() => {});
-      }
+   setIsUploadingSlide(true);
+   setUploadSlideError("");
 
-      const res = await uploadSliderImage(file);
-      if (res && res.fileUrl) {
-        setSlideForm((prev) => ({ ...prev, image: res.fileUrl }));
-      }
-    } catch (err) {
-      setUploadSlideError(err.message || "Failed to upload slider image. Please try again.");
-    } finally {
-      setIsUploadingSlide(false);
-      if (slideFileInputRef.current) slideFileInputRef.current.value = "";
-    }
-  };
+   try {
+     // Get original image when editing an existing slide
+     const originalSlideImage =
+       editingSlideIndex !== null ? slides[editingSlideIndex]?.image : "";
+
+     // Delete previous draft image only if it is not the original image
+     if (
+       slideForm.image &&
+       slideForm.image.startsWith("/uploads/") &&
+       slideForm.image !== originalSlideImage
+     ) {
+       fetch("/api/upload/file", {
+         method: "DELETE",
+         headers: {
+           "Content-Type": "application/json",
+           Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+         },
+         body: JSON.stringify({
+           fileUrl: slideForm.image,
+         }),
+       }).catch(() => {});
+     }
+
+     const res = await uploadSliderImage(file);
+
+     if (res?.fileUrl) {
+       setSlideForm((prev) => ({
+         ...prev,
+         image: res.fileUrl,
+       }));
+     } else {
+       throw new Error("Server did not return an uploaded image URL.");
+     }
+   } catch (err) {
+     setUploadSlideError(
+       err.message || "Failed to upload slider image. Please try again.",
+     );
+   } finally {
+     setIsUploadingSlide(false);
+
+     if (slideFileInputRef.current) {
+       slideFileInputRef.current.value = "";
+     }
+   }
+ };
 
   const handleSaveSlideModal = async (e) => {
     e.preventDefault();
